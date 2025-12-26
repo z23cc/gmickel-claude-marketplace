@@ -1,0 +1,26 @@
+{
+  "name": "gmickel-claude-marketplace",
+  "owner": {
+    "name": "Gordon Mickel",
+    "url": "https://github.com/gmickel"
+  },
+  "metadata": {
+    "description": "Claude Code plugin marketplace by Gordon Mickel",
+    "version": "0.1.0"
+  },
+  "plugins": [
+    {
+      "name": "flow",
+      "description": "Two-step planning + execution workflow. Includes 5 agents, 2 commands, 1 skill.",
+      "version": "0.1.0",
+      "author": {
+        "name": "Gordon Mickel",
+        "email": "gordon@mickel.tech",
+        "url": "https://mickel.tech"
+      },
+      "homepage": "https://mickel.tech",
+      "tags": ["claude-code", "plugin", "workflow", "planning", "execution"],
+      "source": "./plugins/flow"
+    }
+  ]
+}
