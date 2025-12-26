@@ -1,5 +1,5 @@
 ---
-name: plan
+name: flow:plan
 description: Draft a clear build plan from a short request
 argument-hint: "[feature idea or bug]"
 ---

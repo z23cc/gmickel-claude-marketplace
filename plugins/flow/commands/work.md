@@ -1,7 +1,7 @@
 ---
-name: work
+name: flow:work
 description: Execute a plan file end-to-end with checks
-argument-hint: "[plan file path]"
+argument-hint: "[plan file path or plan name]"
 ---
 
 # Flow work
