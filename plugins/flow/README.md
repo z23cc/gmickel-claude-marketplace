@@ -2,12 +2,25 @@
 
 Two‑step Claude Code workflow: plan first, work second.
 
-## Why
+## Quickstart
+
+```bash
+/plugin marketplace add https://github.com/gmickel/gmickel-claude-marketplace
+/plugin install flow
+```
+
+```bash
+/flow:plan Add OAuth login for users
+/flow:work plans/add-oauth-login.md
+```
+
+## Why Flow
 
 Most failures come from weak planning or drifting from the plan. Flow fixes both:
 - Strong research up front
-- Explicit plan reuse of existing code
+- Explicit reuse of existing code
 - Plan re‑read between tasks
+- Clear Definition of Done before shipping
 
 ## What you get
 
@@ -25,42 +38,6 @@ Agents:
 Skills:
 - worktree-kit (safe parallel workspaces)
 
-## Install
-
-Marketplace:
-```
-/plugin marketplace add https://github.com/gmickel/gmickel-claude-marketplace
-/plugin install flow
-```
-
-Local dev:
-```
-claude --plugin-dir ./plugins/flow
-```
-
-## Usage
-
-Plan:
-```
-/flow:plan Add OAuth login for users
-```
-
-Work:
-```
-/flow:work plans/add-oauth-login.md
-```
-
-## Works well with RepoPrompt reviews
-
-If you use [gmickel/claude-code-config](https://github.com/gmickel/claude-code-config), chain Flow with RepoPrompt review commands:
-```bash
-/flow:plan Add OAuth login for users then review the plan using /rp-plan-review and implement fixes until the reviewer is happy
-```
-```bash
-/flow:work plans/add-oauth-login.md then review the implementation using /rp-impl-review and implement fixes until the reviewer is happy
-```
-RepoPrompt commands are `/rp-plan-review` and `/rp-impl-review`, powered by `rp-cli`.
-
 ## How it works
 
 Plan:
@@ -75,13 +52,30 @@ Work:
 3) Turn plan into TodoWrite tasks
 4) Execute task loop with plan re‑read
 5) Test + optional audit
-6) Ship
+6) Ship with Definition of Done
 
 ## Issue creation
 
 From `/flow:plan`, you can create issues in GitHub/Linear/Beads.
 The command auto‑detects from CLAUDE.md, repo docs, MCP servers, or plugins.
 If unclear, it will ask for the right tool/command.
+
+## Works well with RepoPrompt reviews
+
+If you use [gmickel/claude-code-config](https://github.com/gmickel/claude-code-config), chain Flow with RepoPrompt review commands:
+```bash
+/flow:plan Add OAuth login for users then review the plan using /rp-plan-review and implement fixes until the reviewer is happy
+```
+```bash
+/flow:work plans/add-oauth-login.md then review the implementation using /rp-impl-review and implement fixes until the reviewer is happy
+```
+RepoPrompt commands are `/rp-plan-review` and `/rp-impl-review`, powered by `rp-cli`.
+
+## Local development
+
+```bash
+claude --plugin-dir ./plugins/flow
+```
 
 ## Conventions
 
