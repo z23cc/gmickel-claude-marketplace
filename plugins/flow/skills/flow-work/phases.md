@@ -36,12 +36,17 @@ If current branch: confirm this is intentional.
 - Include tests + lint steps
 - Keep tasks small + ordered
 
-**If Beads issue**:
-- Check if issue has children: `bd show <id> --json` → look for children array
-- **Epic with children**: work through children via `bd ready --parent <id> --json`
-- **Single task (no children)**: work on that task directly
+**If Beads issue with children** (epic from /flow:plan):
+- **DO NOT create a separate TodoWrite list** - the Beads children ARE your task list
+- Use `bd ready --parent <id> --json` to find next available task
+- Work through children in dependency order (bd handles this)
+- `bd update <child-id> --status in_progress --json` to start each
+- `bd close <child-id> --json` to complete each
+
+**If Beads single task** (no children):
+- Work on that task directly
 - `bd update <id> --status in_progress --json` to start
-- `bd close <id> --json` to complete
+- `bd close <id> --json` when complete
 
 ## Phase 4: Execute loop
 
@@ -52,14 +57,16 @@ Re-read plan or Beads state before each task. This ensures coherence across cont
 - Verify working state (run basic tests before starting new work)
 
 **For each task:**
-- Check remaining: TodoWrite, or `bd ready --parent <id>` (for epics), or just the single task
+- **Beads epic**: `bd ready --parent <id> --json` → pick first ready child
+- **Beads single task**: work on that task
+- **Markdown plan**: check TodoWrite for next task
 - Pick ONE task only - never batch
-- Mark in_progress (`bd update <id> --status in_progress --json` for Beads)
+- Mark in_progress: `bd update <child-id> --status in_progress --json`
 - Implement + test thoroughly
 - If you discover new work: `bd create "Found issue" -t bug -p 2 --deps discovered-from:<current-id> --description="<what was found and why>" --json`
 - Leave clean state: commit with descriptive message
-- Mark TodoWrite task done (internal tracking)
-- If Beads and wrapping up session: ask before closing (user may want to review first)
+- Mark complete: `bd close <child-id> --json` (or TodoWrite done for markdown)
+- If wrapping up session: ask before closing final tasks (user may want to review first)
 
 **Between tasks (if epic with multiple children):**
 - Re-read Beads state to confirm next task
