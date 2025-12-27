@@ -22,7 +22,7 @@ If empty, ask for the plan path.
 
 ## Workflow
 
-Read [phases.md](phases.md) and execute each phase in order. Phases include setup, task tracking via TodoWrite, and quality checks.
+Read [phases.md](phases.md) and execute each phase in order. Phases include setup, task tracking (Beads children or TodoWrite), and quality checks.
 
 ## Guardrails
 

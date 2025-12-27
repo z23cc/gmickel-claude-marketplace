@@ -243,7 +243,7 @@ Execute a plan systematically with git setup, task tracking, and quality checks.
 **Phases:**
 1. **Confirm** — Read plan fully, open referenced files, ask blocking questions
 2. **Setup** — Choose: current branch, new branch, or isolated worktree (via `worktree-kit`)
-3. **Task List** — Convert plan to TodoWrite tasks with tests + lint steps
+3. **Task List** — Use Beads children (if epic) or TodoWrite (if markdown plan)
 4. **Execute Loop** — For each task:
    - Re-read plan before starting
    - Mark task in_progress
@@ -254,7 +254,7 @@ Execute a plan systematically with git setup, task tracking, and quality checks.
 
 **Definition of Done:**
 - All plan steps completed or explicitly deferred
-- All TodoWrite tasks done
+- All tasks done (Beads children closed or TodoWrite complete)
 - Tests pass
 - Lint/format pass
 - Docs updated if needed
