@@ -18,7 +18,7 @@ If empty, ask for the plan path.
 
 ## Workflow
 
-For the complete 6-phase workflow, see [phases.md](phases.md).
+Read [phases.md](phases.md) and execute each phase in order. Phases include setup, task tracking via TodoWrite, and quality checks.
 
 ## Guardrails
 

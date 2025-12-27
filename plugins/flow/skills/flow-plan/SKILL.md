@@ -18,11 +18,11 @@ If empty, ask: "What should I plan? Give me the feature or bug in 1-5 sentences.
 
 ## Workflow
 
-For the complete workflow, see [steps.md](steps.md).
+Read [steps.md](steps.md) and follow each step in order. The steps include running research agents in parallel via the Task tool.
 
 ## Examples
 
-For plan examples, see [examples.md](examples.md).
+Read [examples.md](examples.md) for plan structure examples.
 
 ## Output rules
 
