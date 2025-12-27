@@ -1,7 +1,7 @@
 {
   "name": "flow",
-  "version": "0.2.2",
-  "description": "Two-step planning + execution workflow. Includes 5 agents, 2 commands, 3 skills.",
+  "version": "0.2.3",
+  "description": "Two-step planning + execution workflow. Includes 5 subagents, 2 commands, 3 skills.",
   "author": {
     "name": "Gordon Mickel",
     "email": "gordon@mickel.tech",

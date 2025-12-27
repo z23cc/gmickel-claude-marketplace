@@ -2,6 +2,11 @@
 
 All notable changes to the gmickel-claude-marketplace.
 
+## [0.2.3] - 2024-12-27
+
+### Fixed
+- Use "subagent" terminology consistently (official Claude Code term)
+
 ## [0.2.2] - 2024-12-27
 
 ### Fixed
