@@ -4,9 +4,9 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](../../LICENSE)
 [![Claude Code](https://img.shields.io/badge/Claude_Code-Plugin-blueviolet)](https://claude.ai/code)
-[![Commands](https://img.shields.io/badge/Commands-2-green)](commands/)
+[![Commands](https://img.shields.io/badge/Commands-4-green)](commands/)
 [![Agents](https://img.shields.io/badge/Agents-5-yellow)](agents/)
-[![Skills](https://img.shields.io/badge/Skills-3-blue)](skills/)
+[![Skills](https://img.shields.io/badge/Skills-5-blue)](skills/)
 
 **Two‑step Claude Code workflow: plan first, work second.**
 
@@ -49,6 +49,8 @@ Most failures come from weak planning or drifting from the plan. Flow fixes both
 |---------|-------------|
 | `/flow:plan` | Research + produce `plans/<slug>.md` |
 | `/flow:work` | Execute a plan end‑to‑end |
+| `/flow:plan-review` | Carmack-level plan review via rp-cli |
+| `/flow:impl-review` | Carmack-level impl review (current branch) |
 
 ### Agents
 
@@ -66,6 +68,8 @@ Most failures come from weak planning or drifting from the plan. Flow fixes both
 |-------|---------|
 | `flow-plan` | Planning workflow logic |
 | `flow-work` | Execution workflow logic |
+| `flow-plan-review` | Plan review via rp-cli + chat |
+| `flow-impl-review` | Impl review via rp-cli + chat |
 | `worktree-kit` | Safe parallel git workspaces |
 
 Skills use **progressive disclosure**: only name + description (~100 tokens) loaded at startup. Full logic loads on-demand when triggered.
@@ -108,19 +112,16 @@ Auto‑detects from CLAUDE.md, repo docs, MCP servers, or plugins. Asks if uncle
 
 ---
 
-## RepoPrompt Integration
+## Review Commands
 
-Chain Flow with [gmickel/claude-code-config](https://github.com/gmickel/claude-code-config) for Carmack‑level reviews:
-
-```bash
-/flow:plan Add OAuth login for users then review the plan using /rp-plan-review and implement fixes until the reviewer is happy
-```
+Carmack-level code reviews via rp-cli context builder + chat:
 
 ```bash
-/flow:work plans/add-oauth-login.md then review the implementation using /rp-impl-review and implement fixes until the reviewer is happy
+/flow:plan-review plans/add-oauth-login.md
+/flow:impl-review
 ```
 
-RepoPrompt commands are `/rp-plan-review` and `/rp-impl-review`, powered by `rp-cli`.
+Reviews use RepoPrompt's context builder to gather relevant files, then run a thorough chat-based review covering correctness, simplicity, DRY, architecture, edge cases, tests, performance, security, and maintainability.
 
 ---
 

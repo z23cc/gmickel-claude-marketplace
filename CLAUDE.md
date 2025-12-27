@@ -34,11 +34,13 @@ This repo is a Claude Code plugin marketplace. It currently ships one plugin: **
 ## Commands (flow)
 - `/flow:plan` -> writes `plans/<slug>.md`
 - `/flow:work` -> executes a plan
+- `/flow:plan-review` -> Carmack-level plan review via rp-cli
+- `/flow:impl-review` -> Carmack-level impl review (current branch)
 
 ## Current components
-- Commands: 2
+- Commands: 4
 - Agents: 5
-- Skills: 3
+- Skills: 5
 
 ## Marketplace rules
 - Keep `marketplace.json` and `plugins/flow/.claude-plugin/plugin.json` in sync (name, version, description, author, homepage).

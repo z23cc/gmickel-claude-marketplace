@@ -37,7 +37,7 @@ Uses progressive disclosure—only ~100 tokens loaded at startup per skill, full
 /flow:work plans/add-oauth-login.md
 ```
 
-**Includes**: 2 commands, 5 agents, 3 skills
+**Includes**: 4 commands, 5 agents, 5 skills
 
 📖 **[Full documentation →](plugins/flow/README.md)** · **[Changelog →](CHANGELOG.md)**
 

@@ -2,6 +2,19 @@
 
 All notable changes to the gmickel-claude-marketplace.
 
+## [0.3.0] - 2024-12-27
+
+### Added
+- `/flow:plan-review` command: Carmack-level plan review via rp-cli context builder + chat
+- `/flow:impl-review` command: Carmack-level implementation review of current branch changes
+- `flow-plan-review` skill: progressive disclosure with workflow.md + rp-cli-reference.md
+- `flow-impl-review` skill: progressive disclosure with workflow.md + rp-cli-reference.md
+
+### Technical
+- Both review skills use rp-cli for context building and chat-based review
+- Shared rp-cli-reference.md for CLI command reference
+- Commands are thin wrappers (~15 lines) invoking skills
+
 ## [0.2.3] - 2024-12-27
 
 ### Fixed
