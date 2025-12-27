@@ -25,6 +25,7 @@ This repo is a Claude Code plugin marketplace. It currently ships one plugin: **
 │     ├─ commands/
 │     ├─ skills/
 │     └─ README.md
+├─ CHANGELOG.md
 ├─ CLAUDE.md
 ├─ LICENSE
 └─ README.md
@@ -37,7 +38,7 @@ This repo is a Claude Code plugin marketplace. It currently ships one plugin: **
 ## Current components
 - Commands: 2
 - Agents: 5
-- Skills: 1
+- Skills: 3
 
 ## Marketplace rules
 - Keep `marketplace.json` and `plugins/flow/.claude-plugin/plugin.json` in sync (name, version, description, author, homepage).
@@ -57,10 +58,11 @@ This repo is a Claude Code plugin marketplace. It currently ships one plugin: **
 
 ## Release checklist
 1) Update versions + descriptions if counts change.
-2) Validate JSON:
+2) Update `CHANGELOG.md` with new version entry.
+3) Validate JSON:
    - `jq . .claude-plugin/marketplace.json`
    - `jq . plugins/flow/.claude-plugin/plugin.json`
-3) Confirm install flow:
+4) Confirm install flow:
    - `/plugin marketplace add https://github.com/gmickel/gmickel-claude-marketplace`
    - `/plugin install flow`
 
