@@ -81,11 +81,18 @@ Claude auto-triggers the matching skill based on intent.
 
 ## Why Flow
 
-Most failures come from weak planning or drifting from the plan. Flow fixes both:
+Most agent failures aren't about model capability—they're about process:
+
+- ✗ Starting to code before understanding the codebase
+- ✗ Reinventing patterns that already exist in the repo
+- ✗ Forgetting the original plan mid-implementation
+- ✗ Missing edge cases that were obvious in hindsight
+
+Flow enforces the discipline that makes agents reliable:
 
 | Problem | Solution |
 |---------|----------|
-| Weak research | Strong research up front via parallel agents |
+| Weak research | Parallel agents gather context upfront |
 | Ignoring existing code | Explicit reuse of existing patterns |
 | Drifting from plan | Plan re‑read between tasks |
 | Unclear completion | Clear Definition of Done before shipping |
@@ -277,6 +284,14 @@ claude --plugin-dir ./plugins/flow
 - Plan files live in `plans/`
 - Prefer reuse of centralized code
 - Tests and linting are part of the plan
+
+---
+
+## Who It's For
+
+Developers who want Claude Code to ship reliably, not just generate code. If you've ever had an agent "finish" a task only to realize it forgot half the requirements—this is for you.
+
+Flow doesn't make Claude smarter. It makes the workflow disciplined enough that capability translates to results.
 
 ---
 
