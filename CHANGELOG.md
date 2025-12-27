@@ -2,6 +2,22 @@
 
 All notable changes to the gmickel-claude-marketplace.
 
+## [0.4.0] - 2025-12-27
+
+### Added
+- **Beads integration**: Optional Beads (`bd`) support for flow skills
+  - `flow-plan`: Can create Beads epics/tasks instead of markdown plans
+  - `flow-work`: Can accept Beads IDs/titles, track via `bd ready`/`bd update`/`bd close`
+  - `flow-plan-review`: Can accept Beads IDs/titles as input
+  - `flow-impl-review`: Looks for Beads context during code review
+- Graceful fallback to markdown/TodoWrite when `bd` unavailable
+- Context recovery guidance per Anthropic's long-running agent best practices
+
+### Technical
+- Agent-first design: no rigid detection gates, uses judgment based on context
+- Validated against bd v0.38.0
+- CLI behavior documented in plan (ID formats, parent linking, scoped ready)
+
 ## [0.3.0] - 2024-12-27
 
 ### Added

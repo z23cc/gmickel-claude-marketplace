@@ -1,7 +1,7 @@
 ---
 name: flow:plan-review
 description: Carmack-level plan review via rp-cli context builder + chat
-argument-hint: "<plan-file> [focus areas]"
+argument-hint: "<plan-file or Beads ID> [focus areas]"
 ---
 
 # Plan Review

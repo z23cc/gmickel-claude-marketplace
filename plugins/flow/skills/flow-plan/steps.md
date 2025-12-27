@@ -55,25 +55,37 @@ Default to short unless complexity demands more.
 
 ## Step 4: Write the plan
 
-Create `plans/<slug>.md`.
+**Standard**: Create `plans/<slug>.md`
 - Slug = kebab-case title
 - Use clear headings, short bullets
 - Put file paths + links under References
 - Include code sketches only if needed, with fake filenames
 - If schema changes, include a Mermaid ERD
 
+**Beads alternative** (if Beads is in use - .beads/ exists, CLAUDE.md mentions it):
+
+1. **Probe** (read-only): `bd --version` succeeds
+2. **Confirm**: "Create Beads issues instead of markdown plan? [Y/n]"
+3. Create structure based on plan complexity:
+   - Simple: `bd create "Title" -t task -p <priority> --json`
+   - Standard: epic with child tasks (children auto-numbered .1, .2, .3)
+   - Complex: epic with tasks and subtasks (up to 3 levels)
+4. Add dependencies inline: `bd create "Title" --deps blocks:<other-id> --json`
+5. Output: `bd show <id> --json` - user can run `/flow:work <id>` directly
+
+**On failure after epic created**:
+- Report what was created (epic ID, any tasks)
+- Offer options: (A) retry failed tasks, (B) close epic, (C) leave for manual handling
+- Do not silently fall back to markdown
+
 ## Step 5: Offer next step
 
-After writing, ask:
-"Plan ready at `plans/<slug>.md`. Next?"
+**If Beads was used**: Output is already in Beads. Ask:
+"Epic created: `<id>`. Start `/flow:work <id>`?"
 
-Options:
+**If markdown plan**: Ask:
+"Plan ready at `plans/<slug>.md`. Next?"
 1) Open plan
 2) Start `/flow:work` with this plan
-3) Create issue in tracker (GitHub/Linear/Beads/Other)
+3) Create issue in tracker (GitHub/Linear/Other)
 4) Simplify or refine
-
-If Open: run `open plans/<slug>.md`.
-If Start work: run `/flow:work plans/<slug>.md`.
-If Create issue: detect tracker from CLAUDE.md, repo docs, MCP servers, or installed plugins. If GitHub, use `gh issue create --title "<title>" --body-file plans/<slug>.md`. If Linear, use linear CLI if present. If Beads, use the Beads tool referenced in CLAUDE.md. If Other or auto-detect, ask for command/tool. Then re-ask next steps.
-If refine: ask what to change, update file, re-ask.

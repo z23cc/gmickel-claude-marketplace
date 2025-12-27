@@ -13,7 +13,11 @@ Conduct a John Carmack-level review of implementation plans using RepoPrompt's c
 ## Input
 
 Arguments: #$ARGUMENTS
-Format: `<plan-file> [additional context or focus areas]`
+Format: `<plan-file-or-beads-id> [additional context or focus areas]`
+
+Accepts:
+- Plan file path: `plans/<slug>.md`
+- Beads ID(s) or title(s) directly
 
 Example: `/flow:plan-review docs/plan/auth-refactor.md focus on security and error handling`
 

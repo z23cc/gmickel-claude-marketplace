@@ -38,6 +38,7 @@ This marketplace contains plugins that fix those problems.
 | Ignoring existing code | Explicit reuse of repo patterns |
 | Drifting from plan | Plan re‑read between every task |
 | No review discipline | Built-in Carmack-level code reviews |
+| Lost task state | Optional [Beads](https://github.com/steveyegge/beads) integration for dependency-aware tracking |
 
 ```bash
 /plugin install flow
@@ -57,6 +58,11 @@ This marketplace contains plugins that fix those problems.
 ```
 ```bash
 /flow:work plans/add-oauth-login.md, then review with /flow:impl-review and fix issues until it passes
+```
+
+**With Beads** (if `.beads/` configured):
+```bash
+/flow:work bd-a3f8e9   # Work on Beads epic with dependency tracking
 ```
 
 Claude understands intent and flows between commands automatically.

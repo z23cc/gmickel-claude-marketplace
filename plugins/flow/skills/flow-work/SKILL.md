@@ -14,6 +14,10 @@ Execute a plan systematically. Focus on finishing.
 
 Plan file: #$ARGUMENTS
 
+Accepts:
+- Plan file: `plans/<slug>.md`
+- Beads ID(s) or title(s) directly
+
 If empty, ask for the plan path.
 
 ## Workflow

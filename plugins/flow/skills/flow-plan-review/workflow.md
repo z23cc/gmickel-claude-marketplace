@@ -32,6 +32,22 @@ rp-cli -w 1 -e 'call manage_workspaces {"action":"select_tab","tab":"MyReviewTab
 
 Extract plan file from arguments (first path-like argument). Additional text = focus areas/context.
 
+### Beads Input Handling
+
+If Beads is in use (.beads/ exists, CLAUDE.md mentions it, or user explicitly passes Beads input), resolve:
+1. If file exists: standard markdown plan
+2. Else try `bd show <arg>` - if succeeds, treat as Beads ID
+3. Else try `bd search "<arg>"` - if unique match, use that issue
+
+If Beads ID:
+1. Fetch content: `bd show <id>` (text output is clean, includes children)
+2. Include output directly in the chat prompt
+3. Continue with builder for codebase context
+
+Agent will notice and adapt if output has escaping issues.
+
+### Standard (file path)
+
 Read the plan file (replace W with your window ID from Phase 0):
 ```bash
 rp-cli -w W -e 'read <plan-file-from-args>'
@@ -43,8 +59,8 @@ Then search for supporting documentation:
 rp-cli -w W -e 'search "PRD" --mode path'
 rp-cli -w W -e 'search "prd_" --mode path'
 
-# Find beads issues
-rp-cli -w W -e 'search ".beads/issues" --mode path'
+# Find beads JSONL (Beads uses .beads/issues.jsonl, not individual files)
+rp-cli -w W -e 'search ".beads/" --mode path'
 
 # Find architecture docs
 rp-cli -w W -e 'search "architecture" --mode path'
@@ -73,7 +89,7 @@ After builder completes, add the plan file and any supporting docs to selection:
 rp-cli -w W -e 'select add <plan-file>'
 # Add PRD, beads issue, etc if found
 rp-cli -w W -e 'select add docs/prd_xxx.md'
-rp-cli -w W -e 'select add .beads/issues/XXX-xxx.md'
+# Note: Beads data is in JSONL, use `bd show <id>` to get issue details
 ```
 
 Verify selection:
@@ -113,11 +129,20 @@ rp-cli -w W -e 'select add docs/architecture.md'
 
 Use chat in **chat mode** to conduct the review. The chat sees all selected files completely.
 
+**Shell escaping note:** Complex prompts with `?`, `()`, etc. may fail with zsh glob errors. Use heredoc:
+```bash
+rp-cli -w W -e "$(cat <<'PROMPT'
+chat "..."
+PROMPT
+)"
+```
+
+Example prompt structure:
 ```bash
 rp-cli -w W -e 'chat "Conduct a John Carmack-level code review of this implementation plan.
 
 ## The Plan
-[PASTE OR REFERENCE THE PLAN FILE]
+[PASTE PLAN CONTENT - for Beads, include `bd show` output here]
 
 ## Additional Context from User
 [INCLUDE ANY FOCUS AREAS/COMMENTS FROM ARGUMENTS]
