@@ -10,9 +10,9 @@
 ## Step 1: Fast research (parallel)
 
 Run these in parallel with Task tool:
-- Task repo-scout(<request>)
-- Task practice-scout(<request>)
-- Task docs-scout(<request>)
+- Task flow:repo-scout(<request>)
+- Task flow:practice-scout(<request>)
+- Task flow:docs-scout(<request>)
 
 Must capture:
 - File paths + line refs
@@ -24,7 +24,7 @@ Must capture:
 ## Step 2: Flow gap check
 
 Run:
-- Task flow-gap-analyst(<request>, research_findings)
+- Task flow:flow-gap-analyst(<request>, research_findings)
 
 Fold gaps + questions into the plan.
 

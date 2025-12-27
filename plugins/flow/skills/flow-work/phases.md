@@ -48,7 +48,7 @@ After each completed task:
 - Run relevant tests
 - Run lint/format per repo
 - If change is large/risky, run:
-  - Task quality-auditor("Review recent changes")
+  - Task flow:quality-auditor("Review recent changes")
 - Fix critical issues
 
 ## Phase 6: Ship
