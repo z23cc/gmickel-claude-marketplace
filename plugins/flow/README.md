@@ -36,6 +36,10 @@ Commands work standalone or chained. Claude understands intent and flows between
 /flow:work plans/add-oauth-login.md
 /flow:plan-review plans/add-oauth-login.md
 /flow:impl-review
+
+# With Beads (if configured)
+/flow:work bd-a3f8e9              # Work on Beads epic
+/flow:plan-review bd-a3f8e9       # Review Beads epic
 ```
 
 ### Full Workflow (Plan → Review → Work → Review)
@@ -262,6 +266,22 @@ Skills use **progressive disclosure**: only name + description (~100 tokens) loa
 **Two ways to trigger**:
 1. **Explicit**: `/flow:plan add OAuth` or `/flow:work plans/oauth.md`
 2. **Natural language**: "help me plan out adding OAuth" or "implement the plan in plans/oauth.md" — Claude auto-triggers the matching skill
+
+---
+
+## Beads Integration
+
+Flow has optional [Beads](https://github.com/steveyegge/beads) (`bd`) integration for dependency-aware issue tracking.
+
+**When Beads is detected** (`.beads/` exists or CLAUDE.md mentions it):
+
+| Command | Beads Mode |
+|---------|-----------|
+| `/flow:plan` | Create epic/tasks instead of markdown |
+| `/flow:work <beads-id>` | Track via `bd ready`/`bd close` instead of TodoWrite |
+| `/flow:plan-review <beads-id>` | Review Beads epic directly |
+
+**Fallback**: If `bd` unavailable, uses markdown plans + TodoWrite (no config needed).
 
 ---
 

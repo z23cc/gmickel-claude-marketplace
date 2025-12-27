@@ -6,13 +6,13 @@
   },
   "metadata": {
     "description": "Claude Code plugin marketplace by Gordon Mickel",
-    "version": "0.3.0"
+    "version": "0.4.0"
   },
   "plugins": [
     {
       "name": "flow",
-      "description": "Two-step planning + execution workflow. Includes 5 subagents, 4 commands, 5 skills.",
-      "version": "0.3.0",
+      "description": "Two-step planning + execution workflow with optional Beads integration. Includes 5 subagents, 4 commands, 5 skills.",
+      "version": "0.4.0",
       "author": {
         "name": "Gordon Mickel",
         "email": "gordon@mickel.tech",

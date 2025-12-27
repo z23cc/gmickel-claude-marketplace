@@ -19,6 +19,14 @@ Example: `/flow:impl-review focus on the auth changes, ignore styling`
 
 Reviews all changes on the **current branch** vs main/master.
 
+## Context Sources
+
+The workflow gathers context from:
+- Git diff and commit messages
+- Plan files referenced in commits
+- PRD/architecture docs
+- **Beads**: If you know which issue(s) this work relates to, include via `bd show`
+
 ## Critical Requirement
 
 **DO NOT REVIEW CODE YOURSELF** – you are a coordinator, not the reviewer.

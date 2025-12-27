@@ -24,7 +24,12 @@ Read [steps.md](steps.md) and follow each step in order. The steps include runni
 
 Read [examples.md](examples.md) for plan structure examples.
 
+## Output
+
+- Standard: `plans/<slug>.md`
+- Beads: epic/tasks/subtasks in Beads (no file written)
+
 ## Output rules
 
-- Only write the plan file
+- Only write the plan file (or create Beads epic)
 - No code changes

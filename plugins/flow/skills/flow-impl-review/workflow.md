@@ -59,8 +59,8 @@ rp-cli -w W -e 'search "docs/impl" --mode path'
 rp-cli -w W -e 'search "PRD" --mode path'
 rp-cli -w W -e 'search "prd_" --mode path'
 
-# Find beads issues
-rp-cli -w W -e 'search ".beads/issues" --mode path'
+# Find beads JSONL (Beads uses .beads/issues.jsonl, not individual files)
+rp-cli -w W -e 'search ".beads/" --mode path'
 
 # Check commit messages for issue references
 git log main..HEAD --format="%B" 2>/dev/null || git log master..HEAD --format="%B"
@@ -70,8 +70,9 @@ Read any relevant docs you find:
 ```bash
 rp-cli -w W -e 'read docs/plan/xxx.md'
 rp-cli -w W -e 'read docs/impl/xxx.md'
-rp-cli -w W -e 'read .beads/issues/XXX-xxx.md'
 ```
+
+**Beads context**: If you know which Beads issue(s) this work relates to (from conversation, commits, or user), include that context in the review prompt via `bd show <id>`.
 
 ---
 
@@ -93,7 +94,7 @@ rp-cli -w W -e 'select add path/to/changed/file2.ts'
 
 # Add supporting docs
 rp-cli -w W -e 'select add docs/plan/xxx.md'
-rp-cli -w W -e 'select add .beads/issues/XXX-xxx.md'
+# Note: Beads data is in JSONL, use `bd show <id>` to get issue details
 ```
 
 ---
@@ -126,6 +127,15 @@ rp-cli -w W -e 'select add path/to/missed/file.ts'
 
 Use chat in **chat mode** to conduct the review. The chat sees all selected files completely.
 
+**Shell escaping note:** Complex prompts with `?`, `()`, etc. may fail with zsh glob errors. Use heredoc:
+```bash
+rp-cli -w W -e "$(cat <<'PROMPT'
+chat "..."
+PROMPT
+)"
+```
+
+Example prompt structure:
 ```bash
 rp-cli -w W -e 'chat "Conduct a John Carmack-level code review of these implementation changes.
 
@@ -135,7 +145,7 @@ Files changed: [LIST FILES]
 Commits: [COMMIT SUMMARY]
 
 ## Original Plan/Spec
-[REFERENCE OR SUMMARIZE THE PLAN/BEADS ISSUE IF FOUND]
+[INCLUDE PLAN CONTENT OR `bd show` OUTPUT IF BEADS]
 
 ## Additional Context from User
 [INCLUDE ANY FOCUS AREAS/COMMENTS FROM ARGUMENTS]
