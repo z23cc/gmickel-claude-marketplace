@@ -30,23 +30,20 @@ rp-cli -w 1 -e 'call manage_workspaces {"action":"select_tab","tab":"MyReviewTab
 
 ## Phase 1: Parse Arguments & Read the Plan
 
-Extract plan file from arguments (first path-like argument). Additional text = focus areas/context.
+**Resolve input first:**
+1. If file path exists → markdown plan
+2. Else if matches Beads ID format or `bd show <arg>` succeeds → Beads issue
+3. Else if `bd search "<arg>"` has unique match → use that issue
+4. Else: ask user for clarification
 
-### Beads Input Handling
+Additional text in arguments = focus areas/context.
 
-If Beads is in use (.beads/ exists, CLAUDE.md mentions it, or user explicitly passes Beads input), resolve:
-1. If file exists: standard markdown plan
-2. Else try `bd show <arg>` - if succeeds, treat as Beads ID
-3. Else try `bd search "<arg>"` - if unique match, use that issue
-
-If Beads ID:
+**If Beads issue:**
 1. Fetch content: `bd show <id>` (text output is clean, includes children)
 2. Include output directly in the chat prompt
 3. Continue with builder for codebase context
 
-Agent will notice and adapt if output has escaping issues.
-
-### Standard (file path)
+**If markdown plan:**
 
 Read the plan file (replace W with your window ID from Phase 0):
 ```bash

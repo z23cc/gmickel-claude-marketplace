@@ -2,16 +2,17 @@
 
 ## Phase 1: Confirm
 
-- Read the plan fully
+**Resolve input first:**
+1. If file path exists → markdown plan
+2. Else if matches Beads ID format or `bd show <arg>` succeeds → Beads issue
+3. Else if `bd search "<arg>"` has unique match → use that issue
+4. Else: ask user for clarification
+
+**Then:**
+- Read the plan/issue fully
 - Open referenced files/links
 - Ask only blocking questions
 - Get user go-ahead
-
-**Beads alternative** - if Beads is in use (.beads/ exists, CLAUDE.md mentions it, or user explicitly passes Beads input):
-1. If file exists: standard markdown plan
-2. Else try `bd show <arg>` - if succeeds, treat as Beads ID
-3. Else try `bd search "<arg>"` - if unique match, use that issue
-4. Else: ask user for clarification
 
 ## Phase 2: Setup
 
@@ -30,14 +31,15 @@ If current branch: confirm this is intentional.
 
 ## Phase 3: Task list
 
-**Standard**: Use TodoWrite
+**If markdown plan**: Use TodoWrite
 - Convert plan to TodoWrite tasks
 - Include tests + lint steps
 - Keep tasks small + ordered
 
-**Beads alternative**:
-- `bd ready --parent <epic-id> --json` for next task
-- If multiple ready: pick first (hybrid sort by priority/age is deterministic)
+**If Beads issue**:
+- Check if issue has children: `bd show <id> --json` → look for children array
+- **Epic with children**: work through children via `bd ready --parent <id> --json`
+- **Single task (no children)**: work on that task directly
 - `bd update <id> --status in_progress --json` to start
 - `bd close <id> --json` to complete
 
@@ -45,12 +47,12 @@ If current branch: confirm this is intentional.
 
 **Context recovery (every turn/task):**
 Re-read plan or Beads state before each task. This ensures coherence across context windows per Anthropic's long-running agent guidance.
-- `bd show <epic-id>` for Beads, or re-read plan file
+- `bd show <id>` for Beads, or re-read plan file
 - Check git log for recent commits
 - Verify working state (run basic tests before starting new work)
 
 **For each task:**
-- Check remaining: TodoWrite or `bd ready --parent <epic-id>`
+- Check remaining: TodoWrite, or `bd ready --parent <id>` (for epics), or just the single task
 - Pick ONE task only - never batch
 - Mark in_progress (`bd update <id> --status in_progress --json` for Beads)
 - Implement + test thoroughly
@@ -59,8 +61,8 @@ Re-read plan or Beads state before each task. This ensures coherence across cont
 - Mark TodoWrite task done (internal tracking)
 - If Beads and wrapping up session: ask before closing (user may want to review first)
 
-**Between tasks:**
-- Re-read plan/Beads to confirm next task
+**Between tasks (if epic with multiple children):**
+- Re-read Beads state to confirm next task
 - Verify no regressions before continuing
 
 ## Phase 5: Quality
@@ -73,8 +75,8 @@ Re-read plan or Beads state before each task. This ensures coherence across cont
 
 ## Phase 6: Ship
 
-**Beads addition**: `bd dep tree <epic-id>` or `bd show <epic-id>`
-Check that all child tasks are closed before commit.
+**If Beads epic**: `bd show <id>` - check all children closed before commit.
+**If Beads single task**: confirm task is complete.
 
 ```bash
 git add .
