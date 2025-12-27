@@ -56,7 +56,7 @@ Re-read plan or Beads state before each task. This ensures coherence across cont
 - Pick ONE task only - never batch
 - Mark in_progress (`bd update <id> --status in_progress --json` for Beads)
 - Implement + test thoroughly
-- If you discover new work: `bd create "Found issue" -t bug -p 2 --deps discovered-from:<current-id> --json`
+- If you discover new work: `bd create "Found issue" -t bug -p 2 --deps discovered-from:<current-id> --description="<what was found and why>" --json`
 - Leave clean state: commit with descriptive message
 - Mark TodoWrite task done (internal tracking)
 - If Beads and wrapping up session: ask before closing (user may want to review first)

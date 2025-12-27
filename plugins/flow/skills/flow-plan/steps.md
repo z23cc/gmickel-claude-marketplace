@@ -67,6 +67,7 @@ Default to short unless complexity demands more.
    - Simple: 1-3 tasks as children (auto-numbered `.1`, `.2`, `.3`)
    - Standard: tasks with clear acceptance criteria
    - Complex: tasks with subtasks (up to 3 levels)
+   - Always include `--description="<why and what>"` for context
 3. Add dependencies between tasks: `bd dep add <child> <depends-on>`
 4. Output: `bd show <id> --json` - ready for `/flow:work <id>`
 
@@ -75,9 +76,9 @@ Default to short unless complexity demands more.
 1. **Probe** (read-only): `bd --version` succeeds
 2. **Confirm**: "Create Beads epic instead of markdown plan? [Y/n]"
 3. If yes, create structure:
-   - `bd create "Title" -t epic -p <priority> --json`
-   - Add child tasks (auto-numbered `.1`, `.2`, `.3`)
-   - Add dependencies inline: `bd create "Title" --deps blocks:<other-id> --json`
+   - `bd create "Title" -t epic -p <priority> --description="<context>" --json`
+   - Add child tasks with descriptions (auto-numbered `.1`, `.2`, `.3`)
+   - Add dependencies inline: `bd create "Title" --deps blocks:<other-id> --description="<context>" --json`
 4. Output: `bd show <id> --json` - user can run `/flow:work <id>` directly
 
 **Route C - No Beads**: Create `plans/<slug>.md`
