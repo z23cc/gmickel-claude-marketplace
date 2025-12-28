@@ -51,26 +51,19 @@ This marketplace contains plugins that fix those problems.
 
 ### Quick Start
 
-**Standalone:**
 ```bash
 /flow:plan Add OAuth login for users
 /flow:work plans/add-oauth-login.md
 ```
 
-**Chained (how I actually use it):**
-```bash
-/flow:plan Add OAuth login, then review it with /flow:plan-review and fix any issues
-```
-```bash
-/flow:work plans/add-oauth-login.md, then review with /flow:impl-review and fix issues until it passes
-```
+**Auto-review** (if [RepoPrompt](https://repoprompt.com) rp-cli installed):
+Both commands detect rp-cli and ask upfront: "Run Carmack-level review?"
+If yes, review runs automatically after completion—no manual chaining needed.
 
 **With Beads** (if `.beads/` configured):
 ```bash
 /flow:work bd-a3f8e9   # Work on Beads epic with dependency tracking
 ```
-
-Claude understands intent and flows between commands automatically.
 
 ### What's Included
 

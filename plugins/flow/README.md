@@ -45,33 +45,33 @@ Commands work standalone or chained. Claude understands intent and flows between
 /flow:plan-review bd-a3f8e9       # Review Beads epic
 ```
 
+### Auto-review (if rp-cli installed)
+
+If [RepoPrompt](https://repoprompt.com) rp-cli is detected, both `/flow:plan` and `/flow:work` ask upfront:
+> "Run Carmack-level review after completion?"
+
+If yes, review runs automatically when done—no manual chaining needed. The workflow handles fix-and-re-review loops until it passes.
+
 ### Full Workflow (Plan → Review → Work → Review)
 
-The complete flow I actually use:
+With auto-review enabled, just two commands:
 
 ```bash
-/flow:plan Add OAuth login for users, then review it with /flow:plan-review and fix any issues
+/flow:plan Add OAuth login for users
+# (asks about review upfront, runs automatically)
+
+/flow:work plans/add-oauth-login.md
+# (asks about review upfront, runs automatically)
 ```
 
-Once the plan passes review:
+### Chaining (manual alternative)
 
-```bash
-/flow:work plans/add-oauth-login.md, then review the implementation with /flow:impl-review and fix any issues
-```
-
-### Variations
-
-**Plan + immediate work:**
+You can still chain commands explicitly:
 ```bash
 /flow:plan Add rate limiting to API, then implement it with /flow:work
 ```
 
-**Work + review loop:**
-```bash
-/flow:work plans/rate-limiting.md, review with /flow:impl-review, fix issues until it passes
-```
-
-**Natural language (no slash commands):**
+### Natural language
 ```
 Help me plan out adding OAuth login for users
 ```
@@ -92,7 +92,7 @@ Claude auto-triggers the matching skill based on intent.
 
 ```
 ┌───────────────────────────────────────────────────────────────────────┐
-│ > /flow:plan gno-40i, then review via /flow:plan-review until approved│
+│ > /flow:plan gno-40i                    (review: auto if rp-cli)      │
 └───────────────────────────────────────────────────────────────────────┘
                                    │
                                    ▼
@@ -164,7 +164,7 @@ Claude auto-triggers the matching skill based on intent.
 
 ```
 ┌───────────────────────────────────────────────────────────────────────┐
-│ > /flow:work gno-40i, then review via /flow:impl-review until done    │
+│ > /flow:work gno-40i                    (review: auto if rp-cli)      │
 └───────────────────────────────────────────────────────────────────────┘
                                    │
                                    ▼
@@ -279,7 +279,7 @@ Turn a rough idea into a practical plan file without writing code.
    - `docs-scout`: Fetch relevant framework/library docs
 2. **Gap Analysis** — Run `flow-gap-analyst` to identify missing flows and edge cases
 3. **Write Plan** — Create `plans/<slug>.md` with references + acceptance checks
-4. **Offer Review** — If rp-cli installed, offer `/flow:plan-review` (Carmack-level review)
+4. **Review** — If rp-cli detected and user opted in, run `/flow:plan-review` automatically
 5. **Offer Next Step** — Start work, or create issue (GitHub/Linear/Beads)
 
 **Plan Depths:**
@@ -310,7 +310,7 @@ Execute a plan systematically with git setup, task tracking, and quality checks.
    - Test, then mark done
 5. **Quality** — Run tests, lint/format, optional `quality-auditor` for risky changes
 6. **Ship** — Commit with summary, push + PR if wanted
-7. **Offer Review** — If rp-cli installed, offer `/flow:impl-review` (Carmack-level review)
+7. **Review** — If rp-cli detected and user opted in, run `/flow:impl-review` automatically
 
 **Definition of Done:**
 - All plan steps completed or explicitly deferred
