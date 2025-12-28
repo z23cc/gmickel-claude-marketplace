@@ -95,20 +95,12 @@ git commit -m "<short summary>"
 
 Then push + open PR if user wants.
 
-## Phase 7: Offer review (if RepoPrompt available)
+## Phase 7: Review (if chosen at start)
 
-Check if rp-cli is installed:
-```bash
-which rp-cli >/dev/null 2>&1 && echo "available" || echo "not found"
-```
-
-**If rp-cli available**, use AskUserQuestion to ask:
-"Review implementation with /flow:impl-review?"
-- Yes, review now
-- No, skip review
-
-If yes: invoke `/flow:impl-review` to review the changes.
-If issues found: fix them and re-run review until it passes.
+If user chose "Yes" to review in setup questions:
+1. Invoke `/flow:impl-review` to review the changes
+2. If issues found: fix them and re-run review
+3. Repeat until review passes
 
 ## Definition of Done
 

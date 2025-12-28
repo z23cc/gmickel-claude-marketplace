@@ -26,9 +26,18 @@ Examples:
 
 If empty, ask: "What should I plan? Give me the feature or bug in 1-5 sentences."
 
+## FIRST: Review Question (if rp-cli available)
+
+Check: `which rp-cli >/dev/null 2>&1`
+If available, use AskUserQuestion to ask:
+"Run Carmack-level review after planning?"
+- Yes, review and fix issues
+- No, skip review
+
 ## Workflow
 
 Read [steps.md](steps.md) and follow each step in order. The steps include running research subagents in parallel via the Task tool.
+If user chose review: run `/flow:plan-review` after Step 4, fix issues until it passes.
 
 ## Examples
 

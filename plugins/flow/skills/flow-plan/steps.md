@@ -93,19 +93,12 @@ Default to short unless complexity demands more.
 - Offer options: (A) retry failed tasks, (B) close epic, (C) leave for manual handling
 - Do not silently fall back to markdown
 
-## Step 5: Offer review (if RepoPrompt available)
+## Step 5: Review (if chosen at start)
 
-Check if rp-cli is installed:
-```bash
-which rp-cli >/dev/null 2>&1 && echo "available" || echo "not found"
-```
-
-**If rp-cli available**, use AskUserQuestion to ask:
-"Review this plan with /flow:plan-review before proceeding?"
-- Yes, review now
-- No, skip review
-
-If yes: invoke `/flow:plan-review` with the plan/Beads ID.
+If user chose "Yes" to review in SKILL.md setup question:
+1. Invoke `/flow:plan-review` with the plan/Beads ID
+2. If issues found: fix them and re-run review
+3. Repeat until review passes
 
 ## Step 6: Offer next step
 

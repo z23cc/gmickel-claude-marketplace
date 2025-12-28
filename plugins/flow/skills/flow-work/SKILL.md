@@ -26,20 +26,29 @@ Examples:
 
 If no plan/ID provided, ask for it.
 
-## FIRST: Branch Setup (REQUIRED)
+## FIRST: Setup Questions (REQUIRED)
 
-**Before doing anything else**, use AskUserQuestion tool to ask:
+**Before doing anything else**, use AskUserQuestion tool to ask these questions:
 
+**Question 1 - Branch:**
 "Which branch setup?"
 - Current branch
 - New branch
 - Isolated worktree
 
-**Wait for answer. Do NOT read files or write code until user responds.**
+**Question 2 - Review (only if rp-cli installed):**
+First check: `which rp-cli >/dev/null 2>&1`
+If available, ask:
+"Run Carmack-level review after implementation?"
+- Yes, review and fix issues
+- No, skip review
+
+**Wait for answers. Do NOT read files or write code until user responds.**
 
 ## Workflow
 
-After branch question is answered, read [phases.md](phases.md) and execute each phase in order.
+After setup questions answered, read [phases.md](phases.md) and execute each phase in order.
+If user chose review: run `/flow:impl-review` after Phase 6, fix issues until it passes.
 
 ## Guardrails
 
