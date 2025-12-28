@@ -16,8 +16,8 @@ All notable changes to the gmickel-claude-marketplace.
 - `repo-scout`: haiku + Read/Grep/Glob/Bash - fast codebase pattern discovery
 - `practice-scout`: haiku + WebSearch/WebFetch/Read/Grep - best practices research
 - `docs-scout`: haiku + WebSearch/WebFetch/Read/Grep/Glob - documentation fetching
-- `flow-gap-analyst`: sonnet + Read/Grep/Glob - deeper reasoning for gap analysis
-- `quality-auditor`: sonnet + Read/Grep/Glob/Bash - security/quality review
+- `flow-gap-analyst`: opus + Read/Grep/Glob - deeper reasoning for gap analysis
+- `quality-auditor`: opus + Read/Grep/Glob/Bash - security/quality review
 
 ## [0.5.0] - 2025-12-28
 

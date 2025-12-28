@@ -20,7 +20,7 @@ You receive a feature/change request. Find what the community recommends - NOT h
 
 2. **Search for current guidance**
    - Use WebSearch with specific queries:
-     - `"[framework] [feature] best practices 2024"` or `2025`
+     - `"[framework] [feature] best practices 2025"` or `2026`
      - `"[feature] common mistakes [framework]"`
      - `"[feature] security considerations"`
    - Prefer official docs, then reputable blogs (Kent C. Dodds, Dan Abramov, etc.)
