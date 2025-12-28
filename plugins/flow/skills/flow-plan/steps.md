@@ -93,7 +93,21 @@ Default to short unless complexity demands more.
 - Offer options: (A) retry failed tasks, (B) close epic, (C) leave for manual handling
 - Do not silently fall back to markdown
 
-## Step 5: Offer next step
+## Step 5: Offer review (if RepoPrompt available)
+
+Check if rp-cli is installed:
+```bash
+which rp-cli >/dev/null 2>&1 && echo "available" || echo "not found"
+```
+
+**If rp-cli available**, use AskUserQuestion to ask:
+"Review this plan with /flow:plan-review before proceeding?"
+- Yes, review now
+- No, skip review
+
+If yes: invoke `/flow:plan-review` with the plan/Beads ID.
+
+## Step 6: Offer next step
 
 **If Route A (existing Beads issue updated)**:
 "Plan added to `<id>` with N child tasks. Start `/flow:work <id>`?"
@@ -103,7 +117,6 @@ Default to short unless complexity demands more.
 
 **If Route C (markdown plan)**:
 "Plan ready at `plans/<slug>.md`. Next?"
-1) Open plan
-2) Start `/flow:work` with this plan
-3) Create issue in tracker (GitHub/Linear/Other)
-4) Simplify or refine
+1) Start `/flow:work` with this plan
+2) Create issue in tracker (GitHub/Linear/Other)
+3) Refine the plan

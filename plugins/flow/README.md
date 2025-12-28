@@ -6,7 +6,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](../../LICENSE)
 [![Claude Code](https://img.shields.io/badge/Claude_Code-Plugin-blueviolet)](https://claude.ai/code)
-[![Version](https://img.shields.io/badge/Version-0.4.12-green)](../../CHANGELOG.md)
+[![Version](https://img.shields.io/badge/Version-0.5.0-green)](../../CHANGELOG.md)
 [![Commands](https://img.shields.io/badge/Commands-4-green)](commands/)
 [![Agents](https://img.shields.io/badge/Agents-5-yellow)](agents/)
 [![Skills](https://img.shields.io/badge/Skills-5-blue)](skills/)
@@ -279,7 +279,8 @@ Turn a rough idea into a practical plan file without writing code.
    - `docs-scout`: Fetch relevant framework/library docs
 2. **Gap Analysis** — Run `flow-gap-analyst` to identify missing flows and edge cases
 3. **Write Plan** — Create `plans/<slug>.md` with references + acceptance checks
-4. **Offer Next Step** — Open plan, start work, or create issue (GitHub/Linear/Beads)
+4. **Offer Review** — If rp-cli installed, offer `/flow:plan-review` (Carmack-level review)
+5. **Offer Next Step** — Start work, or create issue (GitHub/Linear/Beads)
 
 **Plan Depths:**
 - **SHORT**: Bugs, small changes — just problem, acceptance checks, key context
@@ -299,8 +300,8 @@ Turn a rough idea into a practical plan file without writing code.
 Execute a plan systematically with git setup, task tracking, and quality checks.
 
 **Phases:**
-1. **Confirm** — Read plan fully, open referenced files, ask blocking questions
-2. **Setup** — Choose: current branch, new branch, or isolated worktree (via `worktree-kit`)
+1. **Branch Setup** — Choose: current branch, new branch, or isolated worktree
+2. **Confirm** — Read plan fully, open referenced files, ask blocking questions
 3. **Task List** — Use Beads children (if epic) or TodoWrite (if markdown plan)
 4. **Execute Loop** — For each task:
    - Re-read plan before starting
@@ -309,6 +310,7 @@ Execute a plan systematically with git setup, task tracking, and quality checks.
    - Test, then mark done
 5. **Quality** — Run tests, lint/format, optional `quality-auditor` for risky changes
 6. **Ship** — Commit with summary, push + PR if wanted
+7. **Offer Review** — If rp-cli installed, offer `/flow:impl-review` (Carmack-level review)
 
 **Definition of Done:**
 - All plan steps completed or explicitly deferred

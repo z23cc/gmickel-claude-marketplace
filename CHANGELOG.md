@@ -2,6 +2,21 @@
 
 All notable changes to the gmickel-claude-marketplace.
 
+## [0.5.0] - 2025-12-28
+
+### Added
+- **Auto-offer review**: Both `flow-plan` and `flow-work` now detect if rp-cli is installed and offer Carmack-level review
+  - `flow-plan`: After writing plan, offers `/flow:plan-review` before next steps
+  - `flow-work`: After shipping, offers `/flow:impl-review` with fix-and-iterate loop
+- Eliminates need for manual chaining like "then review with /flow:impl-review"
+
+### Changed
+- `flow-work`: Branch setup question now in SKILL.md (first thing shown, cannot be skipped)
+- Explicit examples of chained instructions in skill inputs
+
+### Fixed
+- Review commands now have explicit wait instructions for rp-cli chat responses (1-5+ min timeout)
+
 ## [0.4.0] - 2025-12-27
 
 ### Added
