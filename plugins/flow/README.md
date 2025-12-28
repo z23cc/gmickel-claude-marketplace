@@ -49,7 +49,7 @@ Commands work standalone or chained. Claude understands intent and flows between
 
 If [RepoPrompt](https://repoprompt.com) rp-cli is detected, `/flow:plan` asks two questions upfront:
 
-> **Q1:** "Use RepoPrompt for deeper codebase context? (slower but 30% fewer tokens)"
+> **Q1:** "Use RepoPrompt for deeper codebase context? (slower, better for complex features)"
 > - **Yes**: Uses `context-scout` with RepoPrompt's AI-powered builder + codemaps
 > - **No**: Uses `repo-scout` with standard Grep/Glob/Read (faster)
 
@@ -107,7 +107,7 @@ Claude auto-triggers the matching skill based on intent.
 │ SETUP (if rp-cli detected)                                            │
 ├───────────────────────────────────────────────────────────────────────┤
 │  Q1: Use RepoPrompt for deeper context?   ○ Yes (context-scout)       │
-│      (slower but 30% fewer tokens)        ○ No (repo-scout) [faster]  │
+│      (slower, better for complex features) ○ No (repo-scout) [faster] │
 │                                                                       │
 │  Q2: Run Carmack-level review?            ○ Yes  ○ No                 │
 └───────────────────────────────────────────────────────────────────────┘

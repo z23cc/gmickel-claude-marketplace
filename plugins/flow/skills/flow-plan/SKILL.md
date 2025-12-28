@@ -33,7 +33,7 @@ Check: `which rp-cli >/dev/null 2>&1`
 If available, use AskUserQuestion to ask BOTH questions:
 
 **Question 1 - Research approach:**
-"Use RepoPrompt for deeper codebase context? (slower but 30% fewer tokens)"
+"Use RepoPrompt for deeper codebase context? (slower, better for complex features)"
 - Yes, use context-scout (RepoPrompt builder + codemaps)
 - No, use repo-scout (standard tools, faster)
 
