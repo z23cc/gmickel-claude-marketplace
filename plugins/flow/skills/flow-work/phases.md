@@ -16,10 +16,15 @@
 
 ## Phase 2: Setup
 
-**MUST ASK before any code changes:**
+**STOP. DO NOT SKIP THIS PHASE.**
+
+Use AskUserQuestion tool to ask:
 "Work on current branch, create new branch, or use isolated worktree?"
 
-Wait for user response. Then:
+**You MUST wait for user response before writing any code.**
+Do NOT assume current branch. Do NOT proceed without asking.
+
+After user responds:
 
 - **Worktree**: use `skill: worktree-kit`
 - **New branch**:
@@ -27,7 +32,7 @@ Wait for user response. Then:
   git checkout main && git pull origin main
   git checkout -b <branch>
   ```
-- **Current branch**: confirm this is intentional (user explicitly chose it)
+- **Current branch**: only if user explicitly chose it
 
 ## Phase 3: Task list
 
