@@ -93,16 +93,28 @@ rp-cli -w W -e 'structure src/'
 
 ### Step 2: Find Relevant Files
 
+**Search strategy**: Use multiple targeted searches, not just single keywords.
+
 ```bash
-# Search by content
-rp-cli -w W -e 'search "pattern" --context-lines 3'
-rp-cli -w W -e 'search "auth" --extensions .ts,.tsx --max-results 20'
+# Compound searches - find the feature from multiple angles
+rp-cli -w W -e 'search "hybridSearch" --extensions .ts --max-results 20'
+rp-cli -w W -e 'search "hybrid.*search" --extensions .ts --max-results 20'
+rp-cli -w W -e 'search "searchHybrid" --extensions .ts --max-results 20'
 
-# Search by path
-rp-cli -w W -e 'search "middleware" --mode path'
+# Find types/interfaces
+rp-cli -w W -e 'search "interface.*Search|type.*Search" --extensions .ts'
 
-# AI-powered selection (for complex tasks)
-rp-cli -w W -e 'builder "Find all files related to authentication flow"'
+# Find function definitions
+rp-cli -w W -e 'search "function search|async.*search|const search" --context-lines 2'
+
+# Search by path for related files
+rp-cli -w W -e 'search "search" --mode path'
+rp-cli -w W -e 'search "hybrid" --mode path'
+```
+
+**For complex exploration, use builder** (AI-powered file discovery):
+```bash
+rp-cli -w W -e 'builder "Find all files implementing hybrid search: the main search function, fusion logic, reranking, and related tests"'
 ```
 
 ⚠️ **WAIT**: Builder takes 30s-5min. Do NOT proceed until it returns output.
@@ -224,42 +236,57 @@ interface AuthConfig { ... }
 
 ## Common Patterns
 
-### Understanding a feature
+### Understanding a feature (comprehensive)
 
 ```bash
-rp-cli -w W -e 'search "featureName" --max-results 10'
+# 1. Find files by path first
+rp-cli -w W -e 'search "featureName" --mode path'
+
+# 2. Get signatures of relevant directories
 rp-cli -w W -e 'structure src/features/featureName/'
+
+# 3. Search for the main function/class with variations
+rp-cli -w W -e 'search "featureName|FeatureName|feature_name" --max-results 15'
+
+# 4. Find types and interfaces
+rp-cli -w W -e 'search "interface.*Feature|type.*Feature" --extensions .ts'
+
+# 5. OR use builder for AI-powered discovery
+rp-cli -w W -e 'builder "Find all files related to featureName: implementation, types, tests, and usage"'
 ```
 
-### Finding usage patterns
+### Finding function usage
 
 ```bash
-rp-cli -w W -e 'search "functionName(" --context-lines 2'
+rp-cli -w W -e 'search "functionName\\(" --context-lines 2 --max-results 20'
 ```
 
-### Understanding dependencies
+### Understanding imports/dependencies
 
 ```bash
-rp-cli -w W -e 'search "import.*from.*moduleName"'
+rp-cli -w W -e 'search "import.*from.*moduleName" --extensions .ts'
+rp-cli -w W -e 'search "require.*moduleName"'
 ```
 
 ### Pre-review context
 
 ```bash
-rp-cli -w W -e 'builder "Build context for reviewing changes to [AREA]"'
-rp-cli -w W -e 'select get'  # Verify
+rp-cli -w W -e 'builder "Build context for reviewing changes to [AREA]: implementation, tests, and related code"'
+rp-cli -w W -e 'select get'  # Verify selection
 ```
 
 ---
 
 ## Anti-patterns
 
+- **Single-word searches** - "hybrid" misses "hybridSearch", "searchHybrid", etc. Use multiple patterns
 - **Forgetting `-w <id>`** - commands fail with "Multiple windows" error
 - **Skipping window setup** - wrong project context
 - **Dumping full files** - wastes tokens, use structure/slices
 - **Not waiting for builder** - it takes 30s-5min
 - **Not verifying selection** - builder may miss relevant files
 - **Returning raw output** - summarize for main conversation
+- **Not using builder** - for complex exploration, builder finds files you'd miss with manual search
 
 ---
 
