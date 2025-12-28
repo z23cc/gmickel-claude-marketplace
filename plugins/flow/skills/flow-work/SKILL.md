@@ -12,13 +12,19 @@ Execute a plan systematically. Focus on finishing.
 
 ## Input
 
-Plan file: #$ARGUMENTS
+Full request: #$ARGUMENTS
 
 Accepts:
 - Plan file: `plans/<slug>.md`
 - Beads ID(s) or title(s) directly
+- Chained instructions like "then review with /flow:impl-review"
 
-If empty, ask for the plan path.
+Examples:
+- `/flow:work plans/oauth.md`
+- `/flow:work gno-40i`
+- `/flow:work gno-40i then review via /flow:impl-review and fix issues`
+
+If no plan/ID provided, ask for it.
 
 ## FIRST: Branch Setup (REQUIRED)
 

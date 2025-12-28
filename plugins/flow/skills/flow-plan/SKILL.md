@@ -12,7 +12,17 @@ Turn a rough idea into a practical plan file. This skill does not write code.
 
 ## Input
 
-Request: #$ARGUMENTS
+Full request: #$ARGUMENTS
+
+Accepts:
+- Feature/bug description in natural language
+- Beads ID(s) or title(s) to plan for
+- Chained instructions like "then review with /flow:plan-review"
+
+Examples:
+- `/flow:plan Add OAuth login for users`
+- `/flow:plan gno-40i`
+- `/flow:plan gno-40i then review via /flow:plan-review and fix issues`
 
 If empty, ask: "What should I plan? Give me the feature or bug in 1-5 sentences."
 
