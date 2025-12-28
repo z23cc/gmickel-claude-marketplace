@@ -284,6 +284,43 @@ Flow enforces the discipline that makes agents reliable:
 
 ---
 
+## Direct Invocation
+
+Beyond `/flow:plan` → `/flow:work`, invoke components directly.
+
+### Skills (Natural Language)
+
+Skills auto-trigger on phrase patterns in your current conversation:
+
+| Skill | Trigger Pattern | Example |
+|-------|-----------------|---------|
+| `rp-explorer` | "use rp to..." / "use repoprompt to..." | "use rp to explore how auth works" |
+| `flow-plan` | "plan...", "help me plan..." | "help me plan adding OAuth" |
+| `flow-work` | "implement the plan...", "work on..." | "work on plans/oauth.md" |
+| `worktree-kit` | "worktree...", "parallel work..." | "create worktree for feature X" |
+
+### Agents (Delegated Research)
+
+Agents run in isolated context for deep dives:
+
+```bash
+> Use context-scout to understand how payments work
+> Use repo-scout to find all API endpoints
+> Use practice-scout to find React Server Component best practices
+> Use docs-scout to get Next.js 15 migration docs
+> Use quality-auditor to review my recent changes
+```
+
+### Skill vs Agent
+
+| Aspect | Skill | Agent |
+|--------|-------|-------|
+| Context | Current conversation | Isolated subprocess |
+| Trigger | Natural phrases | "Use X to..." |
+| Best for | Inline help | Parallel/delegated research |
+
+---
+
 ## How It Works
 
 ### `/flow:plan`
