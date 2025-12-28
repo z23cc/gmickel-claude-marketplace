@@ -49,7 +49,12 @@ This repo is a Claude Code plugin marketplace. It currently ships one plugin: **
 
 ## Versioning
 - Use semver.
-- When behavior changes, bump both:
+- **Bump version** when skill/phase/agent files change (affects plugin behavior):
+  - `plugins/flow/skills/**/*.md`
+  - `plugins/flow/agents/**/*.md`
+  - `plugins/flow/commands/**/*.md`
+- **Don't bump** for pure README/doc changes (users don't need update)
+- When bumping, update both:
   - `.claude-plugin/marketplace.json` -> plugin version
   - `plugins/flow/.claude-plugin/plugin.json` -> version
 
