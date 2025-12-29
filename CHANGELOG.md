@@ -2,12 +2,18 @@
 
 All notable changes to the gmickel-claude-marketplace.
 
+## [0.5.9] - 2025-12-29
+
+### Fixed
+- Clarified new-chat behavior in review workflows
+  - Initial review: use `--new-chat --name` for fresh context
+  - Re-reviews after fixes: continue in same chat so reviewer sees prior issues
+  - Prevents both stale chat reuse AND loss of review history
+
 ## [0.5.8] - 2025-12-29
 
 ### Fixed
-- Added prominent "CRITICAL: Always start a fresh chat" instruction in review workflows
-  - Ensures `--new-chat --name` flags are used, not buried in long example
-  - Prevents chat reuse across multiple reviews
+- Added prominent "CRITICAL" instruction for chat management in review workflows
 
 ## [0.5.7] - 2025-12-29
 
