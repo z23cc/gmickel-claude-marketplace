@@ -2,6 +2,15 @@
 
 All notable changes to the gmickel-claude-marketplace.
 
+## [0.5.13] - 2025-12-29
+
+### Changed
+- Replaced AskUserQuestion with text-based questions in flow-plan and flow-work
+  - Better for voice dictation users
+  - Supports terse replies ("1a 2b") and natural language rambling
+  - All questions visible at once
+  - Explicit "do NOT use AskUserQuestion tool" instruction
+
 ## [0.5.12] - 2025-12-29
 
 ### Added

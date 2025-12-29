@@ -30,17 +30,22 @@ If empty, ask: "What should I plan? Give me the feature or bug in 1-5 sentences.
 
 Check: `which rp-cli >/dev/null 2>&1`
 
-If available, use AskUserQuestion to ask BOTH questions:
+If available, output these questions as text (do NOT use AskUserQuestion tool):
 
-**Question 1 - Research approach:**
-"Use RepoPrompt for deeper codebase context? (slower, better for complex features)"
-- Yes, use context-scout (RepoPrompt builder + codemaps)
-- No, use repo-scout (standard tools, faster)
+```
+Quick setup before planning:
 
-**Question 2 - Review:**
-"Run Carmack-level review after planning?"
-- Yes, review and fix issues
-- No, skip review
+1. **Research approach** — Use RepoPrompt for deeper context?
+   a) Yes, context-scout (slower, thorough)
+   b) No, repo-scout (faster)
+
+2. **Review** — Run Carmack-level review after?
+   a) Yes  b) No
+
+(Reply: "1a 2b", "both yes", or just tell me naturally)
+```
+
+Wait for response. Parse naturally — user may reply terse ("1a 2b") or ramble via voice.
 
 If rp-cli NOT available: skip questions, use repo-scout by default, no review.
 

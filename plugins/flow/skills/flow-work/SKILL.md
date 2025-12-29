@@ -28,22 +28,35 @@ If no plan/ID provided, ask for it.
 
 ## FIRST: Setup Questions (REQUIRED)
 
-**Before doing anything else**, use AskUserQuestion tool to ask these questions:
+**Before doing anything else**, output these questions as text (do NOT use AskUserQuestion tool):
 
-**Question 1 - Branch:**
-"Which branch setup?"
-- Current branch
-- New branch
-- Isolated worktree
+Check if rp-cli available: `which rp-cli >/dev/null 2>&1`
 
-**Question 2 - Review (only if rp-cli installed):**
-First check: `which rp-cli >/dev/null 2>&1`
-If available, ask:
-"Run Carmack-level review after implementation?"
-- Yes, review and fix issues
-- No, skip review
+If rp-cli available, ask both:
+```
+Quick setup before starting:
 
-**Wait for answers. Do NOT read files or write code until user responds.**
+1. **Branch** — Where to work?
+   a) Current branch
+   b) New branch
+   c) Isolated worktree
+
+2. **Review** — Run Carmack-level review after?
+   a) Yes  b) No
+
+(Reply: "1a 2b", "current branch, skip review", or just tell me naturally)
+```
+
+If rp-cli NOT available, ask only branch:
+```
+Quick setup: Where to work?
+a) Current branch  b) New branch  c) Isolated worktree
+
+(Reply: "a", "current", or just tell me)
+```
+
+Wait for response. Parse naturally — user may reply terse or ramble via voice.
+**Do NOT read files or write code until user responds.**
 
 ## Workflow
 
