@@ -2,13 +2,18 @@
 
 All notable changes to the gmickel-claude-marketplace.
 
+## [0.5.12] - 2025-12-29
+
+### Added
+- Issue quality guidelines in review prompts (inspired by OpenAI Codex)
+  - impl-review: only flag issues **introduced by this change**
+  - Both: cite **actual affected code** (no speculation)
+  - Both: specify **trigger conditions** (inputs, edge cases)
+
 ## [0.5.11] - 2025-12-29
 
 ### Fixed
 - Restructured chat command examples so `--new-chat` flags aren't buried
-  - Command template with flags shown FIRST: `rp-cli ... --new-chat --name "..."`
-  - Message content shown separately below
-  - Model was missing flags at end of 70-line prompt
 
 ## [0.5.10] - 2025-12-29
 

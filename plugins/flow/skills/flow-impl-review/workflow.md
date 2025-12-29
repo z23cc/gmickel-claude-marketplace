@@ -230,6 +230,12 @@ Evaluate against these world-class engineering standards:
 - Clear separation of concerns?
 - Self-documenting code (minimal comments needed)?
 
+## Issue Quality
+
+- Only flag issues **introduced by this change** (not pre-existing bugs)
+- Cite **actual affected code** (no speculation — show what breaks)
+- Specify **trigger conditions** (inputs, environment, edge cases)
+
 ## Expected Output
 
 For each issue found:

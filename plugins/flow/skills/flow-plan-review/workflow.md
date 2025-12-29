@@ -204,6 +204,12 @@ Evaluate against these world-class engineering standards:
 - Clear separation of concerns?
 - Dependencies well-managed?
 
+## Issue Quality
+
+- Flag issues that are **discrete and actionable** (not vague concerns)
+- Cite **actual plan sections or code** affected (no speculation)
+- Specify **trigger conditions** (inputs, scenarios, edge cases)
+
 ## Expected Output
 
 For each issue found:
