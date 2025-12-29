@@ -127,6 +127,8 @@ Confirm the selection includes:
 
 Use chat in **chat mode** to conduct the review. The chat sees all selected files completely.
 
+**CRITICAL: Always start a fresh chat.** Use `--new-chat --name "Impl Review: [BRANCH_NAME]"` flags. Never reuse an existing chat from a previous review.
+
 ⚠️ **WAIT FOR RESPONSE**: Chat commands can take 1-5+ minutes to complete.
 - Do NOT send follow-up messages asking if it's done
 - Do NOT re-send the chat command
