@@ -567,6 +567,29 @@ Flow doesn't make Claude smarter. It makes the workflow disciplined enough that 
 
 ---
 
+## Other Platforms
+
+### OpenAI Codex (Experimental)
+
+Flow partially works in OpenAI Codex with some limitations:
+
+**Caveats:**
+- No subagent support (research scouts run inline or are skipped)
+- No plugin auto-loading (manual setup required)
+
+**Manual setup:**
+```bash
+# Copy commands (as prompts)
+cp plugins/flow/commands/*.md ~/.codex/prompts/
+
+# Copy skills
+cp -r plugins/flow/skills/* ~/.codex/skills/
+```
+
+A dedicated installer may come later.
+
+---
+
 <div align="center">
 
 Made by [Gordon Mickel](https://mickel.tech) · [gordon@mickel.tech](mailto:gordon@mickel.tech)
