@@ -76,7 +76,9 @@ rp-cli -w W -e 'read docs/impl/xxx.md'
 
 ---
 
-## Phase 3: Build Context
+## Phase 3: Build Context & Verify Selection
+
+### Step 1: Run builder
 
 Call `builder` to get full context around the changed files:
 ```bash
@@ -85,45 +87,43 @@ rp-cli -w W -e 'builder "Build context for reviewing these implementation change
 
 ⚠️ **WAIT**: Builder takes 30s-5min. Do NOT proceed until it returns output.
 
-After builder completes, ensure changed files and supporting docs are selected:
+### Step 2: Add supporting context
+
+Builder is AI-driven and non-deterministic—it builds good baseline context but may miss files you know are relevant.
+
+After builder completes, add changed files + everything you found in Phase 2:
 ```bash
-# Add all changed files
+# Add all changed files from Phase 1
 rp-cli -w W -e 'select add path/to/changed/file1.ts'
 rp-cli -w W -e 'select add path/to/changed/file2.ts'
 # ... add all changed files
 
-# Add supporting docs
-rp-cli -w W -e 'select add docs/plan/xxx.md'
-# Note: Beads data is in JSONL, use `bd show <id>` to get issue details
+# Add supporting docs found in Phase 2 (plan, PRD, etc.)
+rp-cli -w W -e 'select add <path-to-plan>'
+rp-cli -w W -e 'select add <path-to-prd>'
+# Note: Beads data is in JSONL - use `bd show <id>` output in chat prompt instead
+
+# Add any other files you identified as relevant during earlier phases
+# (related tests, config files, type definitions, etc.)
 ```
 
----
-
-## Phase 4: Verify and Augment Selection
-
-The context builder is AI-driven and non-deterministic—it may miss relevant files. **Always verify the selection before proceeding.**
+### Step 3: Verify selection
 
 ```bash
 rp-cli -w W -e 'select get'
 ```
 
-Common gaps to check for:
+Confirm the selection includes:
 - All changed files from Phase 1
-- Plan/spec files referenced in commits
-- Related test files
-- Config files that affect behavior
-- Type definitions or interfaces
+- Supporting docs from Phase 2
+- Related tests and type definitions
+- Anything else needed for thorough review
 
-Add anything missing:
-```bash
-rp-cli -w W -e 'select add path/to/missed/file.ts'
-```
-
-**Why this matters:** The chat only sees selected files. Missing context = incomplete review.
+**Why this matters:** Chat only sees selected files. Missing context = incomplete review.
 
 ---
 
-## Phase 5: Carmack-Level Review
+## Phase 4: Carmack-Level Review
 
 Use chat in **chat mode** to conduct the review. The chat sees all selected files completely.
 

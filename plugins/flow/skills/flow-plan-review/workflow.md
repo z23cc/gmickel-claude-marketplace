@@ -68,61 +68,52 @@ Read any relevant supporting docs you find (PRD, beads issue, architecture).
 
 ---
 
-## Phase 2: Build Context
+## Phase 2: Build Context & Verify Selection
 
-Call `builder` with instructions derived from the plan. Include:
-- What the plan is trying to achieve
-- Key modules/areas it touches
-- Any patterns or dependencies mentioned
+### Step 1: Run builder
 
+Call `builder` with instructions derived from the plan:
 ```bash
 rp-cli -w W -e 'builder "Build context for reviewing this implementation plan: [SUMMARIZE PLAN GOALS]. Focus on: [KEY MODULES/AREAS FROM PLAN]. Include related architecture, tests, and dependency patterns."'
 ```
 
 ⚠️ **WAIT**: Builder takes 30s-5min. Do NOT proceed until it returns output.
 
-After builder completes, add the plan file and any supporting docs to selection:
+### Step 2: Add supporting context
+
+Builder is AI-driven and non-deterministic—it builds good baseline context but may miss files you know are relevant.
+
+After builder completes, add everything you found in Phase 1 plus anything else relevant:
 ```bash
+# Always add the plan file
 rp-cli -w W -e 'select add <plan-file>'
-# Add PRD, beads issue, etc if found
-rp-cli -w W -e 'select add docs/prd_xxx.md'
-# Note: Beads data is in JSONL, use `bd show <id>` to get issue details
+
+# Add supporting docs found in Phase 1 (PRD, architecture, beads issue, etc.)
+rp-cli -w W -e 'select add <path-to-prd>'
+rp-cli -w W -e 'select add <path-to-architecture-doc>'
+# Note: Beads data is in JSONL - use `bd show <id>` output in chat prompt instead
+
+# Add any other files you identified as relevant during earlier phases
+# (code the plan references, similar implementations, related tests, etc.)
 ```
 
-Verify selection:
+### Step 3: Verify selection
+
 ```bash
 rp-cli -w W -e 'select get'
 ```
 
----
+Confirm the selection includes:
+- The plan file
+- Supporting docs from Phase 1
+- Code/patterns the plan references
+- Anything else needed for thorough review
 
-## Phase 3: Verify and Augment Selection
-
-The context builder is AI-driven and non-deterministic—it may miss relevant files. **Always verify the selection before proceeding.**
-
-```bash
-# Check what builder selected
-rp-cli -w W -e 'select get'
-```
-
-Common gaps to check for:
-- The plan file itself
-- PRD or requirements docs
-- Related architecture docs
-- Existing code the plan references
-- Similar implementations to compare against
-
-Add anything missing:
-```bash
-rp-cli -w W -e 'select add path/to/plan.md'
-rp-cli -w W -e 'select add docs/architecture.md'
-```
-
-**Why this matters:** The chat only sees selected files. Missing context = incomplete review.
+**Why this matters:** Chat only sees selected files. Missing context = incomplete review.
 
 ---
 
-## Phase 4: Carmack-Level Review
+## Phase 3: Carmack-Level Review
 
 Use chat in **chat mode** to conduct the review. The chat sees all selected files completely.
 

@@ -6,7 +6,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](../../LICENSE)
 [![Claude Code](https://img.shields.io/badge/Claude_Code-Plugin-blueviolet)](https://claude.ai/code)
-[![Version](https://img.shields.io/badge/Version-0.5.6-green)](../../CHANGELOG.md)
+[![Version](https://img.shields.io/badge/Version-0.5.7-green)](../../CHANGELOG.md)
 [![Commands](https://img.shields.io/badge/Commands-4-green)](commands/)
 [![Agents](https://img.shields.io/badge/Agents-6-yellow)](agents/)
 [![Skills](https://img.shields.io/badge/Skills-5-blue)](skills/)
@@ -395,9 +395,8 @@ Review implementation plans before coding starts.
 **Phases:**
 1. **Window Selection** — Find correct RepoPrompt window via `rp-cli -e 'windows'`
 2. **Parse & Read** — Read plan file, search for PRD/beads issues/architecture docs
-3. **Build Context** — Call `builder` with plan goals and key modules (30s-5min)
-4. **Verify Selection** — Check builder output, add plan file + supporting docs
-5. **Carmack-Level Review** — Execute chat-based review covering:
+3. **Build Context & Verify** — Run `builder`, then add plan + supporting docs from Phase 2
+4. **Carmack-Level Review** — Execute chat-based review covering:
    - Simplicity & minimalism (YAGNI)
    - DRY & code reuse
    - Idiomatic patterns
@@ -425,9 +424,8 @@ Review implementation changes on current branch vs main/master.
 1. **Window Selection** — Find correct RepoPrompt window
 2. **Identify Changes** — Get branch, commits, changed files, diff
 3. **Gather Docs** — Search for plan, PRD, beads issue that drove the work
-4. **Build Context** — Call `builder` for changed files + dependencies (30s-5min)
-5. **Verify Selection** — Ensure all changed files + related code selected
-6. **Carmack-Level Review** — Execute chat-based review covering:
+4. **Build Context & Verify** — Run `builder`, then add changed files + docs from Phase 3
+5. **Carmack-Level Review** — Execute chat-based review covering:
    - Correctness (matches plan/spec?)
    - Simplicity & minimalism
    - DRY & code reuse

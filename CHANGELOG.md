@@ -2,6 +2,15 @@
 
 All notable changes to the gmickel-claude-marketplace.
 
+## [0.5.7] - 2025-12-29
+
+### Changed
+- Merged redundant verify phases in review workflows
+  - `flow-plan-review`: Phase 2+3 → "Build Context & Verify Selection"
+  - `flow-impl-review`: Phase 3+4 → "Build Context & Verify Selection"
+  - Agent now adds all supporting docs found in earlier phases after builder runs
+  - Eliminates duplicate "check for PRD" instructions
+
 ## [0.5.6] - 2025-12-29
 
 ### Changed
