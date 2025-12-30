@@ -531,9 +531,13 @@ The skill triggers on "use rp to..." or "use repoprompt to..." + action verb.
 
 **Requires**: RepoPrompt desktop app with rp-cli installed.
 
+### Known Limitation: Parallel Agents
+
+Multiple agents running simultaneously in the same project share the same RepoPrompt tab context, causing mixed file selections. Use [worktrees](skills/worktree-kit/SKILL.md) for isolated parallel work. See [#3](https://github.com/gmickel/gmickel-claude-marketplace/issues/3).
+
 ### Auto-Review Commands
 
-`/flow:plan-review` and `/flow:impl-review` delegate to RepoPrompt's chat—using a **different model** (GPT-5.2 High, o3, etc.) for cross-validation that catches blind spots same-model review misses. See [Review Commands](#review-commands).
+`/flow:plan-review` and `/flow:impl-review` delegate to RepoPrompt's chat—using a **different model** for cross-validation that catches blind spots same-model review misses. See [Review Commands](#review-commands).
 
 ---
 
