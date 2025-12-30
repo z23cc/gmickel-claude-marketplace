@@ -2,6 +2,15 @@
 
 All notable changes to the gmickel-claude-marketplace.
 
+## [0.6.1] - 2025-12-30
+
+### Fixed
+- Added fix-and-re-review loop to plan/impl review workflows
+  - Agents were documenting issues instead of fixing them during re-review
+  - Now explicitly instructs to implement all fixes directly
+  - Escape hatch for genuine disagreements preserved
+  - Updated anti-patterns to flag "documenting instead of fixing"
+
 ## [0.6.0] - 2025-12-30
 
 ### Added
