@@ -68,7 +68,7 @@ This marketplace contains plugins that fix those problems.
 
 **Auto-review** (if [RepoPrompt](https://repoprompt.com) rp-cli installed):
 Both commands detect rp-cli and ask upfront: "Run Carmack-level review?"
-If yes, review runs automatically after completion—no manual chaining needed.
+If yes, review runs automatically via a different model—we recommend GPT-5.2 High for cross-validation that catches blind spots same-model review misses.
 
 **With Beads** (if `.beads/` configured):
 ```bash
