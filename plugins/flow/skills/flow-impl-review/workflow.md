@@ -269,19 +269,27 @@ rp-cli -w W -e 'chat "Elaborate on the [SPECIFIC CONCERN]. Show me exactly what 
 
 **CRITICAL**: After receiving review feedback, **implement all fixes directly**—edit the code, don't just acknowledge issues.
 
-1. **Parse the review**: Extract all issues (Critical, Major, Minor, Nitpick)
-2. **Fix each issue**: Edit the code files to address it
+### What MUST be fixed:
+- **Critical**: Fix immediately, no exceptions
+- **Major**: Fix immediately, no exceptions
+- **Minor**: Fix immediately—these are real issues, not optional polish
+
+### What MAY be skipped:
+- **Nitpick**: Optional style/preference items—fix if easy, skip if not
+
+1. **Parse the review**: Extract all issues by severity
+2. **Fix Critical → Major → Minor**: Edit the code files to address each
    - Use Edit tool for targeted changes
-   - Run tests/lints after fixes to verify
-3. **Re-review**: After fixes, send a follow-up to verify
+   - Run tests/lints after each batch of fixes
+3. **Re-review**: After ALL Critical/Major/Minor are fixed, verify
    ```bash
-   rp-cli -w W -e 'chat "I have fixed the issues you identified. Key changes: [LIST]. Please re-review and identify any remaining issues." --mode chat'
+   rp-cli -w W -e 'chat "Fixed all Critical, Major, and Minor issues: [LIST]. Please re-review." --mode chat'
    ```
-4. **Repeat**: Continue until review passes (Ship) or only acceptable tradeoffs remain
+4. **Repeat**: Continue until review passes (Ship)
 
-**When to skip a fix**: If you genuinely disagree with a specific suggestion (e.g., reviewer misunderstood the requirement, fix would break something else, suggestion conflicts with established patterns), explain your reasoning and move on. The default is to fix, not to document.
+**When to skip a fix**: Only if you genuinely disagree AND can articulate why (e.g., reviewer misunderstood, fix would break something, conflicts with requirements). Explain reasoning clearly. This is rare—the default is to fix.
 
-**Anti-pattern**: Acknowledging issues without editing code. "Good point, will fix" is not fixing—actually change the code.
+**Anti-pattern**: Skipping Minor issues. "Minor" means "real issue, lower priority"—not "optional". Fix them.
 
 ---
 
@@ -306,3 +314,4 @@ rp-cli -w W -e 'chat "Elaborate on the [SPECIFIC CONCERN]. Show me exactly what 
 - Missing changed files in selection – chat can't see what's not selected
 - Ignoring test changes – tests are code too
 - Documenting issues instead of fixing – after review feedback, edit the code directly
+- **Skipping Minor issues** – "Minor" ≠ "optional"; fix all Critical/Major/Minor before re-review

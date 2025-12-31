@@ -240,21 +240,29 @@ rp-cli -w W -e 'chat "Elaborate on the [SPECIFIC CONCERN]. What exactly would yo
 
 ## Fix and Re-Review Loop
 
-**CRITICAL**: After receiving review feedback, **implement all fixes and improvements directly**—edit the plan file or Beads issue, don't just document issues.
+**CRITICAL**: After receiving review feedback, **implement all fixes directly**—edit the plan file or Beads issue, don't just document issues.
 
-1. **Parse the review**: Extract all issues (Critical, Major, Minor, Nitpick)
-2. **Fix each issue**: Edit the plan to address it
+### What MUST be fixed:
+- **Critical**: Fix immediately, no exceptions
+- **Major**: Fix immediately, no exceptions
+- **Minor**: Fix immediately—these are real issues, not optional polish
+
+### What MAY be skipped:
+- **Nitpick**: Optional style/preference items—fix if easy, skip if not
+
+1. **Parse the review**: Extract all issues by severity
+2. **Fix Critical → Major → Minor**: Edit the plan to address each
    - For markdown plans: use Edit tool to update the file
-   - For Beads issues: use `bd update <id> --body "..."` or `bd update <id>.<task> --body "..."`
-3. **Re-review**: After fixes, send a follow-up to verify
+   - For Beads issues: use `bd update <id> --body "..."`
+3. **Re-review**: After ALL Critical/Major/Minor are fixed, verify
    ```bash
-   rp-cli -w W -e 'chat "I have updated the plan to address your feedback. Key changes: [LIST]. Please re-review and identify any remaining issues." --mode chat'
+   rp-cli -w W -e 'chat "Fixed all Critical, Major, and Minor issues: [LIST]. Please re-review." --mode chat'
    ```
-4. **Repeat**: Continue until review passes (Ship) or only acceptable tradeoffs remain
+4. **Repeat**: Continue until review passes (Ship)
 
-**When to skip a fix**: If you genuinely disagree with a specific suggestion (e.g., reviewer misunderstood constraints, suggestion conflicts with requirements), explain your reasoning and move on. The default is to fix, not to document.
+**When to skip a fix**: Only if you genuinely disagree AND can articulate why (e.g., reviewer misunderstood, conflicts with requirements). Explain reasoning clearly. This is rare—the default is to fix.
 
-**Anti-pattern**: Acknowledging issues without editing the plan. "Noted, will address" is not fixing—actually change the plan text.
+**Anti-pattern**: Skipping Minor issues. "Minor" means "real issue, lower priority"—not "optional". Fix them.
 
 ---
 
@@ -276,3 +284,4 @@ rp-cli -w W -e 'chat "Elaborate on the [SPECIFIC CONCERN]. What exactly would yo
 - Shallow review – thorough analysis takes time; don't rush
 - Not selecting supporting docs – chat can't see what's not selected
 - Documenting issues instead of fixing – after review feedback, edit the plan directly
+- **Skipping Minor issues** – "Minor" ≠ "optional"; fix all Critical/Major/Minor before re-review

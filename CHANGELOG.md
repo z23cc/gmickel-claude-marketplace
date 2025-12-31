@@ -2,6 +2,14 @@
 
 All notable changes to the gmickel-claude-marketplace.
 
+## [0.6.3] - 2025-12-30
+
+### Fixed
+- Strengthened fix-and-re-review loop to require fixing Minor issues
+  - Explicit: Critical/Major/Minor MUST be fixed, only Nitpick is optional
+  - Added anti-pattern: "Skipping Minor issues"
+  - Updated both plan-review and impl-review workflows
+
 ## [0.6.2] - 2025-12-30
 
 ### Fixed
