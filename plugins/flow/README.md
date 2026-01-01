@@ -6,7 +6,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](../../LICENSE)
 [![Claude Code](https://img.shields.io/badge/Claude_Code-Plugin-blueviolet)](https://claude.ai/code)
-[![Version](https://img.shields.io/badge/Version-0.6.5-green)](../../CHANGELOG.md)
+[![Version](https://img.shields.io/badge/Version-0.7.0-green)](../../CHANGELOG.md)
 [![Commands](https://img.shields.io/badge/Commands-4-green)](commands/)
 [![Agents](https://img.shields.io/badge/Agents-6-yellow)](agents/)
 [![Skills](https://img.shields.io/badge/Skills-5-blue)](skills/)
@@ -91,9 +91,16 @@ That's it. Two commands, one disciplined workflow.
 
 When [RepoPrompt](https://repoprompt.com) rp-cli is detected, both `/flow:plan` and `/flow:work` ask upfront:
 
-> "Run Carmack-level review after completion?"
+```
+Review — Run Carmack-level review after?
+a) Yes, RepoPrompt chat
+b) Yes, export for external LLM (ChatGPT, Claude web)
+c) No
+```
 
-If yes, review runs automatically via RepoPrompt's chat with a **different model**. We recommend GPT-5.2 High for all review tasks.
+**Option a)**: Review runs via RepoPrompt's chat with a **different model**. We recommend GPT-5.2 High.
+
+**Option b)**: Exports full context (files, codemaps, review prompt) to `~/Desktop/` and opens the file. Paste into ChatGPT Pro, Claude web, or any LLM.
 
 **Why cross-model?** Same-model self-review has blind spots. A different model catches things Claude missed—architectural issues, edge cases, security gaps.
 
@@ -193,7 +200,7 @@ When rp-cli is detected, `/flow:plan` asks which research approach to use:
 │  Q1: Use RepoPrompt for deeper context?   ○ Yes (context-scout)       │
 │      (slower, better for complex features) ○ No (repo-scout) [faster] │
 │                                                                       │
-│  Q2: Run Carmack-level review?            ○ Yes  ○ No                 │
+│  Q2: Run Carmack-level review?            ○ RepoPrompt ○ Export ○ No  │
 └───────────────────────────────────────────────────────────────────────┘
                                    │
                                    ▼

@@ -6,7 +6,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Claude Code](https://img.shields.io/badge/Claude_Code-Plugin_Marketplace-blueviolet)](https://claude.ai/code)
-[![Flow Version](https://img.shields.io/badge/Flow-v0.6.5-green)](plugins/flow/)
+[![Flow Version](https://img.shields.io/badge/Flow-v0.7.0-green)](plugins/flow/)
 [![Author](https://img.shields.io/badge/Author-Gordon_Mickel-orange)](https://mickel.tech)
 [![Twitter](https://img.shields.io/badge/@gmickel-black?logo=x)](https://twitter.com/gmickel)
 [![Sponsor](https://img.shields.io/badge/Sponsor-❤-ea4aaa)](https://github.com/sponsors/gmickel)
@@ -68,9 +68,20 @@ That's it. Two commands, one disciplined workflow.
 
 ### Auto-Review
 
-When [RepoPrompt](https://repoprompt.com) rp-cli is detected, both commands ask upfront: "Run Carmack-level review?"
+When [RepoPrompt](https://repoprompt.com) rp-cli is detected, both commands ask upfront:
 
-If yes, review runs automatically via a **different model**—we recommend GPT-5.2 High. Cross-model review catches blind spots that same-model self-review misses.
+```
+Review — Run Carmack-level review after?
+a) Yes, RepoPrompt chat
+b) Yes, export for external LLM (ChatGPT, Claude web)
+c) No
+```
+
+**Option a)**: Review via RepoPrompt's chat with a different model (we recommend GPT-5.2 High).
+
+**Option b)**: Exports full context to a file you can paste into ChatGPT Pro, Claude web, or any LLM.
+
+Cross-model review catches blind spots that same-model self-review misses.
 
 ### Commands
 

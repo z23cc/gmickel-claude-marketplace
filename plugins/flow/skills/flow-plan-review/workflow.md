@@ -230,6 +230,56 @@ End with:
 
 ---
 
+## Phase 3 Alternative: Export for External Review
+
+If user chose **export mode**, skip the chat and export context instead.
+
+### Step 1: Set the review prompt
+
+Set the prompt text so it's included in the export:
+```bash
+rp-cli -w W -e 'prompt set "<REVIEW_PROMPT>"'
+```
+
+Use the same review criteria from Phase 3's message content, but formatted for the prompt field. Include:
+- The plan content (or Beads issue summary)
+- User's focus areas
+- Full review criteria checklist
+
+### Step 2: Export to file
+
+```bash
+rp-cli -w W -e 'prompt export ~/Desktop/plan-review-[PLAN_NAME].md'
+```
+
+This exports: file tree, codemaps, selected file contents, and the review prompt.
+
+### Step 3: Open for user
+
+```bash
+open ~/Desktop/plan-review-[PLAN_NAME].md
+```
+
+### Step 4: Inform user
+
+Tell the user:
+```
+Exported review context to ~/Desktop/plan-review-[PLAN_NAME].md
+
+The file contains:
+- Full file tree with selected files marked
+- Code maps (signatures/structure)
+- Complete file contents (plan + supporting docs)
+- Review prompt with Carmack-level criteria
+
+Paste into ChatGPT Pro, Claude web, or your preferred LLM.
+After receiving feedback, return here to implement fixes.
+```
+
+**Skip the Iteration and Fix loops** — user handles those externally.
+
+---
+
 ## Iteration
 
 Continue the chat to drill deeper if needed:

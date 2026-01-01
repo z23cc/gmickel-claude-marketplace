@@ -2,6 +2,26 @@
 
 All notable changes to the gmickel-claude-marketplace.
 
+## [0.7.0] - 2026-01-01
+
+### Added
+- **Export for external review**: Review skills now offer export mode for ChatGPT Pro, Claude web, etc.
+  - `/flow:plan` and `/flow:work` setup questions now have 3 review options:
+    - `a) Yes, RepoPrompt chat` (default)
+    - `b) Yes, export for external LLM`
+    - `c) No`
+  - Direct `/flow:impl-review` and `/flow:plan-review` ask upfront which mode to use
+  - Export mode: same context building, exports to `~/Desktop/` and opens file
+  - Uses new RepoPrompt 1.5.61 `prompt export` command
+
+### Changed
+- Updated rp-cli references for RepoPrompt 1.5.61:
+  - `workspace tabs` shorthand (replaces verbose `call manage_workspaces`)
+  - `workspace tab "name"` shorthand for tab selection
+  - `prompt export /path.md` for full context export
+  - Workflow shorthand flags (`--export-prompt`, `--export-context`)
+  - Note: chats are now bound to compose tabs
+
 ## [0.6.5] - 2025-12-31
 
 ### Fixed

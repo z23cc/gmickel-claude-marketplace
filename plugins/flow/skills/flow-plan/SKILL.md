@@ -40,9 +40,11 @@ Quick setup before planning:
    b) No, repo-scout (faster)
 
 2. **Review** — Run Carmack-level review after?
-   a) Yes  b) No
+   a) Yes, RepoPrompt chat
+   b) Yes, export for external LLM (ChatGPT, Claude web)
+   c) No
 
-(Reply: "1a 2b", "both yes", or just tell me naturally)
+(Reply: "1a 2a", "1b 2c", or just tell me naturally)
 ```
 
 Wait for response. Parse naturally — user may reply terse ("1a 2b") or ramble via voice.
@@ -52,7 +54,9 @@ If rp-cli NOT available: skip questions, use repo-scout by default, no review.
 ## Workflow
 
 Read [steps.md](steps.md) and follow each step in order. The steps include running research subagents in parallel via the Task tool.
-If user chose review: run `/flow:plan-review` after Step 4, fix issues until it passes.
+If user chose review:
+- Option 2a: run `/flow:plan-review` after Step 4, fix issues until it passes
+- Option 2b: run `/flow:plan-review` with export mode after Step 4
 
 ## Examples
 

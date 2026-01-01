@@ -42,9 +42,11 @@ Quick setup before starting:
    c) Isolated worktree
 
 2. **Review** — Run Carmack-level review after?
-   a) Yes  b) No
+   a) Yes, RepoPrompt chat
+   b) Yes, export for external LLM (ChatGPT, Claude web)
+   c) No
 
-(Reply: "1a 2b", "current branch, skip review", or just tell me naturally)
+(Reply: "1a 2a", "current branch, export review", or just tell me naturally)
 ```
 
 If rp-cli NOT available, ask only branch:
@@ -61,7 +63,9 @@ Wait for response. Parse naturally — user may reply terse or ramble via voice.
 ## Workflow
 
 After setup questions answered, read [phases.md](phases.md) and execute each phase in order.
-If user chose review: run `/flow:impl-review` after Phase 6, fix issues until it passes.
+If user chose review:
+- Option 2a: run `/flow:impl-review` after Phase 6, fix issues until it passes
+- Option 2b: run `/flow:impl-review` with export mode after Phase 6
 
 ## Guardrails
 

@@ -71,6 +71,13 @@ rp-cli -e 'context --include prompt,selection,tree'
 rp-cli -e 'context --all > output.md'  # Export to file
 ```
 
+## Prompt Export (v1.5.61+)
+
+```bash
+# Export full context (files, tree, codemaps) to markdown file
+rp-cli -e 'prompt export /path/to/output.md'
+```
+
 ## AI-Powered Builder
 
 ```bash
@@ -83,21 +90,26 @@ rp-cli -e 'builder "find API endpoints" --response-type plan'
 ```bash
 rp-cli -e 'chat "How does auth work?"'
 rp-cli -e 'chat "Design new feature" --mode plan'
+rp-cli -e 'newchat "Start fresh discussion"'  # New chat
 ```
 
-## Workspaces
+Note: Chats are bound to compose tabs. Use `workspace tab` to bind to a specific tab before chatting.
+
+## Workspaces & Tabs
 
 ```bash
 rp-cli -e 'workspace list'          # List workspaces
 rp-cli -e 'workspace switch "Name"' # Switch workspace
 rp-cli -e 'workspace tabs'          # List tabs
+rp-cli -e 'workspace tab "TabName"' # Bind to tab (for chat isolation)
 ```
 
 ## Workflow Shorthand Flags
 
 ```bash
-# Quick operations without -e syntax
-rp-cli --workspace MyProject --select-set src/ --export-context ~/out.md
+# Quick one-liner workflows
+rp-cli --workspace MyProject --select-set src/ --export-context ~/out.json
+rp-cli --workspace MyProject --select-set src/ --export-prompt ~/context.md
 rp-cli --chat "How does auth work?"
 rp-cli --builder "implement user authentication"
 ```

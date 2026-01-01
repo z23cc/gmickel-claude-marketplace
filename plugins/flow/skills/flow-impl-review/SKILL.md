@@ -19,6 +19,24 @@ Example: `/flow:impl-review focus on the auth changes, ignore styling`
 
 Reviews all changes on the **current branch** vs main/master.
 
+## FIRST: Setup Question (if rp-cli available)
+
+Check: `which rp-cli >/dev/null 2>&1`
+
+If available, output this question as text (do NOT use AskUserQuestion tool):
+
+```
+Review mode:
+a) RepoPrompt chat (default)
+b) Export for external LLM (ChatGPT, Claude web, etc.)
+
+(Reply: "a", "b", "export", or just tell me)
+```
+
+Wait for response. Parse naturally.
+
+If rp-cli NOT available: inform user that rp-cli is required for this skill.
+
 ## Context Sources
 
 The workflow gathers context from:

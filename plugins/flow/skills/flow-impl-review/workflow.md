@@ -257,6 +257,57 @@ End with:
 
 ---
 
+## Phase 4 Alternative: Export for External Review
+
+If user chose **export mode**, skip the chat and export context instead.
+
+### Step 1: Set the review prompt
+
+Set the prompt text so it's included in the export:
+```bash
+rp-cli -w W -e 'prompt set "<REVIEW_PROMPT>"'
+```
+
+Use the same review criteria from Phase 4's message content, but formatted for the prompt field. Include:
+- The changes summary (branch, files, commits)
+- Plan/spec content if found
+- User's focus areas
+- Full review criteria checklist
+
+### Step 2: Export to file
+
+```bash
+rp-cli -w W -e 'prompt export ~/Desktop/impl-review-[BRANCH].md'
+```
+
+This exports: file tree, codemaps, selected file contents, and the review prompt.
+
+### Step 3: Open for user
+
+```bash
+open ~/Desktop/impl-review-[BRANCH].md
+```
+
+### Step 4: Inform user
+
+Tell the user:
+```
+Exported review context to ~/Desktop/impl-review-[BRANCH].md
+
+The file contains:
+- Full file tree with selected files marked
+- Code maps (signatures/structure)
+- Complete file contents
+- Review prompt with Carmack-level criteria
+
+Paste into ChatGPT Pro, Claude web, or your preferred LLM.
+After receiving feedback, return here to implement fixes.
+```
+
+**Skip the Iteration and Fix loops** — user handles those externally.
+
+---
+
 ## Iteration
 
 Continue the chat to drill deeper if needed:

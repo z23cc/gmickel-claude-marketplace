@@ -18,8 +18,9 @@ rp-cli -w <window_id> -e '<command>'
 | `context_builder` | `rp-cli -w <id> -e 'builder "instructions"'` |
 | `chat_send` | `rp-cli -w <id> -e 'chat "message" --mode chat'` |
 | `chats` | `rp-cli -w <id> -e 'chats list'` |
-| `list_tabs` | `rp-cli -w <id> -e 'call manage_workspaces {"action":"list_tabs"}'` |
-| `select_tab` | `rp-cli -w <id> -e 'call manage_workspaces {"action":"select_tab","tab":"<name_or_uuid>"}'` |
+| `list_tabs` | `rp-cli -w <id> -e 'workspace tabs'` |
+| `select_tab` | `rp-cli -w <id> -e 'workspace tab "name"'` |
+| `prompt export` | `rp-cli -w <id> -e 'prompt export /path/file.md'` |
 
 ## Common Commands
 
@@ -76,9 +77,15 @@ rp-cli -w 1 -e 'chat "Follow-up" --mode chat --chat-id <id>'
 
 ### Tab Management
 ```bash
-# List tabs
-rp-cli -w 1 -e 'call manage_workspaces {"action":"list_tabs"}'
+# List tabs (chats are bound to tabs)
+rp-cli -w 1 -e 'workspace tabs'
 
-# Select tab
-rp-cli -w 1 -e 'call manage_workspaces {"action":"select_tab","tab":"TabName"}'
+# Select/bind to tab
+rp-cli -w 1 -e 'workspace tab "TabName"'
+```
+
+### Prompt Export
+```bash
+# Export full context (files, tree, codemaps) to file
+rp-cli -w 1 -e 'prompt export /path/to/output.md'
 ```
