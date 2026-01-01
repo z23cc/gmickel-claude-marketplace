@@ -26,9 +26,12 @@ Check: `which rp-cli >/dev/null 2>&1`
 If available, output this question as text (do NOT use AskUserQuestion tool):
 
 ```
+Both modes use RepoPrompt for context building (builder, file selection, codemaps).
+The difference is where the review happens:
+
 Review mode:
-a) RepoPrompt chat (default)
-b) Export for external LLM (ChatGPT, Claude web, etc.)
+a) RepoPrompt chat (default) — review via rp-cli chat
+b) Export for external LLM — export context file for ChatGPT, Claude web, etc.
 
 (Reply: "a", "b", "export", or just tell me)
 ```

@@ -2,6 +2,11 @@
 
 All notable changes to the gmickel-claude-marketplace.
 
+## [0.7.1] - 2026-01-02
+
+### Changed
+- Clarified review mode question: both modes use RepoPrompt for context building, difference is where review happens
+
 ## [0.7.0] - 2026-01-01
 
 ### Added
