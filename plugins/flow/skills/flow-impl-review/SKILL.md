@@ -19,11 +19,15 @@ Example: `/flow:impl-review focus on the auth changes, ignore styling`
 
 Reviews all changes on the **current branch** vs main/master.
 
-## FIRST: Setup Question (if rp-cli available)
+## FIRST: Determine Review Mode
 
 Check: `which rp-cli >/dev/null 2>&1`
+If NOT available: inform user rp-cli is required for this skill.
 
-If available, output this question as text (do NOT use AskUserQuestion tool):
+**If review mode was already chosen earlier in this conversation** (e.g., user answered "2a" or "2b" during `/flow:plan` or `/flow:work` setup):
+→ Use that mode, don't ask again.
+
+**If invoked directly without prior context**, ask:
 
 ```
 Both modes use RepoPrompt for context building (builder, file selection, codemaps).
@@ -37,8 +41,6 @@ b) Export for external LLM — export context file for ChatGPT, Claude web, etc.
 ```
 
 Wait for response. Parse naturally.
-
-If rp-cli NOT available: inform user that rp-cli is required for this skill.
 
 ## Context Sources
 

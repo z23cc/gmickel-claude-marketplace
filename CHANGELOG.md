@@ -2,6 +2,13 @@
 
 All notable changes to the gmickel-claude-marketplace.
 
+## [0.7.2] - 2026-01-02
+
+### Changed
+- Review skills now check conversation context before asking mode question
+  - If mode already chosen in `/flow:plan` or `/flow:work` setup → use it, don't ask again
+  - Only asks when invoked directly without prior context
+
 ## [0.7.1] - 2026-01-02
 
 ### Changed
