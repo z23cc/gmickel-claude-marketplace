@@ -60,6 +60,12 @@ Most failures come from weak planning or drifting from the plan. Flow fixes both
 
 That's it. Two commands, one disciplined workflow.
 
+### What's New
+
+- **v0.7.4**: `/flow:interview` for 40+ question deep-dive before planning
+- **v0.7.0**: Export mode to paste review context into ChatGPT Pro, Claude web, any LLM
+- **v0.7.3**: Codex CLI support via install script
+
 ### What Happens
 
 **`/flow:plan`** runs 3 research agents in parallel, identifies gaps, writes a plan with acceptance checks, and optionally reviews via a different model.
