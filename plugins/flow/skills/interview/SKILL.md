@@ -38,7 +38,7 @@ If empty, ask: "What should I interview you about? Give me a bead ID (e.g., gno-
 
 ## Interview Process
 
-Use `AskUserQuestion` tool extensively. This is NOT a quick 5-question session - expect 40+ questions for complex specs.
+**IMPORTANT**: Use the `AskUserQuestion` tool for ALL questions. Do NOT output questions as text - the tool provides a better UX with clickable options. Group 2-4 related questions per tool call. This is NOT a quick 5-question session - expect 40+ questions for complex specs.
 
 ### Question Categories
 

@@ -2,6 +2,11 @@
 
 All notable changes to the gmickel-claude-marketplace.
 
+## [0.7.5] - 2026-01-03
+
+### Fixed
+- Interview skill now explicitly requires AskUserQuestion tool (was outputting questions as text)
+
 ## [0.7.4] - 2026-01-03
 
 ### Added
