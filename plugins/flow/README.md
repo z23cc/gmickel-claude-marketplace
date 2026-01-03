@@ -6,10 +6,10 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](../../LICENSE)
 [![Claude Code](https://img.shields.io/badge/Claude_Code-Plugin-blueviolet)](https://claude.ai/code)
-[![Version](https://img.shields.io/badge/Version-0.7.3-green)](../../CHANGELOG.md)
-[![Commands](https://img.shields.io/badge/Commands-4-green)](commands/)
+[![Version](https://img.shields.io/badge/Version-0.7.4-green)](../../CHANGELOG.md)
+[![Commands](https://img.shields.io/badge/Commands-5-green)](commands/)
 [![Agents](https://img.shields.io/badge/Agents-6-yellow)](agents/)
-[![Skills](https://img.shields.io/badge/Skills-5-blue)](skills/)
+[![Skills](https://img.shields.io/badge/Skills-7-blue)](skills/)
 
 **Plan first, work second.**
 
@@ -58,6 +58,18 @@ Flow doesn't make Claude smarter. It makes the workflow disciplined enough that 
 
 That's it. Two commands, one disciplined workflow.
 
+### Optional: Interview First
+
+For complex features, start with an interview to flesh out requirements:
+
+```bash
+/flow:interview docs/oauth-spec.md   # or a bead ID
+/flow:plan Add OAuth login for users
+/flow:work plans/add-oauth-login.md
+```
+
+Interview asks 40+ deep questions about technical details, edge cases, testing strategy, etc.
+
 ### What Happens
 
 **`/flow:plan`**:
@@ -82,6 +94,7 @@ That's it. Two commands, one disciplined workflow.
 |---------|-------------|
 | `/flow:plan` | Research + produce `plans/<slug>.md` |
 | `/flow:work` | Execute a plan end-to-end |
+| `/flow:interview` | Deep interview about a spec/bead, write refined details back |
 | `/flow:plan-review` | Carmack-level plan review via rp-cli |
 | `/flow:impl-review` | Carmack-level impl review (current branch) |
 
@@ -186,9 +199,19 @@ When rp-cli is detected, `/flow:plan` asks which research approach to use:
 
 ## Workflow Detail
 
-### `/flow:plan` — Research → Plan → Review
+### `/flow:plan` — (Interview →) Research → Plan → Review
 
 ```
+┌ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ┐
+  OPTIONAL: /flow:interview
+│ ┌─────────────────────────────────────────────────────────────────┐  │
+  │ Deep interview (40+ questions) about spec/bead                  │
+│ │ → Technical details, edge cases, testing, architecture          │  │
+  │ → Writes refined spec back to source                            │
+│ └─────────────────────────────────────────────────────────────────┘  │
+└ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ┘
+                                   │
+                                   ▼
 ┌───────────────────────────────────────────────────────────────────────┐
 │ > /flow:plan gno-40i                                                  │
 └───────────────────────────────────────────────────────────────────────┘
@@ -362,6 +385,7 @@ When rp-cli is detected, `/flow:plan` asks which research approach to use:
 |-------|---------|
 | `flow-plan` | Planning workflow logic |
 | `flow-work` | Execution workflow logic |
+| `interview` | Deep interview to flesh out specs/beads |
 | `flow-plan-review` | Plan review via rp-cli + chat |
 | `flow-impl-review` | Impl review via rp-cli + chat |
 | `worktree-kit` | Manage git worktrees for parallel work |

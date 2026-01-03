@@ -2,6 +2,15 @@
 
 All notable changes to the gmickel-claude-marketplace.
 
+## [0.7.4] - 2026-01-03
+
+### Added
+- `/flow:interview` command + `interview` skill
+  - Deep interview about a spec/bead (40+ questions for complex features)
+  - Accepts beads ID or file path
+  - Writes refined spec back to source
+  - Optional step before `/flow:plan` for thorough requirements gathering
+
 ## [0.7.3] - 2026-01-02
 
 ### Added
