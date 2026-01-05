@@ -1,11 +1,24 @@
 # Plan Review Workflow
 
+## Philosophy: Context Over Convenience
+
+The reviewer model only sees selected files—it's blind to the rest of the codebase. RepoPrompt's Context Builder (hereafter "Builder") is AI-powered—its strength is **discovering related context** the reviewer needs:
+- Existing patterns the plan should follow
+- Similar implementations for consistency
+- Architectural context (how things connect)
+- Dependencies and side effects
+
+We already KNOW the plan file. Builder's job is finding the **surrounding context** that makes review meaningful.
+
+**Key insight:** Builder produces a handoff prompt (factual, non-opinionated). We take that as foundation, then add our review criteria on top.
+
+---
+
 ## Phase 0: Window Selection
 
 **CRITICAL**: Always start by listing windows and selecting the correct one.
 
 ```bash
-# List all windows with their workspaces
 rp-cli -e 'windows'
 ```
 
@@ -13,7 +26,6 @@ Output shows window IDs with workspace names. **Identify the window for the proj
 
 For all subsequent commands, use `-w <id>` to target that window:
 ```bash
-# Example: target window 1
 rp-cli -w 1 -e 'tree --folders'
 ```
 
@@ -41,12 +53,12 @@ rp-cli -w W -e 'builder "..." && select add plan.md && select get'
 3. Else if `bd search "<arg>"` has unique match → use that issue
 4. Else: ask user for clarification
 
-Additional text in arguments = focus areas/context.
+Additional text in arguments = focus areas/context. Save these for Phase 3.
 
 **If Beads issue:**
 1. Fetch content: `bd show <id>` (text output is clean, includes children)
-2. Include output directly in the chat prompt
-3. Continue with builder for codebase context
+2. Save output for inclusion in chat prompt
+3. Compose a concise summary of what the plan accomplishes (1-2 sentences for simple plans, more for complex epics)
 
 **If markdown plan:**
 
@@ -55,13 +67,15 @@ Read the plan file (replace W with your window ID from Phase 0):
 rp-cli -w W -e 'read <plan-file-from-args>'
 ```
 
+Compose a **concise but descriptive summary** of what the plan accomplishes (for builder prompt). Simple plans: 1-2 sentences. Complex epics: brief paragraph capturing key scope.
+
 Then search for supporting documentation:
 ```bash
 # Find PRD if exists
 rp-cli -w W -e 'search "PRD" --mode path'
 rp-cli -w W -e 'search "prd_" --mode path'
 
-# Find beads JSONL (Beads uses .beads/issues.jsonl, not individual files)
+# Find beads JSONL
 rp-cli -w W -e 'search ".beads/" --mode path'
 
 # Find architecture docs
@@ -69,49 +83,69 @@ rp-cli -w W -e 'search "architecture" --mode path'
 rp-cli -w W -e 'search "docs/" --mode path'
 ```
 
-Read any relevant supporting docs you find (PRD, beads issue, architecture).
+Read any relevant supporting docs you find.
 
 ---
 
-## Phase 2: Build Context & Verify Selection
+## Phase 2: Context Discovery & Selection
 
-### Step 1: Run builder
+### Step 1: Run builder with intent (not details)
 
-Call `builder` with instructions derived from the plan:
+Give builder a simple, intent-focused prompt. Let it discover context autonomously:
 ```bash
-rp-cli -w W -e 'builder "Build context for reviewing this implementation plan: [SUMMARIZE PLAN GOALS]. Focus on: [KEY MODULES/AREAS FROM PLAN]. Include related architecture, tests, and dependency patterns."'
+rp-cli -w W -e 'builder "Review a plan to [CONCISE SUMMARY OF WHAT PLAN ACCOMPLISHES]"'
 ```
 
-⚠️ **WAIT**: Builder takes 30s-5min. Do NOT proceed until it returns output.
+**Examples:**
+- Simple: `"Review a plan to add OAuth authentication to the API"`
+- Medium: `"Review a plan to refactor the payment processing module to use the repository pattern and add retry logic"`
+- Complex: `"Review a plan to rebuild the notification system with real-time WebSocket delivery, user preferences, batching, and multi-channel support (email, push, in-app)"`
 
-### Step 2: Add supporting context
+⚠️ **DO NOT** stuff the prompt with file lists, module names, or implementation details. Builder discovers those.
 
-Builder is AI-driven and non-deterministic—it builds good baseline context but may miss files you know are relevant.
+⚠️ **WAIT**: Builder takes 30s-5min. Do NOT proceed until it returns output. Do NOT send another builder command—just wait for the current one to complete.
 
-After builder completes, add everything you found in Phase 1 plus anything else relevant:
+### Step 2: Capture builder's handoff prompt
+
+Builder returns:
+- File selection (what it discovered as relevant)
+- Handoff prompt (factual summary of context)
+- Open questions (ambiguities it identified)
+
+**Save the handoff prompt** - this becomes the foundation for your review prompt.
+
+Get the current prompt:
 ```bash
-# Always add the plan file
+rp-cli -w W -e 'prompt get'
+```
+
+### Step 3: Review and augment selection
+
+Builder is AI-driven and non-deterministic. Review what it found, then add must-haves:
+```bash
+# Check what builder selected
+rp-cli -w W -e 'select get'
+
+# Always add the plan file (builder may not have selected it)
 rp-cli -w W -e 'select add <plan-file>'
 
-# Add supporting docs found in Phase 1 (PRD, architecture, beads issue, etc.)
+# Add supporting docs from Phase 1 (PRD, architecture, etc.)
 rp-cli -w W -e 'select add <path-to-prd>'
 rp-cli -w W -e 'select add <path-to-architecture-doc>'
-# Note: Beads data is in JSONL - use `bd show <id>` output in chat prompt instead
 
-# Add any other files you identified as relevant during earlier phases
-# (code the plan references, similar implementations, related tests, etc.)
+# Add any files you know are critical that builder missed
 ```
 
-### Step 3: Verify selection
+### Step 4: Verify final selection
 
 ```bash
 rp-cli -w W -e 'select get'
 ```
 
-Confirm the selection includes:
+Confirm selection includes:
 - The plan file
 - Supporting docs from Phase 1
-- Code/patterns the plan references
+- Related patterns/code builder discovered
 - Anything else needed for thorough review
 
 **Why this matters:** Chat only sees selected files. Missing context = incomplete review.
@@ -120,112 +154,100 @@ Confirm the selection includes:
 
 ## Phase 3: Carmack-Level Review
 
-Use chat in **chat mode** to conduct the review. The chat sees all selected files completely.
+### Step 1: Build the review prompt
 
-**Chat session management:**
-- **Initial review**: MUST use raw `call chat_send` with `"new_chat": true` (shorthand `--new-chat` is broken)
-- **Re-review after fixes**: use shorthand `chat "..." --mode chat` (continues most recent)
+Combine three pieces:
+1. **Builder's handoff prompt** (from Phase 2 Step 2) - factual context foundation
+2. **Review criteria** - Carmack-level checklist
+3. **User's focus areas** (from arguments) - specific concerns to prioritize
 
-⚠️ **WAIT FOR RESPONSE**: Chat commands can take 1-5+ minutes to complete.
-- Do NOT send follow-up messages asking if it's done
-- Do NOT re-send the chat command
-- Wait for rp-cli to return output before proceeding
-- Use `timeout: 5m` or longer in Bash tool if needed
+**Prompt structure:**
+```
+[BUILDER'S HANDOFF PROMPT - paste as-is]
 
-**Initial review command:**
-```bash
-rp-cli -w W -e 'call chat_send {"message": "<MESSAGE>", "mode": "chat", "new_chat": true, "chat_name": "Plan Review: [PLAN_NAME]"}'
+---
+
+## Plan Under Review
+[PASTE PLAN CONTENT - or for Beads, include `bd show` output]
+
+## Review Focus
+[USER'S FOCUS AREAS FROM ARGUMENTS, if any]
+
+## Review Criteria
+
+Conduct a John Carmack-level review. Evaluate against:
+
+### 1. Simplicity & Minimalism
+- Simplest possible solution?
+- Unnecessary abstraction layers?
+- YAGNI violations?
+
+### 2. DRY & Code Reuse
+- Duplicated logic?
+- Reinventing existing utilities?
+- Could leverage existing patterns?
+
+### 3. Idiomatic Code
+- Follows codebase patterns?
+- Naming conventions consistent?
+
+### 4. Architecture & Design
+- Data flow makes sense?
+- Clear boundaries/responsibilities?
+- Circular dependencies?
+
+### 5. Edge Cases & Error Handling
+- Unhandled failure modes?
+- Race conditions?
+
+### 6. Testability
+- Structure easily testable?
+- Dependencies injectable?
+
+### 7. Performance
+- O(n²) or worse?
+- Unnecessary allocations?
+
+### 8. Security
+- Injection vulnerabilities?
+- Auth/authz gaps?
+
+### 9. Maintainability
+- Future devs will understand?
+- Abstractions earning complexity?
+
+## Output Format
+
+For each issue:
+1. **Severity**: Critical / Major / Minor / Nitpick
+2. **Location**: Where in the plan
+3. **Problem**: What's wrong
+4. **Suggestion**: How to fix
+5. **Rationale**: Why it matters
+
+End with:
+- Overall: Ship / Needs Work / Major Rethink
+- Patterns from codebase the plan should adopt
+
+**List ALL issues.** Agent fixes all Critical/Major/Minor before re-review.
 ```
 
-⚠️ **JSON escaping**: Message must use `\n` for newlines, not literal line breaks. Keep message concise - the chat sees all selected files, so just specify the review focus.
+### Step 2: Execute review
+
+Use chat in **chat mode**. The chat sees all selected files.
+
+**Initial review** - MUST use raw `call chat_send` with `"new_chat": true`:
+```bash
+rp-cli -w W -e 'call chat_send {"message": "<COMBINED_PROMPT>", "mode": "chat", "new_chat": true, "chat_name": "Plan Review: [PLAN_NAME]"}'
+```
+
+⚠️ **JSON escaping**: Message must use `\n` for newlines, not literal line breaks.
+
+⚠️ **WAIT FOR RESPONSE**: Chat takes 1-5+ minutes. Do NOT re-send or follow up until it returns.
 
 **Re-review command (shorthand works):**
 ```bash
 rp-cli -w W -e 'chat "<FOLLOW_UP_MESSAGE>" --mode chat'
-```
-
-**Example message content** (put this in `<MESSAGE>`):
-```
-Conduct a John Carmack-level code review of this implementation plan.
-
-## The Plan
-[PASTE PLAN CONTENT - for Beads, include `bd show` output here]
-
-## Additional Context from User
-[INCLUDE ANY FOCUS AREAS/COMMENTS FROM ARGUMENTS]
-
-## Review Criteria
-
-Evaluate against these world-class engineering standards:
-
-### 1. Simplicity & Minimalism
-- Is this the simplest possible solution?
-- Any unnecessary abstraction layers?
-- Could fewer files/functions achieve the same result?
-- Solving problems we don't have yet (YAGNI)?
-
-### 2. DRY & Code Reuse
-- Any duplicated logic that should be extracted?
-- Reinventing existing utilities in the codebase?
-- Could existing patterns/helpers be leveraged?
-
-### 3. Idiomatic Code
-- Does it follow the codebase's established patterns?
-- Language/framework idioms being violated?
-- Naming conventions consistent with existing code?
-
-### 4. Architecture & Design
-- Does the data flow make sense?
-- Are boundaries/responsibilities clear?
-- Will this scale appropriately?
-- Any circular dependencies introduced?
-
-### 5. Edge Cases & Error Handling
-- What failure modes are unhandled?
-- Race conditions possible?
-- Input validation sufficient?
-
-### 6. Testability
-- Is the proposed structure easily testable?
-- Are dependencies injectable?
-- What's hard to unit test in this design?
-
-### 7. Performance
-- Any obvious O(n²) or worse algorithms?
-- Unnecessary allocations or copies?
-- Could caching help?
-
-### 8. Security
-- Any injection vulnerabilities?
-- Auth/authz gaps?
-- Secrets handling appropriate?
-
-### 9. Maintainability
-- Will future developers understand this easily?
-- Are abstractions earning their complexity?
-- Clear separation of concerns?
-- Dependencies well-managed?
-
-## Issue Quality
-
-- Flag issues that are **discrete and actionable** (not vague concerns)
-- Cite **actual plan sections or code** affected (no speculation)
-- Specify **trigger conditions** (inputs, scenarios, edge cases)
-
-## Expected Output
-
-For each issue found:
-1. **Severity**: Critical / Major / Minor / Nitpick
-2. **Location**: Where in the plan
-3. **Problem**: What's wrong
-4. **Suggestion**: How to fix it
-5. **Rationale**: Why this matters
-
-End with:
-- Overall assessment (Ship / Needs Work / Major Rethink)
-- Any patterns from the codebase the plan should adopt
-
-**IMPORTANT**: List ALL issues found. The agent will fix ALL Critical, Major, and Minor issues before re-review. Do not summarize or prioritize—completeness is required.
 ```
 
 ---
@@ -236,15 +258,16 @@ If user chose **export mode**, skip the chat and export context instead.
 
 ### Step 1: Set the review prompt
 
-Set the prompt text so it's included in the export:
+Build the combined prompt (same structure as Phase 3 Step 1), then set it:
 ```bash
-rp-cli -w W -e 'prompt set "<REVIEW_PROMPT>"'
+rp-cli -w W -e 'prompt set "<COMBINED_PROMPT>"'
 ```
 
-Use the same review criteria from Phase 3's message content, but formatted for the prompt field. Include:
-- The plan content (or Beads issue summary)
+The prompt should include:
+- Builder's handoff prompt (foundation)
+- Plan content (or Beads issue summary)
 - User's focus areas
-- Full review criteria checklist
+- Review criteria checklist
 
 ### Step 2: Export to file
 
@@ -335,6 +358,8 @@ If skipping, explain WHY clearly in the re-review message so the reviewer can re
 
 ## Anti-patterns to Avoid
 
+- **Stuffing builder prompt** – don't list files/modules/details; give intent, let builder discover
+- **Ignoring builder's handoff prompt** – it's the foundation; add criteria on top, don't replace
 - **Forgetting `-w <id>` flag** – commands will fail with "Multiple windows" error
 - Skipping `builder` – you'll miss architectural context
 - Reviewing without PRD/beads context – you won't know the "why"

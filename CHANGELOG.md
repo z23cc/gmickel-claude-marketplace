@@ -2,6 +2,29 @@
 
 All notable changes to the gmickel-claude-marketplace.
 
+## [0.8.0] - 2026-01-05
+
+### Changed
+- **Review workflows now use "Context Over Convenience" approach**
+  - Builder prompt simplified to intent only (e.g., "Review implementation of OAuth on current branch")
+  - No longer stuffs builder with file lists or module details—let Builder discover context
+  - Builder's handoff prompt becomes foundation; review criteria added on top (not replaced)
+  - Explicit step to capture and reuse Builder's handoff prompt via `prompt get`
+- **New philosophy section** at top of both workflow files
+  - Introduces "RepoPrompt's Context Builder" once, then refers to it as "Builder"
+- **New anti-patterns**: "Stuffing builder prompt", "Ignoring builder's handoff prompt"
+- Phase 1 now composes concise summary (flexible: 1-2 sentences for simple, paragraph for complex epics)
+- Phase 2/3 renamed to "Context Discovery & Selection" with clearer 4-step process:
+  1. Run builder with intent
+  2. Capture handoff prompt
+  3. Review and augment selection
+  4. Verify final selection
+- Builder wait warning now explicitly says "do NOT send another builder command"
+- Review criteria condensed (same content, fewer tokens)
+
+### Why This Change
+Builder is AI-powered—its strength is discovering related patterns, architectural context, and dependencies the reviewer needs. We already know the changed files/plan file; Builder's job is finding surrounding context. Previous approach was too prescriptive.
+
 ## [0.7.7] - 2026-01-04
 
 ### Changed

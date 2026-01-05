@@ -6,7 +6,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Claude Code](https://img.shields.io/badge/Claude_Code-Plugin_Marketplace-blueviolet)](https://claude.ai/code)
-[![Flow Version](https://img.shields.io/badge/Flow-v0.7.7-green)](plugins/flow/)
+[![Flow Version](https://img.shields.io/badge/Flow-v0.8.0-green)](plugins/flow/)
 [![Author](https://img.shields.io/badge/Author-Gordon_Mickel-orange)](https://mickel.tech)
 [![Twitter](https://img.shields.io/badge/@gmickel-black?logo=x)](https://twitter.com/gmickel)
 [![Sponsor](https://img.shields.io/badge/Sponsor-❤-ea4aaa)](https://github.com/sponsors/gmickel)
@@ -62,9 +62,9 @@ That's it. Two commands, one disciplined workflow.
 
 ### What's New
 
+- **v0.8.0**: Review workflows now use "Context Over Convenience"—Builder discovers related patterns/context, we augment with must-haves
 - **v0.7.4**: `/flow:interview` for 40+ question deep-dive before planning
 - **v0.7.0**: Export mode to paste review context into ChatGPT Pro, Claude web, any LLM
-- **v0.7.3**: Codex CLI support via install script
 
 ### What Happens
 

@@ -1,11 +1,24 @@
 # Implementation Review Workflow
 
+## Philosophy: Context Over Convenience
+
+The reviewer model only sees selected files—it's blind to the rest of the codebase. RepoPrompt's Context Builder (hereafter "Builder") is AI-powered—its strength is **discovering related context** the reviewer needs:
+- Existing patterns the changes should follow
+- Similar implementations for consistency
+- Architectural context (how things connect)
+- Dependencies and side effects
+
+We already KNOW the changed files. Builder's job is finding the **surrounding context** that makes review meaningful.
+
+**Key insight:** Builder produces a handoff prompt (factual, non-opinionated). We take that as foundation, then add our review criteria on top.
+
+---
+
 ## Phase 0: Window Selection
 
 **CRITICAL**: Always start by listing windows and selecting the correct one.
 
 ```bash
-# List all windows with their workspaces
 rp-cli -e 'windows'
 ```
 
@@ -13,7 +26,6 @@ Output shows window IDs with workspace names. **Identify the window for the proj
 
 For all subsequent commands, use `-w <id>` to target that window:
 ```bash
-# Example: target window 1
 rp-cli -w 1 -e 'tree --folders'
 ```
 
@@ -33,7 +45,7 @@ rp-cli -w W -e 'builder "..." && select add changed.ts && select get'
 
 ---
 
-## Phase 1: Identify Changes
+## Phase 1: Identify Changes & Extract Intent
 
 Get the current branch and changed files:
 ```bash
@@ -43,12 +55,17 @@ git diff main..HEAD --name-only 2>/dev/null || git diff master..HEAD --name-only
 git diff main..HEAD --stat 2>/dev/null || git diff master..HEAD --stat
 ```
 
-Save the list of changed files for later selection.
+Save the list of changed files for later selection (Phase 3).
 
-Get the actual diff for review context:
-```bash
-git diff main..HEAD 2>/dev/null || git diff master..HEAD
-```
+**Compose a concise but descriptive summary** of what the changes accomplish (for builder prompt). Simple changes: 1-2 sentences. Large features: brief paragraph capturing key scope. Look at:
+- Commit messages
+- Branch name
+- Nature of the changes
+
+**Examples:**
+- Simple: "Add OAuth authentication to the API"
+- Medium: "Fix race condition in payment processing by adding mutex locks and retry logic"
+- Complex: "Rebuild notification system with WebSocket delivery, user preferences, batching, and multi-channel support"
 
 ---
 
@@ -64,7 +81,7 @@ rp-cli -w W -e 'search "docs/impl" --mode path'
 rp-cli -w W -e 'search "PRD" --mode path'
 rp-cli -w W -e 'search "prd_" --mode path'
 
-# Find beads JSONL (Beads uses .beads/issues.jsonl, not individual files)
+# Find beads JSONL
 rp-cli -w W -e 'search ".beads/" --mode path'
 
 # Check commit messages for issue references
@@ -74,54 +91,72 @@ git log main..HEAD --format="%B" 2>/dev/null || git log master..HEAD --format="%
 Read any relevant docs you find:
 ```bash
 rp-cli -w W -e 'read docs/plan/xxx.md'
-rp-cli -w W -e 'read docs/impl/xxx.md'
 ```
 
-**Beads context**: If you know which Beads issue(s) this work relates to (from conversation, commits, or user), include that context in the review prompt via `bd show <id>`.
+**Beads context**: If you know which Beads issue(s) this work relates to (from conversation, commits, or user), save for inclusion in the review prompt via `bd show <id>`.
 
 ---
 
-## Phase 3: Build Context & Verify Selection
+## Phase 3: Context Discovery & Selection
 
-### Step 1: Run builder
+### Step 1: Run builder with intent (not details)
 
-Call `builder` to get full context around the changed files:
+Give builder a simple, intent-focused prompt. Let it discover context autonomously:
 ```bash
-rp-cli -w W -e 'builder "Build context for reviewing these implementation changes: [LIST CHANGED FILES]. Include related tests, dependencies, and architectural patterns. Focus on understanding how these changes fit into the existing codebase."'
+rp-cli -w W -e 'builder "Review implementation of [CONCISE SUMMARY FROM PHASE 1] on the current branch"'
 ```
 
-⚠️ **WAIT**: Builder takes 30s-5min. Do NOT proceed until it returns output.
+**Examples:**
+- Simple: `"Review implementation of OAuth authentication on the current branch"`
+- Medium: `"Review implementation of payment race condition fix with mutex locks and retry logic on the current branch"`
+- Complex: `"Review implementation of notification system rebuild with WebSocket delivery, preferences, and multi-channel support on the current branch"`
 
-### Step 2: Add supporting context
+⚠️ **DO NOT** list changed files in the prompt. Builder discovers relevant context; we add changed files after.
 
-Builder is AI-driven and non-deterministic—it builds good baseline context but may miss files you know are relevant.
+⚠️ **WAIT**: Builder takes 30s-5min. Do NOT proceed until it returns output. Do NOT send another builder command—just wait for the current one to complete.
 
-After builder completes, add changed files + everything you found in Phase 2:
+### Step 2: Capture builder's handoff prompt
+
+Builder returns:
+- File selection (what it discovered as relevant)
+- Handoff prompt (factual summary of context)
+- Open questions (ambiguities it identified)
+
+**Save the handoff prompt** - this becomes the foundation for your review prompt.
+
+Get the current prompt:
 ```bash
-# Add all changed files from Phase 1
+rp-cli -w W -e 'prompt get'
+```
+
+### Step 3: Review and augment selection
+
+Builder is AI-driven and non-deterministic. Review what it found, then add must-haves:
+```bash
+# Check what builder selected
+rp-cli -w W -e 'select get'
+
+# Add ALL changed files from Phase 1 (builder may not have selected them all)
 rp-cli -w W -e 'select add path/to/changed/file1.ts'
 rp-cli -w W -e 'select add path/to/changed/file2.ts'
 # ... add all changed files
 
-# Add supporting docs found in Phase 2 (plan, PRD, etc.)
+# Add supporting docs from Phase 2 (plan, PRD, etc.)
 rp-cli -w W -e 'select add <path-to-plan>'
-rp-cli -w W -e 'select add <path-to-prd>'
-# Note: Beads data is in JSONL - use `bd show <id>` output in chat prompt instead
 
-# Add any other files you identified as relevant during earlier phases
-# (related tests, config files, type definitions, etc.)
+# Add any files you know are critical that builder missed
 ```
 
-### Step 3: Verify selection
+### Step 4: Verify final selection
 
 ```bash
 rp-cli -w W -e 'select get'
 ```
 
-Confirm the selection includes:
+Confirm selection includes:
 - All changed files from Phase 1
 - Supporting docs from Phase 2
-- Related tests and type definitions
+- Related patterns/code builder discovered
 - Anything else needed for thorough review
 
 **Why this matters:** Chat only sees selected files. Missing context = incomplete review.
@@ -130,35 +165,20 @@ Confirm the selection includes:
 
 ## Phase 4: Carmack-Level Review
 
-Use chat in **chat mode** to conduct the review. The chat sees all selected files completely.
+### Step 1: Build the review prompt
 
-**Chat session management:**
-- **Initial review**: MUST use raw `call chat_send` with `"new_chat": true` (shorthand `--new-chat` is broken)
-- **Re-review after fixes**: use shorthand `chat "..." --mode chat` (continues most recent)
+Combine three pieces:
+1. **Builder's handoff prompt** (from Phase 3 Step 2) - factual context foundation
+2. **Review criteria** - Carmack-level checklist
+3. **User's focus areas** (from arguments) - specific concerns to prioritize
 
-⚠️ **WAIT FOR RESPONSE**: Chat commands can take 1-5+ minutes to complete.
-- Do NOT send follow-up messages asking if it's done
-- Do NOT re-send the chat command
-- Wait for rp-cli to return output before proceeding
-- Use `timeout: 5m` or longer in Bash tool if needed
-
-**Initial review command:**
-```bash
-rp-cli -w W -e 'call chat_send {"message": "<MESSAGE>", "mode": "chat", "new_chat": true, "chat_name": "Impl Review: [BRANCH_NAME]"}'
+**Prompt structure:**
 ```
+[BUILDER'S HANDOFF PROMPT - paste as-is]
 
-⚠️ **JSON escaping**: Message must use `\n` for newlines, not literal line breaks. Keep message concise - the chat sees all selected files, so just specify the review focus.
+---
 
-**Re-review command (shorthand works):**
-```bash
-rp-cli -w W -e 'chat "<FOLLOW_UP_MESSAGE>" --mode chat'
-```
-
-**Example message content** (put this in `<MESSAGE>`):
-```
-Conduct a John Carmack-level code review of these implementation changes.
-
-## The Changes
+## Changes Under Review
 Branch: [BRANCH_NAME]
 Files changed: [LIST FILES]
 Commits: [COMMIT SUMMARY]
@@ -166,93 +186,103 @@ Commits: [COMMIT SUMMARY]
 ## Original Plan/Spec
 [INCLUDE PLAN CONTENT OR `bd show` OUTPUT IF BEADS]
 
-## Additional Context from User
-[INCLUDE ANY FOCUS AREAS/COMMENTS FROM ARGUMENTS]
+## Review Focus
+[USER'S FOCUS AREAS FROM ARGUMENTS, if any]
 
 ## Review Criteria
 
-Evaluate against these world-class engineering standards:
+Conduct a John Carmack-level review. Evaluate against:
 
 ### 1. Correctness
-- Does the implementation match the plan/spec?
-- Any logic errors or off-by-one bugs?
-- Are all requirements actually met?
+- Matches plan/spec?
+- Logic errors?
+- All requirements met?
 
 ### 2. Simplicity & Minimalism
-- Is this the simplest possible solution?
-- Any unnecessary abstraction layers?
-- Could fewer files/functions achieve the same result?
-- Dead code or unused imports?
-- Over-engineering for hypothetical future needs?
+- Simplest solution?
+- Unnecessary abstraction?
+- Dead code / unused imports?
+- Over-engineering?
 
 ### 3. DRY & Code Reuse
-- Any duplicated logic that should be extracted?
-- Reinventing existing utilities in the codebase?
-- Could existing patterns/helpers be leveraged?
+- Duplicated logic?
+- Reinventing utilities?
+- Could leverage existing patterns?
 
 ### 4. Idiomatic Code
-- Following the codebase's established patterns?
-- Language/framework idioms being violated?
-- Naming conventions consistent with existing code?
-- Type safety appropriate (no unnecessary any or casts)?
+- Follows codebase patterns?
+- Naming conventions consistent?
+- Type safety appropriate?
 
 ### 5. Architecture & Design
-- Does the data flow make sense?
-- Are boundaries/responsibilities clear?
-- Any circular dependencies introduced?
-- Coupling too tight?
+- Data flow makes sense?
+- Clear boundaries?
+- Circular dependencies?
 
 ### 6. Edge Cases & Error Handling
-- What failure modes are unhandled?
-- Race conditions possible?
-- Input validation sufficient?
-- Errors silently swallowed?
+- Unhandled failure modes?
+- Race conditions?
+- Errors swallowed?
 
 ### 7. Testability & Tests
-- Are new tests adequate?
-- Test coverage for edge cases?
-- Tests actually testing behavior vs implementation?
-- Any flaky test patterns?
+- Tests adequate?
+- Edge case coverage?
+- Testing behavior vs implementation?
 
 ### 8. Performance
-- Any obvious O(n²) or worse algorithms?
-- Unnecessary allocations or copies?
+- O(n²) or worse?
+- Unnecessary allocations?
 - N+1 queries?
-- Missing indexes?
 
 ### 9. Security
-- Any injection vulnerabilities?
+- Injection vulnerabilities?
 - Auth/authz gaps?
-- Secrets handling appropriate?
 - Input sanitization?
 
 ### 10. Maintainability
-- Will future developers understand this easily?
-- Are abstractions earning their complexity?
-- Clear separation of concerns?
-- Self-documenting code (minimal comments needed)?
+- Future devs will understand?
+- Abstractions earning complexity?
+- Self-documenting?
 
 ## Issue Quality
 
-- Only flag issues **introduced by this change** (not pre-existing bugs)
-- Cite **actual affected code** (no speculation — show what breaks)
-- Specify **trigger conditions** (inputs, environment, edge cases)
+- Only flag issues **introduced by this change**
+- Cite **actual affected code**
+- Specify **trigger conditions**
 
-## Expected Output
+## Output Format
 
-For each issue found:
+For each issue:
 1. **Severity**: Critical / Major / Minor / Nitpick
 2. **File:Line**: Exact location
 3. **Problem**: What's wrong
-4. **Suggestion**: How to fix it (with code if helpful)
-5. **Rationale**: Why this matters
+4. **Suggestion**: How to fix (with code if helpful)
+5. **Rationale**: Why it matters
 
 End with:
-- Overall assessment (Ship / Needs Work / Major Rethink)
-- Any patterns from the codebase the code should adopt
-- Anything the implementation does particularly well
+- Overall: Ship / Needs Work / Major Rethink
+- Patterns from codebase the code should adopt
+- What the implementation does well
 
-**IMPORTANT**: List ALL issues found. The agent will fix ALL Critical, Major, and Minor issues before re-review. Do not summarize or prioritize—completeness is required.
+**List ALL issues.** Agent fixes all Critical/Major/Minor before re-review.
+```
+
+### Step 2: Execute review
+
+Use chat in **chat mode**. The chat sees all selected files.
+
+**Initial review** - MUST use raw `call chat_send` with `"new_chat": true`:
+```bash
+rp-cli -w W -e 'call chat_send {"message": "<COMBINED_PROMPT>", "mode": "chat", "new_chat": true, "chat_name": "Impl Review: [BRANCH_NAME]"}'
+```
+
+⚠️ **JSON escaping**: Message must use `\n` for newlines, not literal line breaks.
+
+⚠️ **WAIT FOR RESPONSE**: Chat takes 1-5+ minutes. Do NOT re-send or follow up until it returns.
+
+**Re-review command (shorthand works):**
+```bash
+rp-cli -w W -e 'chat "<FOLLOW_UP_MESSAGE>" --mode chat'
 ```
 
 ---
@@ -263,16 +293,17 @@ If user chose **export mode**, skip the chat and export context instead.
 
 ### Step 1: Set the review prompt
 
-Set the prompt text so it's included in the export:
+Build the combined prompt (same structure as Phase 4 Step 1), then set it:
 ```bash
-rp-cli -w W -e 'prompt set "<REVIEW_PROMPT>"'
+rp-cli -w W -e 'prompt set "<COMBINED_PROMPT>"'
 ```
 
-Use the same review criteria from Phase 4's message content, but formatted for the prompt field. Include:
-- The changes summary (branch, files, commits)
+The prompt should include:
+- Builder's handoff prompt (foundation)
+- Changes summary (branch, files, commits)
 - Plan/spec content if found
 - User's focus areas
-- Full review criteria checklist
+- Review criteria checklist
 
 ### Step 2: Export to file
 
@@ -365,6 +396,8 @@ If skipping, explain WHY clearly in the re-review message so the reviewer can re
 
 ## Anti-patterns to Avoid
 
+- **Stuffing builder prompt** – don't list changed files; give intent, let builder discover context
+- **Ignoring builder's handoff prompt** – it's the foundation; add criteria on top, don't replace
 - **Forgetting `-w <id>` flag** – commands will fail with "Multiple windows" error
 - Skipping `builder` – you'll miss how changes interact with existing code
 - Reviewing without plan/beads context – you won't know what was intended
