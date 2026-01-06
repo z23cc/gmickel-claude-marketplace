@@ -1,0 +1,30 @@
+# Example GitHub Actions workflow for validating .flow/
+# Copy this to .github/workflows/flow-validate.yml in your project
+
+name: Validate .flow
+
+on:
+  pull_request:
+    paths:
+      - '.flow/**'
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Validate .flow structure
+        run: |
+          # Download flowctl (adjust path/method for your setup)
+          # Option 1: If flowctl is in repo
+          # python3 ./scripts/flowctl.py validate --all --json
+
+          # Option 2: Download from plugin (example)
+          curl -sL https://raw.githubusercontent.com/gmickel/gmickel-claude-marketplace/main/plugins/flow-next/scripts/flowctl.py -o flowctl.py
+          python3 flowctl.py validate --all --json
