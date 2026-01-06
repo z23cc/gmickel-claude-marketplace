@@ -1183,6 +1183,35 @@ def validate_epic(flow_dir: Path, epic_id: str, use_json: bool = True) -> tuple[
     return errors, warnings, len(tasks)
 
 
+def cmd_prep_chat(args: argparse.Namespace) -> None:
+    """Prepare JSON payload for rp-cli chat_send. Handles escaping safely."""
+    # Read message from file
+    message = read_text_or_exit(Path(args.message_file), "Message file", use_json=False)
+
+    # Build payload
+    payload: dict[str, Any] = {
+        "message": message,
+        "mode": args.mode,
+    }
+
+    # Optional fields
+    if args.new_chat:
+        payload["new_chat"] = True
+    if args.chat_name:
+        payload["chat_name"] = args.chat_name
+    if args.selected_paths:
+        payload["selected_paths"] = args.selected_paths
+
+    # Output JSON (compact, no extra whitespace)
+    json_str = json.dumps(payload, ensure_ascii=False)
+
+    if args.output:
+        atomic_write(Path(args.output), json_str)
+        print(f"Wrote {args.output}", file=sys.stderr)
+    else:
+        print(json_str)
+
+
 def cmd_validate(args: argparse.Namespace) -> None:
     """Validate epic structure or all epics."""
     if not ensure_flow_exists():
@@ -1406,6 +1435,16 @@ def main() -> None:
     p_validate.add_argument("--all", action="store_true", help="Validate all epics and tasks")
     p_validate.add_argument("--json", action="store_true", help="JSON output")
     p_validate.set_defaults(func=cmd_validate)
+
+    # prep-chat (for rp-cli chat_send JSON escaping)
+    p_prep = subparsers.add_parser("prep-chat", help="Prepare JSON for rp-cli chat_send")
+    p_prep.add_argument("--message-file", required=True, help="File containing message text")
+    p_prep.add_argument("--mode", default="chat", choices=["chat", "ask"], help="Chat mode")
+    p_prep.add_argument("--new-chat", action="store_true", help="Start new chat")
+    p_prep.add_argument("--chat-name", help="Name for new chat")
+    p_prep.add_argument("--selected-paths", nargs="*", help="Files to include in context")
+    p_prep.add_argument("--output", "-o", help="Output file (default: stdout)")
+    p_prep.set_defaults(func=cmd_prep_chat)
 
     args = parser.parse_args()
     args.func(args)

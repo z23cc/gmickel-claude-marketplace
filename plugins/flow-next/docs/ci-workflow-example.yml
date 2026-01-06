@@ -1,5 +1,6 @@
-# Example GitHub Actions workflow for validating .flow/
-# Copy this to .github/workflows/flow-validate.yml in your project
+# OPTIONAL: GitHub Actions workflow for validating .flow/
+# All multi-user features work locally without this - CI is just an extra gate.
+# Copy to .github/workflows/flow-validate.yml if you want automated PR checks.
 
 name: Validate .flow
 

@@ -34,7 +34,7 @@ If NOT available: inform user rp-cli is required for this skill.
 **If review mode was already chosen earlier in this conversation** (e.g., user answered "2a" or "2b" during `/flow-next:plan` or `/flow-next:work` setup):
 → Use that mode, don't ask again.
 
-**If invoked directly without prior context**, ask:
+**If invoked directly without prior context**, output this text (do NOT use AskUserQuestion tool):
 
 ```
 Both modes use RepoPrompt for context building (builder, file selection, codemaps).
@@ -47,7 +47,7 @@ b) Export for external LLM — export context file for ChatGPT, Claude web, etc.
 (Reply: "a", "b", "export", or just tell me)
 ```
 
-Wait for response. Parse naturally.
+Wait for user response. Parse naturally.
 
 ## Get Plan Content
 

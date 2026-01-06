@@ -236,21 +236,47 @@ End with:
 
 Use chat in **chat mode**. The chat sees all selected files.
 
-**Initial review** - MUST use raw `call chat_send` with `"new_chat": true`:
-```bash
-rp-cli -w W -e 'call chat_send {"message": "<COMBINED_PROMPT>", "mode": "chat", "new_chat": true, "chat_name": "Plan Review: [PLAN_NAME]"}'
-```
+**Use `flowctl prep-chat`** to handle JSON escaping reliably:
 
-⚠️ **JSON escaping**: Message must use `\n` for newlines, not literal line breaks.
+```bash
+FLOWCTL="${CLAUDE_PLUGIN_ROOT}/scripts/flowctl"
+
+# 1. Write message to temp file (no escaping needed with heredoc)
+cat > /tmp/review-prompt.md << 'EOF'
+<COMBINED_PROMPT>
+EOF
+
+# 2. Generate properly escaped JSON
+$FLOWCTL prep-chat \
+  --message-file /tmp/review-prompt.md \
+  --mode chat \
+  --new-chat \
+  --chat-name "Plan Review: [PLAN_NAME]" \
+  -o /tmp/chat-payload.json
+
+# 3. Send to rp-cli
+rp-cli -w W -e "call chat_send $(cat /tmp/chat-payload.json)"
+```
 
 ⚠️ **WAIT FOR RESPONSE**: Chat takes 1-5+ minutes. Do NOT re-send or follow up until it returns.
 
-**Follow-up/re-review command** - MUST use `call chat_send` with `selected_paths` to ensure files remain visible:
+**Follow-up/re-review** - include `selected_paths` so reviewer keeps file context:
+
 ```bash
-rp-cli -w W -e 'call chat_send {"message": "<FOLLOW_UP_MESSAGE>", "mode": "chat", "selected_paths": ["<FILE1>", "<FILE2>"]}'
+cat > /tmp/followup.md << 'EOF'
+<FOLLOW_UP_MESSAGE>
+EOF
+
+$FLOWCTL prep-chat \
+  --message-file /tmp/followup.md \
+  --mode chat \
+  --selected-paths <FILE1> <FILE2> \
+  -o /tmp/chat-payload.json
+
+rp-cli -w W -e "call chat_send $(cat /tmp/chat-payload.json)"
 ```
 
-⚠️ **CRITICAL**: Chat follow-ups do NOT automatically see the selection. You MUST pass `selected_paths` with the same files from your initial selection, or the reviewer loses file context.
+⚠️ **CRITICAL**: Chat follow-ups do NOT automatically see the selection. You MUST pass `--selected-paths` with the same files from your initial selection, or the reviewer loses file context.
 
 ---
 
@@ -307,9 +333,19 @@ After receiving feedback, return here to implement fixes.
 
 ## Iteration
 
-Continue the chat to drill deeper if needed (remember to include `selected_paths`):
+Continue the chat to drill deeper if needed (remember to include `--selected-paths`):
 ```bash
-rp-cli -w W -e 'call chat_send {"message": "Elaborate on the [SPECIFIC CONCERN]. What exactly would you change?", "mode": "chat", "selected_paths": ["<FILE1>", "<FILE2>"]}'
+cat > /tmp/followup.md << 'EOF'
+Elaborate on the [SPECIFIC CONCERN]. What exactly would you change?
+EOF
+
+$FLOWCTL prep-chat \
+  --message-file /tmp/followup.md \
+  --mode chat \
+  --selected-paths <FILE1> <FILE2> \
+  -o /tmp/chat-payload.json
+
+rp-cli -w W -e "call chat_send $(cat /tmp/chat-payload.json)"
 ```
 
 ---
@@ -322,14 +358,18 @@ rp-cli -w W -e 'call chat_send {"message": "Elaborate on the [SPECIFIC CONCERN].
 - **Critical**: Fix immediately, no exceptions
 - **Major**: Fix immediately, no exceptions
 - **Minor**: Fix immediately—these are real issues, not optional polish
+- **Nitpick**: Fix by default—world-class code has zero rough edges
 
-### What MAY be skipped:
-- **Nitpick**: Optional style/preference items—fix if easy, skip if not
+### When to skip a Nitpick (rare):
+- Conflicts with project conventions or requirements
+- Would require significant refactoring beyond the scope
+- Is purely subjective style with no objective improvement (tabs vs spaces)
 
 ### The Loop
 
 1. **Parse the review**: Extract all issues by severity
-2. **Fix Critical → Major → Minor**: Edit the plan to address each
+2. **Re-anchor if needed**: If context was compacted or you're unsure of current state, re-read the plan file before editing
+3. **Fix Critical → Major → Minor → Nitpick**: Edit the plan to address each
    - For markdown plans: use Edit tool to update the file
    - For Flow issues: use `flowctl epic set-plan <id> --body "..."`
 3. **Augment selection** (if needed): Add any files touched during fixes that aren't already selected
@@ -364,14 +404,22 @@ rp-cli -w W -e 'call chat_send {"message": "Elaborate on the [SPECIFIC CONCERN].
 Please re-review.
 ```
 
-**Use raw JSON for multi-line messages** - include `selected_paths` to maintain file context:
+**Use `flowctl prep-chat`** for multi-line messages:
 ```bash
-rp-cli -w W -e 'call chat_send {"message": "<RE_REVIEW_MESSAGE>", "mode": "chat", "selected_paths": ["<FILE1>", "<FILE2>"]}'
+cat > /tmp/re-review.md << 'EOF'
+<RE_REVIEW_MESSAGE>
+EOF
+
+$FLOWCTL prep-chat \
+  --message-file /tmp/re-review.md \
+  --mode chat \
+  --selected-paths <FILE1> <FILE2> \
+  -o /tmp/chat-payload.json
+
+rp-cli -w W -e "call chat_send $(cat /tmp/chat-payload.json)"
 ```
 
-⚠️ **JSON escaping**: Use `\n` for newlines, `\"` for quotes inside the message string.
-
-⚠️ **CRITICAL**: Always include `selected_paths` with the files from your initial selection. Without this, the reviewer cannot see file contents in follow-up messages.
+⚠️ **CRITICAL**: Always include `--selected-paths` with the files from your initial selection. Without this, the reviewer cannot see file contents in follow-up messages.
 
 5. **Repeat**: Continue until review passes (Ship)
 

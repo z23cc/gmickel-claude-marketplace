@@ -150,11 +150,18 @@ Fix any errors before proceeding.
 If user chose "Yes" to review in SKILL.md setup question:
 1. Invoke `/flow-next:plan-review` with the epic ID
 2. If review returns "Needs Work" or "Major Rethink":
+   - **Re-anchor EVERY iteration** (do not skip):
+     ```bash
+     $FLOWCTL show <epic-id> --json
+     $FLOWCTL cat <epic-id>
+     ```
    - **Immediately fix the issues** (do NOT ask for confirmation — user already consented)
    - Re-run `/flow-next:plan-review`
 3. Repeat until review returns "Ship"
 
 **No human gates here** — the review-fix-review loop is fully automated.
+
+**Why re-anchor every iteration?** Per Anthropic's long-running agent guidance: context compresses, you forget details. Re-read before each fix pass.
 
 ## Step 7: Offer next step
 

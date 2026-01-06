@@ -5,19 +5,21 @@ CLI for `.flow/` task tracking. Agents must use flowctl for all writes.
 ## Available Commands
 
 ```
-init, detect, epic, task, dep, show, cat, ready, start, done, validate
+init, detect, epic, task, dep, show, cat, ready, start, done, validate, prep-chat
 ```
 
 Aliases: `list` → `show`, `ls` → `show`
 
 ## Multi-User Safety
 
-flowctl is designed for concurrent use:
+Works out of the box for parallel branches. No setup required.
 
 - **ID allocation**: Scans existing files to determine next ID (merge-safe)
 - **Soft claims**: Tasks have `assignee` field to prevent duplicate work
-- **Actor resolution**: Uses `FLOW_ACTOR` env, git email, git name, or `$USER`
-- **Validation**: `--all` mode for CI gates
+- **Actor resolution**: `FLOW_ACTOR` env → git email → git name → `$USER` → "unknown"
+- **Local validation**: `flowctl validate --all` catches issues before commit
+
+**Optional**: Add CI gate with `docs/ci-workflow-example.yml` to block bad PRs.
 
 ## File Structure
 
@@ -232,6 +234,42 @@ Checks:
 - Done status consistency
 
 Exits with code 1 if validation fails (for CI use).
+
+### prep-chat
+
+Generate properly escaped JSON for `rp-cli chat_send`. Avoids shell escaping issues with complex prompts.
+
+```bash
+# Write message to file (avoids escaping issues)
+cat > /tmp/prompt.md << 'EOF'
+Your multi-line prompt with "quotes", $variables, and `backticks`.
+EOF
+
+# Generate JSON
+flowctl prep-chat \
+  --message-file /tmp/prompt.md \
+  --mode chat \
+  [--new-chat] \
+  [--chat-name "Review Name"] \
+  [--selected-paths file1.ts file2.ts] \
+  [-o /tmp/payload.json]
+
+# Use with rp-cli
+rp-cli -w W -e "call chat_send $(cat /tmp/payload.json)"
+```
+
+Options:
+- `--message-file FILE` (required): File containing the message text
+- `--mode {chat,ask}`: Chat mode (default: chat)
+- `--new-chat`: Start a new chat session
+- `--chat-name NAME`: Name for the new chat
+- `--selected-paths FILE...`: Files to include in context (for follow-ups)
+- `-o, --output FILE`: Write JSON to file (default: stdout)
+
+Output (stdout or file):
+```json
+{"message": "...", "mode": "chat", "new_chat": true, "chat_name": "...", "selected_paths": ["..."]}
+```
 
 ## JSON Output
 

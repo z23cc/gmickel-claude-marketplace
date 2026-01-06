@@ -2,41 +2,100 @@
 
 # gmickel claude marketplace
 
-[![Flow Website](https://img.shields.io/badge/Flow_Website-mickel.tech%2Fapps%2Fflow-blue?style=for-the-badge)](https://mickel.tech/apps/flow)
-
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Claude Code](https://img.shields.io/badge/Claude_Code-Plugin_Marketplace-blueviolet)](https://claude.ai/code)
-[![Flow Version](https://img.shields.io/badge/Flow-v0.8.3-green)](plugins/flow/)
-[![Flow-next Version](https://img.shields.io/badge/Flow--next-v0.1.0-green)](plugins/flow-next/)
+[![Flow-next](https://img.shields.io/badge/Flow--next-v0.1.0-green)](plugins/flow-next/)
+[![Flow](https://img.shields.io/badge/Flow-v0.8.3-blue)](plugins/flow/)
 [![Author](https://img.shields.io/badge/Author-Gordon_Mickel-orange)](https://mickel.tech)
 [![Twitter](https://img.shields.io/badge/@gmickel-black?logo=x)](https://twitter.com/gmickel)
 [![Sponsor](https://img.shields.io/badge/Sponsor-❤-ea4aaa)](https://github.com/sponsors/gmickel)
 
-</div>
+**Plugins that make AI agents actually work.**
 
-> [!IMPORTANT]
-> **RepoPrompt v1.5.62+ Required** for review features (`/flow:plan-review`, `/flow:impl-review`).
-> Using older RepoPrompt? Downgrade: `/plugin install flow@0.8.0`
+</div>
 
 ---
 
 ## The Problem
 
-Most AI agent failures aren't about model capability—they're about process:
+Most AI agent failures aren't about model capability. They're about process:
 
-- ✗ Starting to code before understanding the codebase
-- ✗ Reinventing patterns that already exist in the repo
-- ✗ Forgetting the original plan mid-implementation
-- ✗ Missing edge cases that were obvious in hindsight
+- Starting to code before understanding the codebase
+- Reinventing patterns that already exist
+- Forgetting the plan mid-implementation
+- Skipping edge cases that were obvious in hindsight
 
 This marketplace ships plugins that fix these problems.
 
+---
+
 ## Plugins
 
-| Plugin | Description |
-|--------|-------------|
-| **flow** | Full-featured plan+work with optional Beads, subagents, cross-model review |
-| **flow-next** | Simpler alternative: `.flow/` dir (md specs + json), no Beads, no plan files |
+| Plugin | What It Does |
+|--------|--------------|
+| [**flow-next**](#flow-next) | Plan-first workflow with `.flow/` task tracking. Zero deps. Multi-user safe. |
+| [**flow**](#flow) | Full-featured plan+work with optional Beads integration |
+
+---
+
+## Flow-Next
+
+> **Experimental.** Give it a spin. [Report issues.](https://github.com/gmickel/gmickel-claude-marketplace/issues)
+
+**Plan first, work second. Zero external dependencies.**
+
+```bash
+/plugin install flow-next
+
+/flow-next:plan Add a contact form with validation
+/flow-next:work fn-1
+```
+
+<table>
+<tr>
+<td><img src="assets/flow-next-plan.png" alt="Planning Phase" width="400"/></td>
+<td><img src="assets/flow-next-work.png" alt="Implementation Phase" width="400"/></td>
+</tr>
+<tr>
+<td align="center"><em>Planning: dependency-ordered tasks</em></td>
+<td align="center"><em>Execution: fixes, evidence, review</em></td>
+</tr>
+</table>
+
+### Why We Built This
+
+AI agents fail in predictable ways: they forget the plan mid-task, skip steps, lose context in long sessions, and produce work that drifts from the original intent. Flow-Next is an orchestration layer that fixes these failure modes.
+
+It gives agents structured task graphs with explicit dependencies, forces re-anchoring before every task, records evidence of completion, and optionally runs cross-model reviews. The result: agents that actually finish what they start.
+
+We wanted all this without requiring external tools, config file edits, or background services. Flow-Next uses a bundled `flowctl.py` CLI and stores everything in `.flow/`. Try it in 30 seconds, remove it by deleting a folder.
+
+### Features
+
+| | |
+|:--|:--|
+| **Re-anchoring** | Before EVERY task, re-reads epic/task specs + git state. Per Anthropic's long-running agent guidance. No context drift. |
+| **Multi-user safe** | Merge-safe IDs (scans files, no counters). Soft claims via assignee. Auto-detects actor from git email. Teams work parallel branches without coordination servers. |
+| **Zero deps** | Bundled `flowctl.py`. No external CLI installs. Just Python 3. |
+| **Non-invasive** | No hooks, daemons, or CLAUDE.md edits. Delete `.flow/` to uninstall completely. |
+| **CI-ready** | `flowctl validate --all` exits 1 on errors. Drop into pre-commit or GitHub Actions. |
+| **One file per task** | Merge-friendly. Conflict surface is minimal. |
+| **Automated reviews** | Carmack-level plan + impl reviews via [RepoPrompt](https://repoprompt.com). Highly recommended. |
+| **Dependency graphs** | Tasks declare blockers. Nothing starts until dependencies resolve. |
+
+### Commands
+
+| Command | What It Does |
+|---------|--------------|
+| `/flow-next:plan` | Research, produce epic with tasks in `.flow/` |
+| `/flow-next:work` | Execute epic end-to-end, task by task |
+| `/flow-next:interview` | Deep interview to flesh out a spec |
+| `/flow-next:plan-review` | Carmack-level plan review via rp-cli |
+| `/flow-next:impl-review` | Carmack-level impl review (current branch) |
+
+📖 **[Full documentation](plugins/flow-next/README.md)**
+
+---
 
 ## Install
 
@@ -44,108 +103,54 @@ This marketplace ships plugins that fix these problems.
 /plugin marketplace add https://github.com/gmickel/gmickel-claude-marketplace
 ```
 
+Then install whichever plugin you want:
+
+```bash
+/plugin install flow-next    # Recommended: zero deps, simpler
+/plugin install flow         # If you use Beads or want plan files
+```
+
 ---
 
 ## Flow
 
-**Plan first, work second.**
+> **Requires RepoPrompt v1.5.62+** for review features.
+> Using older RepoPrompt? Downgrade: `/plugin install flow@0.8.0`
 
-Most failures come from weak planning or drifting from the plan. Flow fixes both:
+**Plan first, work second.** The original, with optional Beads integration.
+
+```bash
+/plugin install flow
+
+/flow:plan Add OAuth login for users
+/flow:work plans/add-oauth-login.md
+```
+
+### How It Works
 
 | Failure Mode | How Flow Fixes It |
 |--------------|-------------------|
 | Weak research | Parallel agents gather context *before* coding starts |
 | Ignoring existing code | Explicit pattern reuse from your repo |
 | Drifting from plan | Plan re-read between every task |
-| Shallow self-review | Cross-model review via [RepoPrompt](https://repoprompt.com) (we recommend GPT-5.2 High) |
-
-```bash
-/plugin install flow
-```
-
-### Quick Start
-
-```bash
-/flow:plan Add OAuth login for users    # Research → plan → optional review
-/flow:work plans/add-oauth-login.md     # Execute → test → ship → optional review
-```
-
-That's it. Two commands, one disciplined workflow.
-
-### What's New
-
-- **v0.8.2**: Detailed re-review messages—explain what changed, why, trade-offs
-- **v0.8.0**: "Context Over Convenience"—Builder discovers related patterns, we augment with must-haves
-- **v0.7.4**: `/flow:interview` for 40+ question deep-dive before planning
-
-### What Happens
-
-**`/flow:plan`** runs 3 research agents in parallel, identifies gaps, writes a plan with acceptance checks, and optionally reviews via a different model.
-
-**`/flow:work`** re-reads the plan before each task, implements following existing patterns, runs tests, and ships with a clear Definition of Done.
-
-### Auto-Review
-
-When [RepoPrompt](https://repoprompt.com) rp-cli is detected, both commands ask upfront:
-
-```
-Review — Run Carmack-level review after?
-a) Yes, RepoPrompt chat
-b) Yes, export for external LLM (ChatGPT, Claude web)
-c) No
-```
-
-**Option a)**: Review via RepoPrompt's chat with a different model (we recommend GPT-5.2 High).
-
-**Option b)**: Exports full context to a file you can paste into ChatGPT Pro, Claude web, or any LLM.
-
-Cross-model review catches blind spots that same-model self-review misses.
+| Shallow self-review | Cross-model review via RepoPrompt |
 
 ### Commands
 
 | Command | What It Does |
 |---------|--------------|
-| `/flow:interview` | Deep interview to flesh out spec/bead (optional) |
 | `/flow:plan` | Research + produce `plans/<slug>.md` |
 | `/flow:work` | Execute plan end-to-end with task tracking |
+| `/flow:interview` | Deep interview to flesh out spec/bead |
 | `/flow:plan-review` | Carmack-level plan review via rp-cli |
-| `/flow:impl-review` | Carmack-level implementation review (current branch) |
+| `/flow:impl-review` | Carmack-level impl review (current branch) |
 
 ### Integrations
 
-- **[RepoPrompt](https://repoprompt.com)** — Token-efficient codebase exploration + cross-model reviews
-- **[Beads](https://github.com/steveyegge/beads)** — Dependency-aware issue tracking (auto-detected from `.beads/`)
+- **[RepoPrompt](https://repoprompt.com)** for token-efficient codebase exploration + cross-model reviews
+- **[Beads](https://github.com/steveyegge/beads)** for dependency-aware issue tracking (auto-detected)
 
-### Codex CLI
-
-Flow also works with [Codex CLI](https://github.com/openai/codex). Run from repo root:
-
-```bash
-./scripts/install-codex.sh
-```
-
-Installs skills and prompts to `~/.codex/`. Commands work the same (`/flow:plan`, `/flow:work`).
-
-**Caveat:** Codex doesn't support subagents, so the parallel research phase won't run. The core plan→work flow still works well without it.
-
-📖 **[Full documentation →](plugins/flow/README.md)** · **[Changelog →](CHANGELOG.md)**
-
----
-
-## Flow-next
-
-**Simpler alternative** using `.flow/` directory instead of Beads.
-
-```bash
-/plugin install flow-next
-```
-
-- Markdown specs + JSON metadata in `.flow/`
-- No external dependencies (Beads, plan files)
-- Non-invasive: no hooks, daemons, or `CLAUDE.md` edits
-- Same commands: `/flow-next:plan`, `/flow-next:work`, `/flow-next:interview`
-
-📖 **[Flow-next documentation →](plugins/flow-next/README.md)**
+📖 **[Full documentation](plugins/flow/README.md)** · **[Changelog](CHANGELOG.md)**
 
 ---
 

@@ -49,29 +49,43 @@ Based on user's answer from setup questions:
 
 ## Phase 3: Prime / Re-anchor Context (EVERY task)
 
-**This phase runs at session start AND before each task.**
+**MANDATORY: This phase runs before EVERY task. No exceptions. No optimizations.**
 
-Per Anthropic's long-running agent guidance: re-anchor from sources of truth.
+Per Anthropic's long-running agent guidance: agents must re-anchor from sources of truth to prevent drift. Even if you "remember" the context, re-read it. The reads are cheap; drift is expensive.
 
-1. Identify epic + task:
-   - If epic mode: `$FLOWCTL ready --epic <id> --json` → pick first ready task
-   - If task mode: use provided task, get epic from task data
+**Also run this phase after context compaction** (if you notice the conversation was summarized).
 
-2. Re-read context:
-   ```bash
-   $FLOWCTL show <epic-id> --json
-   $FLOWCTL cat <epic-id>
-   $FLOWCTL show <task-id> --json
-   $FLOWCTL cat <task-id>
-   git status
-   git log -10 --oneline
-   ```
+### Re-anchor Checklist (run ALL before each task)
 
-3. Sanity check before editing code:
-   ```bash
-   $FLOWCTL validate --epic <epic-id> --json
-   ```
-   Then run the smoke command from epic spec's "Quick commands" section.
+**You MUST run every command below. Do not skip or combine.**
+
+```bash
+# 1. Find next task
+$FLOWCTL ready --epic <epic-id> --json
+
+# 2. Re-read epic (EVERY time)
+$FLOWCTL show <epic-id> --json
+$FLOWCTL cat <epic-id>
+
+# 3. Re-read task spec (EVERY time)
+$FLOWCTL show <task-id> --json
+$FLOWCTL cat <task-id>
+
+# 4. Check git state (EVERY time)
+git status
+git log -5 --oneline
+
+# 5. Validate structure (EVERY time)
+$FLOWCTL validate --epic <epic-id> --json
+```
+
+If no ready tasks after step 1, all done → go to Phase 6.
+
+After step 5, run the smoke command from epic spec's "Quick commands" section.
+
+**Why every time?** Context windows compress. You forget details. The spec is the truth. 30 seconds of re-reading prevents hours of rework.
+
+**Anti-pattern**: Running steps 2-5 only on the first task. The whole point is EVERY task gets fresh context.
 
 ## Phase 4: Execute Task Loop
 
