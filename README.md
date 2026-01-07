@@ -102,9 +102,13 @@ All commands accept flags to bypass interactive questions—the first step towar
 /flow-next:plan Add caching
 /flow-next:work fn-1
 
-# Autonomous (skips questions)
+# Autonomous (flags)
 /flow-next:plan Add caching --research=grep --no-review
 /flow-next:work fn-1 --branch=current --no-review
+
+# Autonomous (natural language)
+/flow-next:plan Add caching, use context-scout, skip review
+/flow-next:work fn-1 current branch, no review
 ```
 
 📖 **[Full documentation](plugins/flow-next/README.md)**

@@ -11,9 +11,13 @@ All notable changes to the gmickel-claude-marketplace.
   /flow-next:plan Add caching
   /flow-next:work fn-1
 
-  # Autonomous (skips questions)
+  # Autonomous (flags)
   /flow-next:plan Add caching --research=grep --no-review
   /flow-next:work fn-1 --branch=current --no-review
+
+  # Autonomous (natural language)
+  /flow-next:plan Add caching, use context-scout, skip review
+  /flow-next:work fn-1 current branch, no review
   ```
   - `/flow-next:plan`: `--research=rp|grep`, `--review=rp|export|none`, `--no-review`
   - `/flow-next:work`: `--branch=current|new|worktree`, `--review=rp|export|none`, `--no-review`
