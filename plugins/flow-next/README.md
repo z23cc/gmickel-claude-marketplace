@@ -38,6 +38,22 @@ Everything lives in a `.flow/` directory in your repo. No external services. No 
 
 ---
 
+## Epic-first task model
+
+Flow-Next does not support standalone tasks.
+
+Every unit of work belongs to an epic fn-N (even if it's a single task).
+
+Tasks are always fn-N.M and inherit context from the epic spec.
+
+Flow-Next always creates an epic container (even for one-offs) so every task has a durable home for context, re-anchoring, and automation. You never have to think about it.
+
+Rationale: keeps the system simple, improves re-anchoring, makes automation (Ralph) reliable.
+
+"One-off request" -> epic with one task.
+
+---
+
 ## Why I Built This
 
 Process failures, not model failures.
@@ -78,6 +94,8 @@ Try it in ~30 seconds. Uninstall with `rm -rf .flow/`.
 # 2. Work: execute tasks in dependency order
 /flow-next:work fn-1
 ```
+
+This creates an epic (fn-N) even for small requests, then breaks it into tasks.
 
 Start with a short spec (prompt or file). If fuzzy, run `/flow-next:interview` first.
 
@@ -208,6 +226,8 @@ Five commands, complete workflow:
 | `/flow-next:plan-review <id>` | Carmack-level plan review via rp-cli |
 | `/flow-next:impl-review` | Carmack-level impl review of current branch |
 
+Work accepts an epic (fn-N) or a task (fn-N.M). Tasks always belong to an epic.
+
 ### Autonomous Mode (Flags)
 
 All commands accept flags to skip questions:
@@ -284,6 +304,8 @@ Natural language also works:
 
 - **Epic**: `fn-N` (e.g., `fn-1`, `fn-42`)
 - **Task**: `fn-N.M` (e.g., `fn-1.1`, `fn-42.7`)
+
+There are no task IDs outside an epic. If you want a single task, create an epic with one task.
 
 ### Separation of Concerns
 
