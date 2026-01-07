@@ -464,15 +464,10 @@ Flow partially works in OpenAI Codex with some limitations:
 
 **Caveats:**
 - No subagent support (research scouts run inline or are skipped)
-- No plugin auto-loading (manual setup required)
 
-**Manual setup:**
+**Install:**
 ```bash
-# Copy commands (as prompts)
-cp plugins/flow/commands/*.md ~/.codex/prompts/
-
-# Copy skills
-cp -r plugins/flow/skills/* ~/.codex/skills/
+./scripts/install-codex.sh flow
 ```
 
 ---

@@ -350,6 +350,22 @@ claude --plugin-dir ./plugins/flow-next
 
 ---
 
+## Other Platforms
+
+### OpenAI Codex (Experimental)
+
+Flow-Next partially works in OpenAI Codex with some limitations:
+
+**Caveats:**
+- No subagent support (research scouts run inline or are skipped)
+
+**Install:**
+```bash
+./scripts/install-codex.sh flow-next
+```
+
+---
+
 <div align="center">
 
 Made by [Gordon Mickel](https://mickel.tech) · [@gmickel](https://twitter.com/gmickel)

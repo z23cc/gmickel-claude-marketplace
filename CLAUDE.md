@@ -86,6 +86,20 @@ Commands:
 - Homepage: https://mickel.tech
 - Marketplace repo: https://github.com/gmickel/gmickel-claude-marketplace
 
+## Codex CLI Installation
+
+Install flow or flow-next to OpenAI Codex:
+
+```bash
+# Install flow-next (recommended)
+./scripts/install-codex.sh flow-next
+
+# Or install flow
+./scripts/install-codex.sh flow
+```
+
+**Note**: Subagents won't run in Codex (no Task tool support). Core plan/work flow still works.
+
 ## Landing the Plane (Session Completion)
 
 **When ending a work session**, you MUST complete ALL steps below. Work is NOT complete until `git push` succeeds.
