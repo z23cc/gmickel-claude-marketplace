@@ -5,7 +5,7 @@
     "url": "https://github.com/gmickel"
   },
   "metadata": {
-    "description": "Claude Code plugin marketplace by Gordon Mickel",
+    "description": "Plan-first workflows for Claude Code. Two plugins: flow (Beads integration) and flow-next (zero-dep, Ralph autonomous mode).",
     "version": "0.4.0"
   },
   "plugins": [
@@ -19,32 +19,20 @@
         "url": "https://mickel.tech"
       },
       "homepage": "https://mickel.tech/apps/flow",
-      "tags": [
-        "claude-code",
-        "plugin",
-        "workflow",
-        "planning",
-        "execution"
-      ],
+      "tags": ["claude-code", "plugin", "workflow", "planning", "execution"],
       "source": "./plugins/flow"
     },
     {
       "name": "flow-next",
-      "description": "Flow workflow backed by .flow/ with optional Ralph autonomous mode",
-      "version": "0.3.8",
+      "description": "Zero-dependency planning + execution with .flow/ task tracking and Ralph autonomous mode (multi-model review gates). Includes 6 subagents, 7 commands, 11 skills.",
+      "version": "0.3.9",
       "author": {
         "name": "Gordon Mickel",
         "email": "gordon@mickel.tech",
         "url": "https://mickel.tech"
       },
       "homepage": "https://mickel.tech/apps/flow-next",
-      "tags": [
-        "claude-code",
-        "plugin",
-        "workflow",
-        "planning",
-        "execution"
-      ],
+      "tags": ["claude-code", "plugin", "workflow", "planning", "execution"],
       "source": "./plugins/flow-next"
     }
   ]

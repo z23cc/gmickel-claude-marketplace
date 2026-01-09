@@ -4,7 +4,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](../../LICENSE)
 [![Claude Code](https://img.shields.io/badge/Claude_Code-Plugin-blueviolet)](https://claude.ai/code)
-[![Version](https://img.shields.io/badge/Version-0.3.8-green)](../../CHANGELOG.md)
+[![Version](https://img.shields.io/badge/Version-0.3.9-green)](../../CHANGELOG.md)
 [![Status](https://img.shields.io/badge/Status-Experimental-orange)]()
 
 **Plan first, work second. Zero external dependencies.**
@@ -95,6 +95,28 @@ rm -rf .flow/
 If you enabled Ralph:
 ```bash
 rm -rf scripts/ralph/
+```
+
+## Optional: Local Setup
+
+For power users who want CLI access or use non-Claude-Code environments (Codex, Cursor, etc.):
+
+```bash
+/flow-next:setup
+```
+
+This:
+- Copies `flowctl` to `.flow/bin/` for command-line use
+- Adds flow-next instructions to CLAUDE.md or AGENTS.md
+- Tracks setup version for updates
+
+**Fully optional** - standard plugin usage works without this.
+
+After setup, use flowctl from terminal:
+```bash
+export PATH=".flow/bin:$PATH"
+flowctl show fn-1
+flowctl ready --epic fn-1
 ```
 
 ---
@@ -274,7 +296,7 @@ Tasks declare their blockers. `flowctl ready` shows what can start. Nothing exec
 
 ## Commands
 
-Six commands, complete workflow:
+Seven commands, complete workflow:
 
 | Command | What It Does |
 |---------|--------------|
@@ -284,6 +306,7 @@ Six commands, complete workflow:
 | `/flow-next:plan-review <id>` | Carmack-level plan review via RepoPrompt |
 | `/flow-next:impl-review` | Carmack-level impl review of current branch |
 | `/flow-next:ralph-init` | Scaffold repo-local Ralph harness (`scripts/ralph/`) |
+| `/flow-next:setup` | Optional: install flowctl locally + add docs (for power users) |
 
 Work accepts an epic (fn-N) or a task (fn-N.M). Tasks always belong to an epic.
 

@@ -2,6 +2,24 @@
 
 All notable changes to the gmickel-claude-marketplace.
 
+## [flow-next 0.3.9] - 2026-01-09
+
+### Added
+- **`flow-next` skill**: General task management skill for quick operations
+  - Triggers on: "add task", "show tasks", "what's ready", etc.
+  - Provides flowctl path setup and CLI quick reference
+  - Prevents agents from struggling to find/use flowctl
+- **`/flow-next:setup` command**: Optional local install for power users
+  - Copies flowctl scripts to `.flow/bin/` for CLI access
+  - Adds flow-next instructions to CLAUDE.md or AGENTS.md
+  - Enables use in non-Claude-Code environments (Codex, Cursor, etc.)
+  - Tracks setup version for update detection
+  - **Fully optional** - standard plugin usage works without this
+
+### Notes
+- Setup is opt-in only; flow-next continues to work via plugin as before
+- Re-run `/flow-next:setup` after plugin updates to refresh local scripts
+
 ## [flow-next 0.3.7] - 2026-01-09
 
 ### Ralph: Autonomous Coding with Multi-Model Review Gates
