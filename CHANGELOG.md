@@ -2,6 +2,12 @@
 
 All notable changes to the gmickel-claude-marketplace.
 
+## [flow-next 0.3.15] - 2026-01-09
+
+### Changed
+- `/flow-next:setup` now detects doc status (missing/current/outdated) before asking
+- Only prompts for files that actually need updates
+
 ## [flow-next 0.3.14] - 2026-01-09
 
 ### Added

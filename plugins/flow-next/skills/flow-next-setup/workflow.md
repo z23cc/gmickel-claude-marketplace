@@ -65,34 +65,51 @@ Read current `.flow/meta.json`, add/update these fields (preserve all others):
 }
 ```
 
-## Step 6: Ask about documentation
-
-Output as text (do NOT use AskUserQuestion):
-
-```
-Add flow-next instructions to project docs?
-
-1. CLAUDE.md only
-2. AGENTS.md only
-3. Both
-4. Neither
-
-(Reply: 1, 2, 3, or 4)
-```
-
-Wait for response.
-
-## Step 7: Update documentation
+## Step 6: Check and update documentation
 
 Read the template from [templates/claude-md-snippet.md](templates/claude-md-snippet.md).
 
-For each chosen file:
-1. Read the file (create if doesn't exist)
-2. Check if `<!-- BEGIN FLOW-NEXT -->` marker exists
-3. If exists: replace everything between `<!-- BEGIN FLOW-NEXT -->` and `<!-- END FLOW-NEXT -->` (inclusive) with the new snippet
-4. If not exists: append the snippet
+For each of CLAUDE.md and AGENTS.md:
+1. Check if file exists
+2. If exists, check if `<!-- BEGIN FLOW-NEXT -->` marker exists
+3. If marker exists, extract content between markers and compare with template
 
-## Step 8: Print summary
+Determine status for each file:
+- **missing**: file doesn't exist or no flow-next section
+- **current**: section exists and matches template
+- **outdated**: section exists but differs from template
+
+Based on status:
+
+**If both are current:**
+```
+Documentation already up to date (CLAUDE.md, AGENTS.md).
+```
+Skip to Step 7.
+
+**If one or both need updates:**
+Show status and ask:
+```
+Documentation status:
+- CLAUDE.md: <missing|current|outdated>
+- AGENTS.md: <missing|current|outdated>
+
+Update docs? (Only showing files that need changes)
+1. CLAUDE.md only
+2. AGENTS.md only
+3. Both
+4. Skip
+
+(Reply: 1, 2, 3, or 4)
+```
+Only show options for files that are missing or outdated.
+
+Wait for response, then for each chosen file:
+1. Read the file (create if doesn't exist)
+2. If marker exists: replace everything between `<!-- BEGIN FLOW-NEXT -->` and `<!-- END FLOW-NEXT -->` (inclusive)
+3. If no marker: append the snippet
+
+## Step 7: Print summary
 
 ```
 Flow-Next setup complete!
