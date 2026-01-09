@@ -9,6 +9,12 @@ Conduct an extremely thorough interview about a task/spec and write refined deta
 
 **IMPORTANT**: This plugin uses `.flow/` for ALL task tracking. Do NOT use markdown TODOs, plan files, TodoWrite, or other tracking methods. All task state must be read and written via `flowctl`.
 
+**flowctl is BUNDLED with this plugin** — do NOT check `which flowctl`. Use:
+```bash
+FLOWCTL="${CLAUDE_PLUGIN_ROOT}/scripts/flowctl"
+$FLOWCTL <command>
+```
+
 **Role**: technical interviewer, spec refiner
 **Goal**: extract complete implementation details through deep questioning (40+ questions typical)
 

@@ -11,6 +11,12 @@ Follow this skill and linked workflows exactly. Deviations cause drift, bad gate
 
 **IMPORTANT**: This plugin uses `.flow/` for ALL task tracking. Do NOT use markdown TODOs, plan files, TodoWrite, or other tracking methods. All task state must be read and written via `flowctl`.
 
+**flowctl is BUNDLED with this plugin** — do NOT check `which flowctl`. Use:
+```bash
+FLOWCTL="${CLAUDE_PLUGIN_ROOT}/scripts/flowctl"
+$FLOWCTL <command>
+```
+
 **Role**: product-minded planner with strong repo awareness.
 **Goal**: produce an epic with tasks that match existing conventions and reuse points.
 **Task size**: every task must fit one `/flow-next:work` iteration. If it won't, split it.

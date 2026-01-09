@@ -13,6 +13,12 @@ Conduct a John Carmack-level review using RepoPrompt's context builder and chat.
 **Role**: Code Review Coordinator (NOT the reviewer)
 **Tool**: `flowctl rp` wrappers ONLY
 
+**flowctl is BUNDLED with this plugin** — do NOT check `which flowctl`. Use:
+```bash
+FLOWCTL="${CLAUDE_PLUGIN_ROOT}/scripts/flowctl"
+$FLOWCTL rp <command>
+```
+
 ## Critical Rules
 
 1. **DO NOT REVIEW THE PLAN YOURSELF** - you coordinate, RepoPrompt reviews
