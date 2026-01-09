@@ -31,15 +31,17 @@ Read `.flow/meta.json` and check for `setup_version` field.
 mkdir -p .flow/bin
 ```
 
-## Step 4: Copy flowctl scripts
+## Step 4: Copy files
 
-Copy both files (overwrites existing - this is safe and intentional for updates):
+Copy scripts and usage guide (overwrites existing - safe for updates):
 
 ```bash
 cp "${CLAUDE_PLUGIN_ROOT}/scripts/flowctl" .flow/bin/flowctl
 cp "${CLAUDE_PLUGIN_ROOT}/scripts/flowctl.py" .flow/bin/flowctl.py
 chmod +x .flow/bin/flowctl
 ```
+
+Also copy usage guide from [templates/usage.md](templates/usage.md) to `.flow/usage.md`.
 
 ## Step 5: Update meta.json
 
@@ -77,8 +79,8 @@ Read the template from [templates/claude-md-snippet.md](templates/claude-md-snip
 
 For each chosen file:
 1. Read the file (create if doesn't exist)
-2. Check if `## Flow-Next` section already exists
-3. If exists: ask "Replace existing ## Flow-Next section? (y/n)"
+2. Check if `<!-- BEGIN FLOW-NEXT -->` marker exists
+3. If exists: replace everything between `<!-- BEGIN FLOW-NEXT -->` and `<!-- END FLOW-NEXT -->` (inclusive) with the new snippet
 4. If not exists: append the snippet
 
 ## Step 8: Print summary
@@ -89,6 +91,7 @@ Flow-Next setup complete!
 Installed:
 - .flow/bin/flowctl (v<VERSION>)
 - .flow/bin/flowctl.py
+- .flow/usage.md
 
 To use from command line:
   export PATH=".flow/bin:$PATH"
@@ -99,6 +102,6 @@ Documentation updated:
 
 Notes:
 - Re-run /flow-next:setup after plugin updates to refresh scripts
-- Uninstall: rm -rf .flow/bin and remove ## Flow-Next section from docs
+- Uninstall: rm -rf .flow/bin .flow/usage.md and remove <!-- BEGIN/END FLOW-NEXT --> block from docs
 - This setup is optional - plugin works without it
 ```

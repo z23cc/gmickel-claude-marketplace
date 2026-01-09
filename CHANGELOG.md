@@ -2,6 +2,14 @@
 
 All notable changes to the gmickel-claude-marketplace.
 
+## [flow-next 0.3.12] - 2026-01-09
+
+### Changed
+- Optimized `/flow-next:setup` to minimize context footprint
+  - CLAUDE.md snippet now minimal (~20 lines) with rules + quick commands
+  - Full reference moved to `.flow/usage.md` (loaded on demand)
+  - Added `<!-- BEGIN/END FLOW-NEXT -->` delimiters for idempotent updates
+
 ## [flow-next 0.3.11] - 2026-01-09
 
 ### Changed
