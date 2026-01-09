@@ -8,6 +8,8 @@ The reviewer model only sees selected files. RepoPrompt's Builder discovers cont
 
 **Run this first. Do not skip or modify.**
 
+**CRITICAL: flowctl is BUNDLED — NOT installed globally.** `which flowctl` will fail (expected). Always use:
+
 ```bash
 set -e
 FLOWCTL="${CLAUDE_PLUGIN_ROOT}/scripts/flowctl"

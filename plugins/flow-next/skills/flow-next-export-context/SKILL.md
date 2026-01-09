@@ -9,7 +9,7 @@ Build RepoPrompt context and export to a markdown file for use with external LLM
 
 **Use case**: When you want Carmack-level review but prefer to use an external model.
 
-**flowctl is BUNDLED with this plugin** — do NOT check `which flowctl`. Use:
+**CRITICAL: flowctl is BUNDLED — NOT installed globally.** `which flowctl` will fail (expected). Always use:
 ```bash
 FLOWCTL="${CLAUDE_PLUGIN_ROOT}/scripts/flowctl"
 $FLOWCTL <command>

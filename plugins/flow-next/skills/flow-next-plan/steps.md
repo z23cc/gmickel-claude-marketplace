@@ -21,6 +21,8 @@
 
 ## Step 0: Initialize .flow
 
+**CRITICAL: flowctl is BUNDLED — NOT installed globally.** `which flowctl` will fail (expected). Always use:
+
 ```bash
 # Get flowctl path
 FLOWCTL="${CLAUDE_PLUGIN_ROOT}/scripts/flowctl"
