@@ -190,7 +190,7 @@ flowchart TD
   S --> T{Next ready task?}
   R -- no --> T
   T -- yes --> N
-  T -- no --> U[Close epic (manual or Ralph)]
+  T -- no --> U[Close epic]
   classDef optional stroke-dasharray: 6 4,stroke:#999;
   class C,J,S optional;
 ```
