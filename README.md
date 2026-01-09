@@ -54,6 +54,7 @@ This marketplace ships plugins that fix these problems.
 **Plan first, work second. Zero external dependencies.**
 
 ```bash
+/plugin marketplace add https://github.com/gmickel/gmickel-claude-marketplace
 /plugin install flow-next
 
 /flow-next:plan Add a contact form with validation
