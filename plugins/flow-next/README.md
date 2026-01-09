@@ -56,18 +56,45 @@ Rationale: keeps the system simple, improves re-anchoring, makes automation (Ral
 
 ---
 
-## Why I Built This
+## Why It Works
 
-Process failures, not model failures.
+### You Control the Granularity
 
-- Forgetting the plan mid-implementation
-- Losing context in long sessions
-- Drifting from original intent
-- Skipping edge cases obvious in hindsight
+Work task-by-task with full review cycles for maximum control. Or throw the whole epic at it and let Flow-Next handle everything. Same guarantees either way.
 
-Flow-Next gives agents structured task graphs, forces re-anchoring before every task, records evidence of completion, and runs cross-model reviews.
+```bash
+# One task at a time (you review each)
+/flow-next:work fn-1.1
 
-Instead of relying on external CLIs and config file edits, Flow-Next bundles a fully-featured task system in a single Python script:
+# Entire epic (automated task-by-task)
+/flow-next:work fn-1
+```
+
+Both get: re-anchoring before each task, evidence recording, cross-model review (if rp-cli available).
+
+### No Context Length Worries
+
+- **Tasks sized at planning:** Every task is scoped to fit one work iteration
+- **Re-anchor every task:** Fresh context from `.flow/` specs before each task
+- **Survives compaction:** Re-anchors after conversation summarization too
+- **Fresh context in Ralph:** Each iteration starts with a clean context window
+
+Never worry about 200K token limits again.
+
+### Reviewer as Safety Net
+
+If drift happens despite re-anchoring, a different model catches it before it compounds:
+
+1. Claude implements task
+2. GPT reviews via RepoPrompt (sees full files, not diffs)
+3. Reviews block until `SHIP` verdict
+4. Fix → re-review cycles continue until approved
+
+Two models catch what one misses.
+
+---
+
+### Zero Friction
 
 - **Works in 30 seconds.** Install the plugin, run a command. No setup.
 - **Non-invasive.** No CLAUDE.md edits. No daemons. (Ralph uses plugin hooks for enforcement.)

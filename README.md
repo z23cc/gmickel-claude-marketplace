@@ -109,11 +109,24 @@ flowchart TD
 </tr>
 </table>
 
-### Why I Built This
+### Why It Works
 
-Agents forget, drift, and skip edge cases. Flow-Next fixes the process: task graphs, re-anchoring, evidence, cross-model review.
+**You control the granularity:**
+- `/flow-next:work fn-1.1` — one task at a time with full review cycles
+- `/flow-next:work fn-1` — throw the whole epic at it, walk away
 
-Instead of relying on external CLIs and config file edits, Flow-Next bundles a fully-featured task system in a single Python script. No npm packages. No daemons. No CLAUDE.md modifications. Try it in 30 seconds. Uninstall by deleting `.flow/` (and `scripts/ralph/` if enabled).
+Either way you get the same guarantees: re-anchoring, evidence, cross-model review.
+
+**No context length worries:**
+- Planning ensures every task fits one work iteration
+- Re-anchoring after each task (and after compaction) prevents drift
+- Fresh context window every iteration in Ralph mode
+
+**Reviewer as safety net:**
+- If drift happens despite re-anchoring, a different model catches it
+- Reviews block until `SHIP` verdict — no "LGTM with nits" that get ignored
+
+Bundles everything in a single Python script. No npm. No daemons. No config edits. Try it in 30 seconds. Uninstall by deleting `.flow/` (and `scripts/ralph/` if enabled).
 
 ## Ralph (Autonomous Mode)
 
