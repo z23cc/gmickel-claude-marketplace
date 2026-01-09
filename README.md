@@ -110,6 +110,41 @@ Agents forget, drift, and skip edge cases. Flow-Next fixes the process: task gra
 
 Instead of relying on external CLIs and config file edits, Flow-Next bundles a fully-featured task system in a single Python script. No npm packages. No daemons. No CLAUDE.md modifications. Try it in 30 seconds. Uninstall by deleting `.flow/` (and `scripts/ralph/` if enabled).
 
+### Ralph (Autonomous Mode)
+
+> **⚠️ Warning**: Autonomous code generation is powerful but requires care. Start with `scripts/ralph/ralph_once.sh` to observe a single iteration before going fully autonomous.
+
+**Setup (one-time, inside Claude):**
+```bash
+/flow-next:ralph-init
+```
+
+Or from terminal without entering Claude:
+```bash
+claude -p "/flow-next:ralph-init"
+```
+
+**Run (outside Claude):**
+```bash
+scripts/ralph/ralph.sh
+```
+
+**How Ralph differs from other autonomous agents:**
+
+Most agents gate by tests alone. Ralph adds production-grade quality gates:
+
+- **Multi-model reviews**: Uses [RepoPrompt](https://repoprompt.com/?atp=KJbuL4) to send code to a *different* model. Two models catch what one misses.
+- **Review loops until SHIP**: Reviews block progress until `<verdict>SHIP</verdict>`. Fix → re-review cycles continue until approved.
+- **Receipt-based gating**: Every review must produce a receipt JSON proving it ran. No receipt = no progress. Treats agent as untrusted actor; receipts are proof-of-work.
+
+<details>
+<summary><strong>📸 Ralph in action</strong> (click to expand)</summary>
+<br>
+<img src="assets/ralph.png" alt="Ralph Autonomous Loop" width="600"/>
+</details>
+
+📖 **[Ralph deep dive](plugins/flow-next/docs/ralph.md)**
+
 ### Features
 
 | | |
@@ -132,10 +167,9 @@ Instead of relying on external CLIs and config file edits, Flow-Next bundles a f
 | `/flow-next:interview` | Deep interview to flesh out a spec |
 | `/flow-next:plan-review` | Carmack-level plan review via rp-cli |
 | `/flow-next:impl-review` | Carmack-level impl review (current branch) |
+| `/flow-next:ralph-init` | Scaffold autonomous loop in `scripts/ralph/` |
 
-- **Ralph mode (autonomous overnight loop)** is available via `/flow-next:ralph-init`.
-
-### Autonomous Mode
+### Autonomous Flags
 
 All commands accept flags to bypass interactive questions:
 
