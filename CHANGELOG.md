@@ -2,6 +2,12 @@
 
 All notable changes to the gmickel-claude-marketplace.
 
+## [flow-next 0.3.11] - 2026-01-09
+
+### Changed
+- Expanded CLAUDE.md/AGENTS.md template with file structure, workflow, and rules
+- Improved `flow-next` skill trigger phrases ("show me my tasks", "list epics", etc.)
+
 ## [flow-next 0.3.10] - 2026-01-09
 
 ### Fixed
