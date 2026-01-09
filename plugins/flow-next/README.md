@@ -111,6 +111,8 @@ This:
 - Adds flow-next instructions to CLAUDE.md or AGENTS.md
 - Tracks setup version for updates
 
+**Idempotent** - safe to re-run. Detects plugin updates and refreshes local scripts automatically.
+
 **Fully optional** - standard plugin usage works without this.
 
 After setup, use flowctl from terminal:
