@@ -32,8 +32,6 @@ elapsed_time() {
 
 # Stats tracking
 STATS_TASKS_DONE=0
-STATS_REVIEWS_TOTAL=0
-STATS_REVIEWS_NEEDS_WORK=0
 
 # Colors (disabled if not tty or NO_COLOR set)
 if [[ -t 1 && -z "${NO_COLOR:-}" ]]; then
@@ -199,24 +197,6 @@ ui_impl_review() {
   fi
 }
 
-ui_verdict() {
-  local verdict="$1"
-  case "$verdict" in
-    SHIP)
-      STATS_REVIEWS_TOTAL=$((STATS_REVIEWS_TOTAL + 1))
-      ui "   ${C_GREEN}✅ SHIP${C_RESET}" ;;
-    NEEDS_WORK)
-      STATS_REVIEWS_TOTAL=$((STATS_REVIEWS_TOTAL + 1))
-      STATS_REVIEWS_NEEDS_WORK=$((STATS_REVIEWS_NEEDS_WORK + 1))
-      ui "   ${C_YELLOW}🔧 NEEDS_WORK${C_RESET} ${C_DIM}fixing...${C_RESET}" ;;
-    MAJOR_RETHINK)
-      STATS_REVIEWS_TOTAL=$((STATS_REVIEWS_TOTAL + 1))
-      ui "   ${C_RED}⚠️  MAJOR_RETHINK${C_RESET}" ;;
-    *)
-      [[ -n "$verdict" ]] && ui "   ${C_DIM}$verdict${C_RESET}" || true ;;
-  esac
-}
-
 ui_task_done() {
   local task="$1" git_stats=""
   STATS_TASKS_DONE=$((STATS_TASKS_DONE + 1))
@@ -242,25 +222,16 @@ ui_blocked() {
 }
 
 ui_complete() {
-  local elapsed progress_info epics_done epics_total tasks_done tasks_total review_summary=""
+  local elapsed progress_info epics_done epics_total tasks_done tasks_total
   elapsed="$(elapsed_time)"
   progress_info="$(get_progress)"
   IFS='|' read -r epics_done epics_total tasks_done tasks_total <<< "$progress_info"
-
-  if [[ "$STATS_REVIEWS_TOTAL" -gt 0 ]]; then
-    if [[ "$STATS_REVIEWS_NEEDS_WORK" -gt 0 ]]; then
-      review_summary="${C_DIM}Reviews:${C_RESET} $STATS_REVIEWS_TOTAL ${C_DIM}(${STATS_REVIEWS_NEEDS_WORK} fixed)${C_RESET}"
-    else
-      review_summary="${C_DIM}Reviews:${C_RESET} $STATS_REVIEWS_TOTAL"
-    fi
-  fi
 
   ui ""
   ui "${C_BOLD}${C_GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${C_RESET}"
   ui "${C_BOLD}${C_GREEN}  ✅ Ralph Complete${C_RESET}                                        ${C_DIM}[${elapsed}]${C_RESET}"
   ui ""
   ui "   ${C_DIM}Tasks:${C_RESET} ${tasks_done}/${tasks_total} ${C_DIM}•${C_RESET} ${C_DIM}Epics:${C_RESET} ${epics_done}/${epics_total}"
-  [[ -n "$review_summary" ]] && ui "   $review_summary"
   ui "${C_BOLD}${C_GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${C_RESET}"
   ui ""
 }
@@ -707,18 +678,17 @@ Violations break automation and leave the user with incomplete work. Be precise,
     fi
   fi
 
-  # Extract verdict early so we can display before task_done
+  # Extract verdict/promise for progress log (not displayed in UI)
   verdict="$(printf '%s' "$claude_out" | extract_tag verdict)"
   promise="$(printf '%s' "$claude_out" | extract_tag promise)"
 
-  # Fallback: try to get verdict from receipt if not in output
-  if [[ -z "$verdict" && -n "$REVIEW_RECEIPT_PATH" && -f "$REVIEW_RECEIPT_PATH" ]]; then
-    receipt_verdict="$(json_get verdict "$(<"$REVIEW_RECEIPT_PATH")" 2>/dev/null || true)"
-    [[ -n "$receipt_verdict" ]] && verdict="$receipt_verdict"
+  # Fallback: derive verdict from flowctl status for logging
+  if [[ -z "$verdict" && -n "$plan_review_status" ]]; then
+    case "$plan_review_status" in
+      ship) verdict="SHIP" ;;
+      needs_work) verdict="NEEDS_WORK" ;;
+    esac
   fi
-
-  # Show verdict before task completion
-  ui_verdict "$verdict"
 
   if [[ "$status" == "work" ]]; then
     task_json="$("$FLOWCTL" show "$task_id" --json 2>/dev/null || true)"
@@ -729,6 +699,8 @@ Violations break automation and leave the user with incomplete work. Be precise,
       force_retry=1
     else
       ui_task_done "$task_id"
+      # Derive verdict from task completion for logging
+      [[ -z "$verdict" ]] && verdict="SHIP"
     fi
   fi
   append_progress "$verdict" "$promise" "$plan_review_status" "$task_status"

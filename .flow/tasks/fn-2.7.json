@@ -1,0 +1,17 @@
+{
+  "assignee": null,
+  "claim_note": "",
+  "claimed_at": null,
+  "created_at": "2026-01-10T22:44:18.992242Z",
+  "depends_on": [
+    "fn-2.1",
+    "fn-2.2"
+  ],
+  "epic": "fn-2",
+  "id": "fn-2.7",
+  "priority": null,
+  "spec_path": ".flow/tasks/fn-2.7.md",
+  "status": "todo",
+  "title": "Add codex backend smoke tests",
+  "updated_at": "2026-01-10T22:46:01.769491Z"
+}

@@ -2,6 +2,14 @@
 
 All notable changes to the gmickel-claude-marketplace.
 
+## [flow-next 0.3.19] - 2026-01-11
+
+### Changed
+- Removed verdict display from Ralph UI (too brittle, interfered with prompting)
+
+### Fixed
+- Added important notice to e2e notes about uninstalling marketplace plugins before dev testing
+
 ## [flow-next 0.3.18] - 2026-01-10
 
 ### Added
