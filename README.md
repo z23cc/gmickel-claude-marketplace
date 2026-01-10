@@ -193,6 +193,8 @@ Most agents gate by tests alone. Ralph adds production-grade quality gates:
 | `/flow-next:plan-review` | Carmack-level plan review via rp-cli |
 | `/flow-next:impl-review` | Carmack-level impl review (current branch) |
 | `/flow-next:ralph-init` | Scaffold autonomous loop in `scripts/ralph/` |
+| `/flow-next:setup` | Install flowctl locally + add project docs |
+| `/flow-next:uninstall` | Remove flow-next from project |
 
 ### Autonomous Flags
 

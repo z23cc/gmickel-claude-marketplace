@@ -366,6 +366,7 @@ Seven commands, complete workflow:
 | `/flow-next:impl-review` | Carmack-level impl review of current branch |
 | `/flow-next:ralph-init` | Scaffold repo-local Ralph harness (`scripts/ralph/`) |
 | `/flow-next:setup` | Optional: install flowctl locally + add docs (for power users) |
+| `/flow-next:uninstall` | Remove flow-next from project (keeps tasks if desired) |
 
 Work accepts an epic (fn-N) or a task (fn-N.M). Tasks always belong to an epic.
 

@@ -2,6 +2,16 @@
 
 All notable changes to the gmickel-claude-marketplace.
 
+## [flow-next 0.3.18] - 2026-01-10
+
+### Added
+- `/flow-next:uninstall` command - removes flow-next from project with option to keep tasks
+- Ralph UI improvements: elapsed time, progress counters, task titles, git stats, review stats
+- `/flow-next:setup` now asks about GitHub starring
+
+### Changed
+- Quick start docs now promote `/flow-next:setup` as recommended step
+
 ## [flow-next 0.3.17] - 2026-01-10
 
 ### Added
