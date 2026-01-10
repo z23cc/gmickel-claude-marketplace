@@ -21,9 +21,19 @@ Test scenarios:
 - [ ] Works in smoke test environment
 
 ## Done summary
-TBD
+- Verified memory disabled prevents all operations
+- Verified memory enabled allows add/read/list/search
+- Verified ralph-guard extract_feedback and is_learnable work
+- Verified skills reference memory-scout with config gating
 
+Why:
+- Confirms integration works end-to-end
+- Tests both enabled and disabled states
+
+Verification:
+- Manual integration tests passed
+- flowctl validate --all passes
 ## Evidence
-- Commits:
-- Tests:
+- Commits: cfd27b75cd349ecf0f0ae91bffbcb4a9d4d6f7b4
+- Tests: integration tests: disabled behavior, enabled operations, ralph-guard capture, skill references
 - PRs:
