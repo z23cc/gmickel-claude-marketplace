@@ -2,6 +2,11 @@
 
 All notable changes to the gmickel-claude-marketplace.
 
+## [flow-next 0.3.16] - 2026-01-10
+
+### Changed
+- `flowctl epic create` now defaults `branch_name` to epic ID if not specified
+
 ## [flow-next 0.3.15] - 2026-01-09
 
 ### Changed

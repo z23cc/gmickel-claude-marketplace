@@ -611,7 +611,7 @@ def cmd_epic_create(args: argparse.Namespace) -> None:
         "status": "open",
         "plan_review_status": "unknown",
         "plan_reviewed_at": None,
-        "branch_name": args.branch if args.branch else None,
+        "branch_name": args.branch if args.branch else epic_id,
         "depends_on_epics": [],
         "spec_path": f"{FLOW_DIR}/{SPECS_DIR}/{epic_id}.md",
         "next_task": 1,
