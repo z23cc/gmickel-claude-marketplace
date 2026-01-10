@@ -258,35 +258,13 @@ def classify_issue(issue: dict) -> str:
 
 
 def get_current_task_id() -> str:
-    """Try to determine current task ID from environment or state."""
-    # Check env var first (set by Ralph)
-    task_id = os.environ.get("FLOW_CURRENT_TASK", "")
-    if task_id:
-        return task_id
+    """Get current task ID from Ralph's environment.
 
-    # Fallback: check flowctl for in-progress tasks
-    try:
-        result = subprocess.run(
-            ["git", "rev-parse", "--show-toplevel"],
-            capture_output=True, text=True, check=True
-        )
-        repo_root = Path(result.stdout.strip())
-        flowctl = repo_root / ".flow" / "bin" / "flowctl"
-        if not flowctl.exists():
-            return "unknown"
-
-        result = subprocess.run(
-            [str(flowctl), "tasks", "--status", "in_progress", "--json"],
-            capture_output=True, text=True, check=True, cwd=repo_root
-        )
-        data = json.loads(result.stdout)
-        tasks = data.get("tasks", [])
-        if tasks:
-            return tasks[0].get("id", "unknown")
-    except Exception:
-        pass
-
-    return "unknown"
+    Returns task ID from FLOW_CURRENT_TASK env var, or 'unknown' if not set.
+    Note: In Ralph mode, the harness sets this env var. No fallback query
+    since .flow/bin/flowctl may not exist (setup is optional).
+    """
+    return os.environ.get("FLOW_CURRENT_TASK", "unknown")
 
 
 def append_to_pitfalls(issue: dict, task_id: str, category: str) -> bool:

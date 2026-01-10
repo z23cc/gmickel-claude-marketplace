@@ -75,12 +75,14 @@ def get_default_config() -> dict:
 def load_flow_config() -> dict:
     """Load .flow/config.json, returning defaults if missing."""
     config_path = get_flow_dir() / CONFIG_FILE
+    defaults = get_default_config()
     if not config_path.exists():
-        return {}
+        return defaults
     try:
-        return json.loads(config_path.read_text(encoding="utf-8"))
+        data = json.loads(config_path.read_text(encoding="utf-8"))
+        return data if isinstance(data, dict) else defaults
     except (json.JSONDecodeError, Exception):
-        return {}
+        return defaults
 
 
 def get_config(key: str, default=None):
@@ -761,7 +763,9 @@ def require_memory_enabled(args) -> Path:
         sys.exit(1)
 
     memory_dir = get_flow_dir() / MEMORY_DIR
-    if not memory_dir.exists():
+    required_files = ["pitfalls.md", "conventions.md", "decisions.md"]
+    missing = [f for f in required_files if not (memory_dir / f).exists()]
+    if missing:
         if args.json:
             json_output({
                 "error": "Memory not initialized. Run: flowctl memory init"
@@ -900,6 +904,13 @@ def cmd_memory_search(args: argparse.Namespace) -> None:
     memory_dir = require_memory_enabled(args)
 
     pattern = args.pattern
+
+    # Validate regex pattern
+    try:
+        re.compile(pattern)
+    except re.error as e:
+        error_exit(f"Invalid regex pattern: {e}", use_json=args.json)
+
     matches = []
 
     for filename in ["pitfalls.md", "conventions.md", "decisions.md"]:

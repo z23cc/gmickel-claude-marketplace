@@ -266,9 +266,8 @@ flowctl memory add --type decision "Chose SQLite over Postgres for simplicity"
 # Retrieval
 flowctl memory read                    # Dump all memory
 flowctl memory read --type pitfalls    # Filter by type
-flowctl memory read --relevant "auth"  # Semantic match
 flowctl memory list                    # Show entry count per file
-flowctl memory search "rp-cli"         # Grep across all memory
+flowctl memory search "pattern"        # Regex search across all memory
 ```
 
 ## Memory File Format
@@ -316,9 +315,9 @@ If memory gets large, memory-scout subagent returns only relevant entries (not e
 
 ### fn-1.3: flowctl memory commands
 - [ ] `flowctl memory add --type <type> "<content>"`
-- [ ] `flowctl memory read [--type <type>] [--relevant "<query>"]`
+- [ ] `flowctl memory read [--type <type>]`
 - [ ] `flowctl memory list`
-- [ ] `flowctl memory search "<pattern>"`
+- [ ] `flowctl memory search "<pattern>"` (regex)
 
 ### fn-1.4: Memory-scout subagent
 - [ ] Create `agents/memory-scout.md`

@@ -348,9 +348,11 @@ flowctl memory read --type pitfalls
 When enabled:
 - **Planning**: `memory-scout` runs in parallel with other scouts
 - **Work**: `memory-scout` retrieves relevant entries during re-anchor
-- **Ralph**: NEEDS_WORK reviews auto-capture to `pitfalls.md`
+- **Ralph only**: NEEDS_WORK reviews auto-capture to `pitfalls.md`
 
-Memory is a flow-next feature, not Ralph-specific. Config lives in `.flow/config.json`, separate from Ralph's `scripts/ralph/config.env`.
+Memory retrieval works in both manual and Ralph modes. Auto-capture from reviews only happens in Ralph mode (via hooks). Use `flowctl memory add` for manual entries.
+
+Config lives in `.flow/config.json`, separate from Ralph's `scripts/ralph/config.env`.
 
 ---
 

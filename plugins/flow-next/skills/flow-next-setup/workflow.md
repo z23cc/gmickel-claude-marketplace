@@ -20,6 +20,13 @@ Check if `.flow/` directory exists (use Bash `ls .flow/` or check for `.flow/met
   {"schema_version": 2, "next_epic": 1}
   ```
 
+Also ensure `.flow/config.json` exists with defaults:
+```bash
+if [ ! -f .flow/config.json ]; then
+  echo '{"memory":{"enabled":false}}' > .flow/config.json
+fi
+```
+
 ## Step 2: Check existing setup
 
 Read `.flow/meta.json` and check for `setup_version` field.
