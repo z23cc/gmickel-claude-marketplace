@@ -63,14 +63,16 @@ Rationale: keeps the system simple, improves re-anchoring, makes automation (Ral
 Work task-by-task with full review cycles for maximum control. Or throw the whole epic at it and let Flow-Next handle everything. Same guarantees either way.
 
 ```bash
-# One task at a time (you review each)
+# One task at a time (review after each)
 /flow-next:work fn-1.1
 
-# Entire epic (automated task-by-task)
+# Entire epic (review after all tasks complete)
 /flow-next:work fn-1
 ```
 
 Both get: re-anchoring before each task, evidence recording, cross-model review (if rp-cli available).
+
+**Review timing**: The RepoPrompt review runs once at the end of the work package—after a single task if you specified `fn-N.M`, or after all tasks if you specified `fn-N`. For tighter review loops on large epics, work task-by-task.
 
 ### No Context Length Worries
 
