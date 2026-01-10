@@ -79,7 +79,15 @@ git log -5 --oneline
 
 # 5. Validate structure (EVERY time)
 $FLOWCTL validate --epic <epic-id> --json
+
+# 6. Check memory (if enabled)
+$FLOWCTL config get memory.enabled --json
 ```
+
+**If memory.enabled is true**, also run:
+- Task flow-next:memory-scout(<task-id>: <task-title>)
+
+This retrieves relevant project learnings before implementation.
 
 If no ready tasks after step 1, all done → go to Phase 6.
 

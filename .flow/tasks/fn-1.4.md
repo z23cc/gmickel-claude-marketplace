@@ -23,9 +23,20 @@ Task flow-next:memory-scout(<request>)
 - [ ] Handles large memory files (selective return)
 
 ## Done summary
-TBD
+- Created agents/memory-scout.md with haiku model
+- Updated plan skill steps.md to call memory-scout in Step 1
+- Updated work skill phases.md to call memory-scout in Phase 3
+- All calls gated by `$FLOWCTL config get memory.enabled`
 
+Why:
+- Single agent for both plan and work phases
+- Uses haiku for efficiency (simple lookup task)
+- Returns only relevant entries, not entire memory
+
+Verification:
+- Agent file follows existing scout format
+- flowctl validate --all passes
 ## Evidence
-- Commits:
-- Tests:
+- Commits: 73fa01c602619ea30031cc17e7098c07c3db23c5
+- Tests: flowctl validate --all
 - PRs:

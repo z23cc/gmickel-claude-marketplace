@@ -35,6 +35,11 @@ $FLOWCTL init --json
 
 **If input is a Flow ID** (fn-N or fn-N.M): First fetch it with `$FLOWCTL show <id> --json` and `$FLOWCTL cat <id>` to get the request context.
 
+**Check if memory is enabled:**
+```bash
+$FLOWCTL config get memory.enabled --json
+```
+
 **Based on user's choice in SKILL.md setup:**
 
 **If user chose context-scout (RepoPrompt)**:
@@ -42,12 +47,14 @@ Run these subagents in parallel using the Task tool:
 - Task flow-next:context-scout(<request>) - uses RepoPrompt builder for AI-powered file discovery
 - Task flow-next:practice-scout(<request>)
 - Task flow-next:docs-scout(<request>)
+- Task flow-next:memory-scout(<request>) - **only if memory.enabled is true**
 
 **If user chose repo-scout (default/faster)** OR rp-cli unavailable:
 Run these subagents in parallel using the Task tool:
 - Task flow-next:repo-scout(<request>) - uses standard Grep/Glob/Read
 - Task flow-next:practice-scout(<request>)
 - Task flow-next:docs-scout(<request>)
+- Task flow-next:memory-scout(<request>) - **only if memory.enabled is true**
 
 Must capture:
 - File paths + line refs
