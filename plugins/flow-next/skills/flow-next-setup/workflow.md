@@ -126,6 +126,9 @@ To use from command line:
 Documentation updated:
 - <files updated or "none">
 
+Memory system: disabled by default
+Enable with: flowctl config set memory.enabled true
+
 Notes:
 - Re-run /flow-next:setup after plugin updates to refresh scripts
 - Uninstall: rm -rf .flow/bin .flow/usage.md and remove <!-- BEGIN/END FLOW-NEXT --> block from docs

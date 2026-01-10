@@ -21,9 +21,21 @@ Key implementation:
 - [ ] Memory commands error gracefully when disabled
 
 ## Done summary
-TBD
+- Added `load_flow_config()` and `get_config(key, default)` helpers
+- Implemented `flowctl config get/set` commands for nested keys
+- Implemented `flowctl memory init` with gating on memory.enabled
+- Updated `flowctl init` to create config.json with defaults
+- Updated setup workflow Step 7 to mention memory system
 
+Why:
+- Provides foundation for memory system opt-in behavior
+- All memory operations gated behind single config flag
+
+Verification:
+- flowctl validate --all passes
+- Manual testing of config get/set commands
+- Manual testing of memory init (enabled/disabled states)
 ## Evidence
-- Commits:
-- Tests:
+- Commits: 4398a30be610c53384bf07d3e646d82f771f70ec
+- Tests: flowctl validate --all
 - PRs:

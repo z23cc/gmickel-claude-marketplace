@@ -30,6 +30,7 @@ EPICS_DIR = "epics"
 SPECS_DIR = "specs"
 TASKS_DIR = "tasks"
 MEMORY_DIR = "memory"
+CONFIG_FILE = "config.json"
 
 EPIC_STATUS = ["open", "done"]
 TASK_STATUS = ["todo", "in_progress", "blocked", "done"]
@@ -60,6 +61,71 @@ def get_flow_dir() -> Path:
 def ensure_flow_exists() -> bool:
     """Check if .flow/ exists."""
     return get_flow_dir().exists()
+
+
+def get_default_config() -> dict:
+    """Return default config structure."""
+    return {
+        "memory": {
+            "enabled": False
+        }
+    }
+
+
+def load_flow_config() -> dict:
+    """Load .flow/config.json, returning defaults if missing."""
+    config_path = get_flow_dir() / CONFIG_FILE
+    if not config_path.exists():
+        return {}
+    try:
+        return json.loads(config_path.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, Exception):
+        return {}
+
+
+def get_config(key: str, default=None):
+    """Get nested config value like 'memory.enabled'."""
+    config = load_flow_config()
+    for part in key.split('.'):
+        if not isinstance(config, dict):
+            return default
+        config = config.get(part, {})
+        if config == {}:
+            return default
+    return config if config != {} else default
+
+
+def set_config(key: str, value) -> dict:
+    """Set nested config value and return updated config."""
+    config_path = get_flow_dir() / CONFIG_FILE
+    if config_path.exists():
+        try:
+            config = json.loads(config_path.read_text(encoding="utf-8"))
+        except (json.JSONDecodeError, Exception):
+            config = get_default_config()
+    else:
+        config = get_default_config()
+
+    # Navigate/create nested path
+    parts = key.split('.')
+    current = config
+    for part in parts[:-1]:
+        if part not in current or not isinstance(current[part], dict):
+            current[part] = {}
+        current = current[part]
+
+    # Set the value (handle type conversion for common cases)
+    if isinstance(value, str):
+        if value.lower() == 'true':
+            value = True
+        elif value.lower() == 'false':
+            value = False
+        elif value.isdigit():
+            value = int(value)
+
+    current[parts[-1]] = value
+    atomic_write_json(config_path, config)
+    return config
 
 
 def json_output(data: dict, success: bool = True) -> None:
@@ -525,6 +591,9 @@ def cmd_init(args: argparse.Namespace) -> None:
     }
     atomic_write_json(flow_dir / META_FILE, meta)
 
+    # Create config.json with defaults
+    atomic_write_json(flow_dir / CONFIG_FILE, get_default_config())
+
     if args.json:
         json_output({"message": ".flow/ initialized", "path": str(flow_dir)})
     else:
@@ -577,6 +646,103 @@ def cmd_detect(args: argparse.Namespace) -> None:
                 print(f"  - {issue}")
         else:
             print(".flow/ does not exist")
+
+
+def cmd_config_get(args: argparse.Namespace) -> None:
+    """Get a config value."""
+    if not ensure_flow_exists():
+        error_exit(".flow/ does not exist. Run 'flowctl init' first.", use_json=args.json)
+
+    value = get_config(args.key)
+    if args.json:
+        json_output({"key": args.key, "value": value})
+    else:
+        if value is None:
+            print(f"{args.key}: (not set)")
+        elif isinstance(value, bool):
+            print(f"{args.key}: {'true' if value else 'false'}")
+        else:
+            print(f"{args.key}: {value}")
+
+
+def cmd_config_set(args: argparse.Namespace) -> None:
+    """Set a config value."""
+    if not ensure_flow_exists():
+        error_exit(".flow/ does not exist. Run 'flowctl init' first.", use_json=args.json)
+
+    config = set_config(args.key, args.value)
+    new_value = get_config(args.key)
+
+    if args.json:
+        json_output({"key": args.key, "value": new_value, "message": f"{args.key} set"})
+    else:
+        print(f"{args.key} set to {new_value}")
+
+
+MEMORY_TEMPLATES = {
+    "pitfalls.md": """# Pitfalls
+
+Lessons learned from NEEDS_WORK feedback. Things models tend to miss.
+
+<!-- Entries added automatically by hooks or manually via `flowctl memory add` -->
+""",
+    "conventions.md": """# Conventions
+
+Project patterns discovered during work. Not in CLAUDE.md but important.
+
+<!-- Entries added manually via `flowctl memory add` -->
+""",
+    "decisions.md": """# Decisions
+
+Architectural choices with rationale. Why we chose X over Y.
+
+<!-- Entries added manually via `flowctl memory add` -->
+"""
+}
+
+
+def cmd_memory_init(args: argparse.Namespace) -> None:
+    """Initialize memory directory with templates."""
+    if not ensure_flow_exists():
+        error_exit(".flow/ does not exist. Run 'flowctl init' first.", use_json=args.json)
+
+    # Check if memory is enabled
+    if not get_config("memory.enabled", False):
+        if args.json:
+            json_output({
+                "error": "Memory not enabled. Run: flowctl config set memory.enabled true"
+            }, success=False)
+        else:
+            print("Error: Memory not enabled.")
+            print("Enable with: flowctl config set memory.enabled true")
+        sys.exit(1)
+
+    flow_dir = get_flow_dir()
+    memory_dir = flow_dir / MEMORY_DIR
+
+    # Create memory dir if missing
+    memory_dir.mkdir(parents=True, exist_ok=True)
+
+    created = []
+    for filename, content in MEMORY_TEMPLATES.items():
+        filepath = memory_dir / filename
+        if not filepath.exists():
+            atomic_write(filepath, content)
+            created.append(filename)
+
+    if args.json:
+        json_output({
+            "path": str(memory_dir),
+            "created": created,
+            "message": "Memory initialized" if created else "Memory already initialized"
+        })
+    else:
+        if created:
+            print(f"Memory initialized at {memory_dir}")
+            for f in created:
+                print(f"  Created: {f}")
+        else:
+            print(f"Memory already initialized at {memory_dir}")
 
 
 def cmd_epic_create(args: argparse.Namespace) -> None:
@@ -2262,6 +2428,29 @@ def main() -> None:
     p_detect = subparsers.add_parser("detect", help="Check if .flow/ exists")
     p_detect.add_argument("--json", action="store_true", help="JSON output")
     p_detect.set_defaults(func=cmd_detect)
+
+    # config
+    p_config = subparsers.add_parser("config", help="Config commands")
+    config_sub = p_config.add_subparsers(dest="config_cmd", required=True)
+
+    p_config_get = config_sub.add_parser("get", help="Get config value")
+    p_config_get.add_argument("key", help="Config key (e.g., memory.enabled)")
+    p_config_get.add_argument("--json", action="store_true", help="JSON output")
+    p_config_get.set_defaults(func=cmd_config_get)
+
+    p_config_set = config_sub.add_parser("set", help="Set config value")
+    p_config_set.add_argument("key", help="Config key (e.g., memory.enabled)")
+    p_config_set.add_argument("value", help="Config value")
+    p_config_set.add_argument("--json", action="store_true", help="JSON output")
+    p_config_set.set_defaults(func=cmd_config_set)
+
+    # memory
+    p_memory = subparsers.add_parser("memory", help="Memory commands")
+    memory_sub = p_memory.add_subparsers(dest="memory_cmd", required=True)
+
+    p_memory_init = memory_sub.add_parser("init", help="Initialize memory templates")
+    p_memory_init.add_argument("--json", action="store_true", help="JSON output")
+    p_memory_init.set_defaults(func=cmd_memory_init)
 
     # epic create
     p_epic = subparsers.add_parser("epic", help="Epic commands")
