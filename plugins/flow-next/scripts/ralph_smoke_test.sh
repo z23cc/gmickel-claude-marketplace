@@ -219,23 +219,78 @@ else
   FAIL=$((FAIL + 1))
 fi
 
+echo -e "${YELLOW}--- UI output verification ---${NC}"
+# Run with UI enabled and capture output
+# Note: fn-1 and fn-2 already exist from previous tests, so this creates fn-3
+scripts/ralph/flowctl epic create --title "UI Test Epic" --json >/dev/null
+scripts/ralph/flowctl task create --epic fn-3 --title "UI Test Task" --json >/dev/null
+write_config "none" "none" "0" "new" "3" "5" "2"
+ui_output="$(STUB_MODE=success CLAUDE_BIN="$TEST_DIR/bin/claude" scripts/ralph/ralph.sh 2>&1)"
+
+# Check elapsed time format [X:XX]
+if echo "$ui_output" | grep -qE '\[[0-9]+:[0-9]{2}\]'; then
+  echo -e "${GREEN}✓${NC} elapsed time shown"
+  PASS=$((PASS + 1))
+else
+  echo -e "${RED}✗${NC} elapsed time shown"
+  FAIL=$((FAIL + 1))
+fi
+
+# Check progress counter (Epic X/Y • Task X/Y)
+if echo "$ui_output" | grep -qE 'Epic [0-9]+/[0-9]+.*Task [0-9]+/[0-9]+'; then
+  echo -e "${GREEN}✓${NC} progress counter shown"
+  PASS=$((PASS + 1))
+else
+  echo -e "${RED}✗${NC} progress counter shown"
+  FAIL=$((FAIL + 1))
+fi
+
+# Check task title is shown (quoted)
+if echo "$ui_output" | grep -q '"UI Test Task"'; then
+  echo -e "${GREEN}✓${NC} task title shown"
+  PASS=$((PASS + 1))
+else
+  echo -e "${RED}✗${NC} task title shown"
+  FAIL=$((FAIL + 1))
+fi
+
+# Check completion summary shows Tasks: X/Y
+if echo "$ui_output" | grep -qE 'Tasks:.*[0-9]+/[0-9]+'; then
+  echo -e "${GREEN}✓${NC} completion summary shown"
+  PASS=$((PASS + 1))
+else
+  echo -e "${RED}✗${NC} completion summary shown"
+  FAIL=$((FAIL + 1))
+fi
+
+# Check branch is shown
+if echo "$ui_output" | grep -q 'Branch:'; then
+  echo -e "${GREEN}✓${NC} branch shown"
+  PASS=$((PASS + 1))
+else
+  echo -e "${RED}✗${NC} branch shown"
+  FAIL=$((FAIL + 1))
+fi
+
 echo -e "${YELLOW}--- ralph.sh backstop ---${NC}"
-scripts/ralph/flowctl epic create --title "Ralph Epic 3" --json >/dev/null
-scripts/ralph/flowctl task create --epic fn-3 --title "Stuck Task" --json >/dev/null
+# Note: fn-1, fn-2, fn-3 already exist, so this creates fn-4
+scripts/ralph/flowctl epic create --title "Ralph Epic 4" --json >/dev/null
+scripts/ralph/flowctl task create --epic fn-4 --title "Stuck Task" --json >/dev/null
 write_config "none" "none" "0" "new" "3" "5" "2"
 STUB_MODE=retry CLAUDE_BIN="$TEST_DIR/bin/claude" scripts/ralph/ralph.sh >/dev/null
 python3 - <<'PY'
 import json
 from pathlib import Path
-data = json.loads(Path(".flow/tasks/fn-3.1.json").read_text())
+data = json.loads(Path(".flow/tasks/fn-4.1.json").read_text())
 assert data["status"] == "blocked"
 PY
 echo -e "${GREEN}✓${NC} blocks after attempts"
 PASS=$((PASS + 1))
 
 echo -e "${YELLOW}--- missing receipt forces retry ---${NC}"
-scripts/ralph/flowctl epic create --title "Ralph Epic 4" --json >/dev/null
-scripts/ralph/flowctl task create --epic fn-4 --title "Receipt Task" --json >/dev/null
+# Note: fn-1 through fn-4 already exist, so this creates fn-5
+scripts/ralph/flowctl epic create --title "Ralph Epic 5" --json >/dev/null
+scripts/ralph/flowctl task create --epic fn-5 --title "Receipt Task" --json >/dev/null
 write_config "none" "rp" "0" "new" "3" "5" "1"
 set +e
 STUB_MODE=success STUB_WRITE_PLAN_RECEIPT=1 STUB_WRITE_IMPL_RECEIPT=0 CLAUDE_BIN="$TEST_DIR/bin/claude" scripts/ralph/ralph.sh >/dev/null
@@ -243,7 +298,7 @@ rc=$?
 set -e
 run_dir="$(latest_run_dir)"
 receipts_dir="scripts/ralph/runs/$run_dir/receipts"
-if [[ -f "$receipts_dir/impl-fn-4.1.json" ]]; then
+if [[ -f "$receipts_dir/impl-fn-5.1.json" ]]; then
   echo -e "${RED}✗${NC} impl receipt unexpectedly exists"
   FAIL=$((FAIL + 1))
 else

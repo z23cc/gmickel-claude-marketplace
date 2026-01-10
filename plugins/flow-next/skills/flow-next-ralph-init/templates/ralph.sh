@@ -18,6 +18,23 @@ log() {
 # ─────────────────────────────────────────────────────────────────────────────
 UI_ENABLED="${RALPH_UI:-1}"  # set RALPH_UI=0 to disable
 
+# Timing
+START_TIME="$(date +%s)"
+
+elapsed_time() {
+  local now elapsed mins secs
+  now="$(date +%s)"
+  elapsed=$((now - START_TIME))
+  mins=$((elapsed / 60))
+  secs=$((elapsed % 60))
+  printf "%d:%02d" "$mins" "$secs"
+}
+
+# Stats tracking
+STATS_TASKS_DONE=0
+STATS_REVIEWS_TOTAL=0
+STATS_REVIEWS_NEEDS_WORK=0
+
 # Colors (disabled if not tty or NO_COLOR set)
 if [[ -t 1 && -z "${NO_COLOR:-}" ]]; then
   C_RESET='\033[0m'
@@ -38,6 +55,88 @@ ui() {
   echo -e "$*"
 }
 
+# Get title from epic/task JSON
+get_title() {
+  local json="$1"
+  python3 - "$json" <<'PY'
+import json, sys
+try:
+    data = json.loads(sys.argv[1])
+    print(data.get("title", "")[:40])
+except:
+    print("")
+PY
+}
+
+# Count progress (done/total tasks for scoped epics)
+get_progress() {
+  python3 - "$ROOT_DIR" "${EPICS_FILE:-}" <<'PY'
+import json, sys
+from pathlib import Path
+root = Path(sys.argv[1])
+epics_file = sys.argv[2] if len(sys.argv) > 2 else ""
+flow_dir = root / ".flow"
+
+# Get scoped epics or all
+scoped = []
+if epics_file:
+    try:
+        scoped = json.load(open(epics_file))["epics"]
+    except:
+        pass
+
+epics_dir = flow_dir / "epics"
+tasks_dir = flow_dir / "tasks"
+if not epics_dir.exists():
+    print("0|0|0|0")
+    sys.exit(0)
+
+epic_ids = []
+for f in sorted(epics_dir.glob("fn-*.json")):
+    eid = f.stem
+    if not scoped or eid in scoped:
+        epic_ids.append(eid)
+
+epics_done = sum(1 for e in epic_ids if json.load(open(epics_dir / f"{e}.json")).get("status") == "done")
+tasks_total = 0
+tasks_done = 0
+if tasks_dir.exists():
+    for tf in tasks_dir.glob("*.json"):
+        try:
+            t = json.load(open(tf))
+            epic_id = tf.stem.rsplit(".", 1)[0]
+            if not scoped or epic_id in scoped:
+                tasks_total += 1
+                if t.get("status") == "done":
+                    tasks_done += 1
+        except:
+            pass
+print(f"{epics_done}|{len(epic_ids)}|{tasks_done}|{tasks_total}")
+PY
+}
+
+# Get git diff stats
+get_git_stats() {
+  local base_branch="${1:-main}"
+  local stats
+  stats="$(git -C "$ROOT_DIR" diff --shortstat "$base_branch"...HEAD 2>/dev/null || true)"
+  if [[ -z "$stats" ]]; then
+    echo ""
+    return
+  fi
+  python3 - "$stats" <<'PY'
+import re, sys
+s = sys.argv[1]
+files = re.search(r"(\d+) files? changed", s)
+ins = re.search(r"(\d+) insertions?", s)
+dels = re.search(r"(\d+) deletions?", s)
+f = files.group(1) if files else "0"
+i = ins.group(1) if ins else "0"
+d = dels.group(1) if dels else "0"
+print(f"{f} files, +{i} -{d}")
+PY
+}
+
 ui_header() {
   ui ""
   ui "${C_BOLD}${C_BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${C_RESET}"
@@ -46,29 +145,38 @@ ui_header() {
 }
 
 ui_config() {
-  local epic_count task_count
-  epic_count="$(ls "$ROOT_DIR/.flow/epics/"*.json 2>/dev/null | wc -l | tr -d ' ')"
-  task_count="$(ls "$ROOT_DIR/.flow/tasks/"*.json 2>/dev/null | wc -l | tr -d ' ')"
+  local git_branch progress_info epics_done epics_total tasks_done tasks_total
+  git_branch="$(git -C "$ROOT_DIR" rev-parse --abbrev-ref HEAD 2>/dev/null || echo "unknown")"
+  progress_info="$(get_progress)"
+  IFS='|' read -r epics_done epics_total tasks_done tasks_total <<< "$progress_info"
+
   ui ""
-  ui "${C_DIM}   Run:${C_RESET} $RUN_ID"
-  ui "${C_DIM}   Epics:${C_RESET} $epic_count  ${C_DIM}Tasks:${C_RESET} $task_count  ${C_DIM}Max iters:${C_RESET} $MAX_ITERATIONS"
-  local plan_review_display="$PLAN_REVIEW" work_review_display="$WORK_REVIEW"
-  [[ "$PLAN_REVIEW" == "rp" ]] && plan_review_display="RepoPrompt" || true
-  [[ "$WORK_REVIEW" == "rp" ]] && work_review_display="RepoPrompt" || true
-  ui "${C_DIM}   Plan review:${C_RESET} $plan_review_display  ${C_DIM}Work review:${C_RESET} $work_review_display  ${C_DIM}Branch:${C_RESET} $BRANCH_MODE"
-  [[ -n "${EPICS:-}" ]] && ui "${C_DIM}   Scope:${C_RESET} $EPICS" || true
+  ui "${C_DIM}   Branch:${C_RESET} ${C_BOLD}$git_branch${C_RESET}"
+  ui "${C_DIM}   Progress:${C_RESET} Epic ${epics_done}/${epics_total} ${C_DIM}•${C_RESET} Task ${tasks_done}/${tasks_total}"
+
+  local plan_display="$PLAN_REVIEW" work_display="$WORK_REVIEW"
+  [[ "$PLAN_REVIEW" == "rp" ]] && plan_display="RepoPrompt"
+  [[ "$WORK_REVIEW" == "rp" ]] && work_display="RepoPrompt"
+  ui "${C_DIM}   Reviews:${C_RESET} Plan=$plan_display ${C_DIM}•${C_RESET} Work=$work_display"
+  [[ -n "${EPICS:-}" ]] && ui "${C_DIM}   Scope:${C_RESET} $EPICS"
   ui ""
 }
 
 ui_iteration() {
-  local iter="$1" status="$2" epic="${3:-}" task="${4:-}"
+  local iter="$1" status="$2" epic="${3:-}" task="${4:-}" title="" item_json=""
+  local elapsed
+  elapsed="$(elapsed_time)"
   ui ""
-  ui "${C_BOLD}${C_CYAN}🔄 Iteration $iter${C_RESET}"
+  ui "${C_BOLD}${C_CYAN}🔄 Iteration $iter${C_RESET}                                              ${C_DIM}[${elapsed}]${C_RESET}"
   if [[ "$status" == "plan" ]]; then
-    ui "   ${C_DIM}Epic:${C_RESET} ${C_BOLD}$epic${C_RESET}"
+    item_json="$("$FLOWCTL" show "$epic" --json 2>/dev/null || true)"
+    title="$(get_title "$item_json")"
+    ui "   ${C_DIM}Epic:${C_RESET} ${C_BOLD}$epic${C_RESET} ${C_DIM}\"$title\"${C_RESET}"
     ui "   ${C_DIM}Phase:${C_RESET} ${C_YELLOW}Planning${C_RESET}"
   elif [[ "$status" == "work" ]]; then
-    ui "   ${C_DIM}Task:${C_RESET} ${C_BOLD}$task${C_RESET}"
+    item_json="$("$FLOWCTL" show "$task" --json 2>/dev/null || true)"
+    title="$(get_title "$item_json")"
+    ui "   ${C_DIM}Task:${C_RESET} ${C_BOLD}$task${C_RESET} ${C_DIM}\"$title\"${C_RESET}"
     ui "   ${C_DIM}Phase:${C_RESET} ${C_MAGENTA}Implementation${C_RESET}"
   fi
 }
@@ -95,20 +203,32 @@ ui_verdict() {
   local verdict="$1"
   case "$verdict" in
     SHIP)
-      ui "   ${C_GREEN}✅ Verdict: SHIP${C_RESET}" ;;
+      STATS_REVIEWS_TOTAL=$((STATS_REVIEWS_TOTAL + 1))
+      ui "   ${C_GREEN}✅ SHIP${C_RESET}" ;;
     NEEDS_WORK)
-      ui "   ${C_YELLOW}🔧 Verdict: NEEDS_WORK${C_RESET} ${C_DIM}(fixing...)${C_RESET}" ;;
+      STATS_REVIEWS_TOTAL=$((STATS_REVIEWS_TOTAL + 1))
+      STATS_REVIEWS_NEEDS_WORK=$((STATS_REVIEWS_NEEDS_WORK + 1))
+      ui "   ${C_YELLOW}🔧 NEEDS_WORK${C_RESET} ${C_DIM}fixing...${C_RESET}" ;;
     MAJOR_RETHINK)
-      ui "   ${C_RED}⚠️  Verdict: MAJOR_RETHINK${C_RESET}" ;;
+      STATS_REVIEWS_TOTAL=$((STATS_REVIEWS_TOTAL + 1))
+      ui "   ${C_RED}⚠️  MAJOR_RETHINK${C_RESET}" ;;
     *)
-      [[ -n "$verdict" ]] && ui "   ${C_DIM}Verdict: $verdict${C_RESET}" || true ;;
+      [[ -n "$verdict" ]] && ui "   ${C_DIM}$verdict${C_RESET}" || true ;;
   esac
 }
 
-
 ui_task_done() {
-  local task="$1"
-  ui "   ${C_GREEN}✓ Task complete:${C_RESET} ${C_BOLD}$task${C_RESET}"
+  local task="$1" git_stats=""
+  STATS_TASKS_DONE=$((STATS_TASKS_DONE + 1))
+  init_branches_file 2>/dev/null || true
+  local base_branch
+  base_branch="$(get_base_branch 2>/dev/null || echo "main")"
+  git_stats="$(get_git_stats "$base_branch")"
+  if [[ -n "$git_stats" ]]; then
+    ui "   ${C_GREEN}✓${C_RESET} ${C_BOLD}$task${C_RESET} ${C_DIM}($git_stats)${C_RESET}"
+  else
+    ui "   ${C_GREEN}✓${C_RESET} ${C_BOLD}$task${C_RESET}"
+  fi
 }
 
 ui_retry() {
@@ -122,19 +242,36 @@ ui_blocked() {
 }
 
 ui_complete() {
+  local elapsed progress_info epics_done epics_total tasks_done tasks_total review_summary=""
+  elapsed="$(elapsed_time)"
+  progress_info="$(get_progress)"
+  IFS='|' read -r epics_done epics_total tasks_done tasks_total <<< "$progress_info"
+
+  if [[ "$STATS_REVIEWS_TOTAL" -gt 0 ]]; then
+    if [[ "$STATS_REVIEWS_NEEDS_WORK" -gt 0 ]]; then
+      review_summary="${C_DIM}Reviews:${C_RESET} $STATS_REVIEWS_TOTAL ${C_DIM}(${STATS_REVIEWS_NEEDS_WORK} fixed)${C_RESET}"
+    else
+      review_summary="${C_DIM}Reviews:${C_RESET} $STATS_REVIEWS_TOTAL"
+    fi
+  fi
+
   ui ""
   ui "${C_BOLD}${C_GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${C_RESET}"
-  ui "${C_BOLD}${C_GREEN}  ✅ Ralph Complete${C_RESET}"
+  ui "${C_BOLD}${C_GREEN}  ✅ Ralph Complete${C_RESET}                                        ${C_DIM}[${elapsed}]${C_RESET}"
+  ui ""
+  ui "   ${C_DIM}Tasks:${C_RESET} ${tasks_done}/${tasks_total} ${C_DIM}•${C_RESET} ${C_DIM}Epics:${C_RESET} ${epics_done}/${epics_total}"
+  [[ -n "$review_summary" ]] && ui "   $review_summary"
   ui "${C_BOLD}${C_GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${C_RESET}"
   ui ""
 }
 
 ui_fail() {
-  local reason="${1:-}"
+  local reason="${1:-}" elapsed
+  elapsed="$(elapsed_time)"
   ui ""
   ui "${C_BOLD}${C_RED}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${C_RESET}"
-  ui "${C_BOLD}${C_RED}  ❌ Ralph Failed${C_RESET}"
-  [[ -n "$reason" ]] && ui "     ${C_DIM}$reason${C_RESET}" || true
+  ui "${C_BOLD}${C_RED}  ❌ Ralph Failed${C_RESET}                                          ${C_DIM}[${elapsed}]${C_RESET}"
+  [[ -n "$reason" ]] && ui "     ${C_DIM}$reason${C_RESET}"
   ui "${C_BOLD}${C_RED}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${C_RESET}"
   ui ""
 }
