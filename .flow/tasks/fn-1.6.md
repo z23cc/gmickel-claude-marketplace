@@ -17,9 +17,19 @@ Clarify:
 - [ ] flowctl memory commands documented with examples
 
 ## Done summary
-TBD
+- Added Memory System section to flow-next README
+- Updated .flow/ directory tree to show config.json and memory files
+- Added Memory Capture section to ralph.md
+- Added memory quick-reference to CLAUDE.md
 
+Key clarifications:
+- Memory is flow-next feature, not Ralph-specific
+- Config in .flow/config.json (separate from Ralph's config.env)
+- Works in manual + Ralph modes
+
+Verification:
+- flowctl validate --all passes
 ## Evidence
-- Commits:
-- Tests:
+- Commits: aea13e84163a72c8fba7380df747720d335046a0
+- Tests: flowctl validate --all
 - PRs:

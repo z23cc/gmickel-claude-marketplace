@@ -111,6 +111,14 @@ Reviews don't just flag issues—they block progress. The cycle repeats until:
 
 Fix → re-review → fix → re-review... until the reviewer approves.
 
+### 4. Memory Capture (Opt-in)
+
+When memory is enabled (`flowctl config set memory.enabled true`), NEEDS_WORK reviews auto-capture learnings to `.flow/memory/pitfalls.md`.
+
+This builds a project-specific knowledge base of things reviewers catch that models tend to miss.
+
+**Note**: Memory config lives in `.flow/config.json`, separate from Ralph's `scripts/ralph/config.env`. Memory is a flow-next feature that works in both manual and Ralph modes.
+
 ---
 
 ## Configuration

@@ -26,6 +26,14 @@ Ralph (autonomous loop):
 - Receipts gate progress when `REVIEW_RECEIPT_PATH` is set.
 - Runbooks: `plans/ralph-e2e-notes.md`, `plans/ralph-getting-started.md`.
 
+Memory system (opt-in):
+- Config in `.flow/config.json` (NOT Ralph's `config.env`)
+- Enable: `flowctl config set memory.enabled true`
+- Init: `flowctl memory init`
+- Add: `flowctl memory add --type <pitfall|convention|decision> "content"`
+- Query: `flowctl memory list`, `flowctl memory search "pattern"`
+- Auto-capture: NEEDS_WORK reviews → pitfalls.md (in Ralph mode)
+
 ### flow
 Original plugin with optional Beads integration. Plan files in `plans/`.
 

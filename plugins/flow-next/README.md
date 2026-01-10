@@ -323,6 +323,33 @@ Reviews require [rp-cli](https://repoprompt.com/?atp=KJbuL4) ([RepoPrompt](https
 
 Tasks declare their blockers. `flowctl ready` shows what can start. Nothing executes until dependencies resolve.
 
+### Memory System (Opt-in)
+
+Persistent learnings that survive context compaction.
+
+```bash
+# Enable
+flowctl config set memory.enabled true
+flowctl memory init
+
+# Manual entries
+flowctl memory add --type pitfall "Always use flowctl rp wrappers"
+flowctl memory add --type convention "Tests in __tests__ dirs"
+flowctl memory add --type decision "SQLite over Postgres for simplicity"
+
+# Query
+flowctl memory list
+flowctl memory search "flowctl"
+flowctl memory read --type pitfalls
+```
+
+When enabled:
+- **Planning**: `memory-scout` runs in parallel with other scouts
+- **Work**: `memory-scout` retrieves relevant entries during re-anchor
+- **Ralph**: NEEDS_WORK reviews auto-capture to `pitfalls.md`
+
+Memory is a flow-next feature, not Ralph-specific. Config lives in `.flow/config.json`, separate from Ralph's `scripts/ralph/config.env`.
+
 ---
 
 ## Commands
@@ -479,6 +506,7 @@ flowchart TD
 ```
 .flow/
 ├── meta.json              # Schema version
+├── config.json            # Project settings (memory enabled, etc.)
 ├── epics/
 │   └── fn-1.json          # Epic metadata (id, title, status, deps)
 ├── specs/
@@ -487,7 +515,10 @@ flowchart TD
 │   ├── fn-1.1.json        # Task metadata (id, status, priority, deps, assignee)
 │   ├── fn-1.1.md          # Task spec (description, acceptance, done summary)
 │   └── ...
-└── memory/                # Reserved for future context features
+└── memory/                # Persistent learnings (opt-in)
+    ├── pitfalls.md        # Lessons from NEEDS_WORK reviews
+    ├── conventions.md     # Project patterns
+    └── decisions.md       # Architectural choices
 ```
 
 Flowctl accepts schema v1 and v2; new fields are optional and defaulted.
