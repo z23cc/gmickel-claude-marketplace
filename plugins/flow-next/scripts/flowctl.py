@@ -672,7 +672,7 @@ def cmd_config_set(args: argparse.Namespace) -> None:
     if not ensure_flow_exists():
         error_exit(".flow/ does not exist. Run 'flowctl init' first.", use_json=args.json)
 
-    config = set_config(args.key, args.value)
+    set_config(args.key, args.value)
     new_value = get_config(args.key)
 
     if args.json:
@@ -951,7 +951,7 @@ def cmd_epic_create(args: argparse.Namespace) -> None:
 
     flow_dir = get_flow_dir()
     meta_path = flow_dir / META_FILE
-    meta = load_json_or_exit(meta_path, "meta.json", use_json=args.json)
+    load_json_or_exit(meta_path, "meta.json", use_json=args.json)
 
     # MU-1: Scan-based allocation for merge safety
     # Scan existing epics to determine next ID (don't rely on counter)
@@ -1014,7 +1014,7 @@ def cmd_task_create(args: argparse.Namespace) -> None:
     flow_dir = get_flow_dir()
     epic_path = flow_dir / EPICS_DIR / f"{args.epic}.json"
 
-    epic_data = load_json_or_exit(epic_path, f"Epic {args.epic}", use_json=args.json)
+    load_json_or_exit(epic_path, f"Epic {args.epic}", use_json=args.json)
 
     # MU-1: Scan-based allocation for merge safety
     # Scan existing tasks to determine next ID (don't rely on counter)
@@ -2516,7 +2516,6 @@ def cmd_validate(args: argparse.Namespace) -> None:
         root_errors = validate_flow_root(flow_dir)
 
         epics_dir = flow_dir / EPICS_DIR
-        tasks_dir = flow_dir / TASKS_DIR
 
         # Find all epics (if epics dir exists)
         epic_ids = []
@@ -2558,7 +2557,7 @@ def cmd_validate(args: argparse.Namespace) -> None:
                 "total_warnings": len(all_warnings)
             }, success=valid)
         else:
-            print(f"Validation for all epics:")
+            print("Validation for all epics:")
             print(f"  Epics: {len(epic_ids)}")
             print(f"  Tasks: {total_tasks}")
             print(f"  Valid: {valid}")

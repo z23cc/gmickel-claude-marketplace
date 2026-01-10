@@ -140,6 +140,63 @@ scripts/flowctl epic close fn-2 --json >/dev/null
 echo -e "${GREEN}✓${NC} epic close succeeds when done"
 PASS=$((PASS + 1))
 
+echo -e "${YELLOW}--- config set/get ---${NC}"
+scripts/flowctl config set memory.enabled true --json >/dev/null
+config_json="$(scripts/flowctl config get memory.enabled --json)"
+python3 - <<'PY' "$config_json"
+import json, sys
+data = json.loads(sys.argv[1])
+assert data["value"] == True, f"Expected True, got {data['value']}"
+PY
+echo -e "${GREEN}✓${NC} config set/get"
+PASS=$((PASS + 1))
+
+scripts/flowctl config set memory.enabled false --json >/dev/null
+config_json="$(scripts/flowctl config get memory.enabled --json)"
+python3 - <<'PY' "$config_json"
+import json, sys
+data = json.loads(sys.argv[1])
+assert data["value"] == False, f"Expected False, got {data['value']}"
+PY
+echo -e "${GREEN}✓${NC} config toggle"
+PASS=$((PASS + 1))
+
+echo -e "${YELLOW}--- memory commands ---${NC}"
+scripts/flowctl config set memory.enabled true --json >/dev/null
+scripts/flowctl memory init --json >/dev/null
+if [[ -f ".flow/memory/pitfalls.md" ]]; then
+  echo -e "${GREEN}✓${NC} memory init creates files"
+  PASS=$((PASS + 1))
+else
+  echo -e "${RED}✗${NC} memory init creates files"
+  FAIL=$((FAIL + 1))
+fi
+
+scripts/flowctl memory add --type pitfall "Test pitfall entry" --json >/dev/null
+if grep -q "Test pitfall entry" .flow/memory/pitfalls.md; then
+  echo -e "${GREEN}✓${NC} memory add pitfall"
+  PASS=$((PASS + 1))
+else
+  echo -e "${RED}✗${NC} memory add pitfall"
+  FAIL=$((FAIL + 1))
+fi
+
+scripts/flowctl memory add --type convention "Test convention" --json >/dev/null
+scripts/flowctl memory add --type decision "Test decision" --json >/dev/null
+list_json="$(scripts/flowctl memory list --json)"
+python3 - <<'PY' "$list_json"
+import json, sys
+data = json.loads(sys.argv[1])
+assert data["success"] == True
+counts = data["counts"]
+assert counts["pitfalls.md"] >= 1
+assert counts["conventions.md"] >= 1
+assert counts["decisions.md"] >= 1
+assert data["total"] >= 3
+PY
+echo -e "${GREEN}✓${NC} memory list"
+PASS=$((PASS + 1))
+
 echo -e "${YELLOW}--- schema v1 validate ---${NC}"
 python3 - <<'PY'
 import json
