@@ -365,11 +365,9 @@ OpenAI Codex CLI works on any platform (macOS, Linux, Windows).
 
 **Setup:**
 ```bash
-# Install Codex CLI
+# Install and authenticate Codex CLI
 npm install -g @openai/codex
-
-# Set API key
-export OPENAI_API_KEY=sk-...
+codex auth
 ```
 
 **Usage:**

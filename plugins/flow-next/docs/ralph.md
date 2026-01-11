@@ -232,8 +232,7 @@ flowctl codex plan-review ...  # Run plan review
 ```
 
 **Requirements:**
-- OpenAI Codex CLI installed (`npm install -g @openai/codex`)
-- `OPENAI_API_KEY` environment variable set
+- OpenAI Codex CLI installed and authenticated (`npm install -g @openai/codex && codex auth`)
 
 **Advantages over rp:**
 - Cross-platform (Windows, Linux, macOS)
@@ -275,11 +274,11 @@ Alternatives:
 
 ### Codex not found
 
-Ensure Codex CLI is installed and `OPENAI_API_KEY` is set:
+Ensure Codex CLI is installed and authenticated:
 
 ```bash
 npm install -g @openai/codex
-export OPENAI_API_KEY=sk-...
+codex auth
 ```
 
 Or switch to RepoPrompt: set `PLAN_REVIEW=rp` and `WORK_REVIEW=rp`.

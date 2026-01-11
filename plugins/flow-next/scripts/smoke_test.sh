@@ -378,10 +378,10 @@ PY
 echo -e "${GREEN}✓${NC} parse_receipt_path works"
 PASS=$((PASS + 1))
 
-echo -e "${YELLOW}--- codex e2e (requires codex + OPENAI_API_KEY) ---${NC}"
-# Check if codex is available and API key is set
+echo -e "${YELLOW}--- codex e2e (requires codex CLI) ---${NC}"
+# Check if codex is available (handles its own auth)
 codex_available="$(scripts/flowctl codex check --json 2>/dev/null | python3 -c "import sys,json; print(json.load(sys.stdin).get('available', False))" 2>/dev/null || echo "False")"
-if [[ "$codex_available" == "True" && -n "${OPENAI_API_KEY:-}" ]]; then
+if [[ "$codex_available" == "True" ]]; then
   # Create a simple epic + task for testing
   scripts/flowctl epic create --title "Codex test epic" --json >/dev/null
   scripts/flowctl task create --epic fn-3 --title "Test task" --json >/dev/null
@@ -473,7 +473,7 @@ PY
     FAIL=$((FAIL + 1))
   fi
 else
-  echo -e "${YELLOW}⊘${NC} codex e2e skipped (codex=$codex_available, OPENAI_API_KEY=${OPENAI_API_KEY:+set})"
+  echo -e "${YELLOW}⊘${NC} codex e2e skipped (codex not available)"
 fi
 
 echo -e "${YELLOW}--- depends_on_epics gate ---${NC}"

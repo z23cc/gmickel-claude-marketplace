@@ -450,7 +450,7 @@ OpenAI Codex CLI wrappers — cross-platform alternative to RepoPrompt.
 **Requirements:**
 ```bash
 npm install -g @openai/codex
-export OPENAI_API_KEY=sk-...
+codex auth
 ```
 
 **Commands:**
