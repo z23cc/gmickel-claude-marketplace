@@ -17,6 +17,8 @@
 > 🤖 **New**: [Ralph mode](#ralph-autonomous-mode) — ship features while you sleep. Multi-model review gates that actually block on quality.
 >
 > 🧠 **New in v0.3.17**: [Memory system](plugins/flow-next/README.md#memory-system-opt-in) — agents learn from NEEDS_WORK feedback. Stop repeating the same mistakes.
+>
+> 📡 **Coming soon**: [Codex CLI support](https://github.com/gmickel/gmickel-claude-marketplace/issues/5) — free, open-source alternative for multi-model reviews. No RepoPrompt required.
 
 ---
 
@@ -182,8 +184,6 @@ Most agents gate by tests alone. Ralph adds production-grade quality gates:
 | **One file per task** | Merge-friendly. Conflict surface is minimal. |
 | **Automated reviews** | Require [RepoPrompt](https://repoprompt.com/?atp=KJbuL4) (rp-cli). Without it, reviews are skipped. |
 | **Dependency graphs** | Tasks declare blockers. Nothing starts until dependencies resolve. |
-
-> **No RepoPrompt?** [Codex CLI support coming soon](https://github.com/gmickel/gmickel-claude-marketplace/issues/5) - free, open-source alternative for multi-model reviews.
 
 ### Commands
 
