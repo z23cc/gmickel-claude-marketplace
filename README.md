@@ -183,6 +183,8 @@ Most agents gate by tests alone. Ralph adds production-grade quality gates:
 | **Automated reviews** | Require [RepoPrompt](https://repoprompt.com/?atp=KJbuL4) (rp-cli). Without it, reviews are skipped. |
 | **Dependency graphs** | Tasks declare blockers. Nothing starts until dependencies resolve. |
 
+> **No RepoPrompt?** [Codex CLI support coming soon](https://github.com/gmickel/gmickel-claude-marketplace/issues/5) - free, open-source alternative for multi-model reviews.
+
 ### Commands
 
 | Command | What It Does |
