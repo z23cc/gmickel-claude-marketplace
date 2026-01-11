@@ -2,6 +2,17 @@
 
 All notable changes to the gmickel-claude-marketplace.
 
+## [flow-next 0.5.9] - 2026-01-11
+
+### Fixed
+- Worker timeout now triggers retry instead of failing entire Ralph run
+- macOS compatibility: detect `timeout`/`gtimeout`, warn if missing
+- Python 3.9 compat: use `Optional[int]` not `int|None`
+
+### Changed
+- RP timeout configurable via `FLOW_RP_TIMEOUT` env (default 1200s/20min)
+- Increased default timeout from 600s to 1200s for large repo context builders
+
 ## [flow-next 0.5.8] - 2026-01-11
 
 ### Added
