@@ -2,6 +2,22 @@
 
 All notable changes to the gmickel-claude-marketplace.
 
+## [flow-next 0.5.0] - 2026-01-11
+
+### Added
+- **Codex review backend** — cross-platform alternative to RepoPrompt (#5)
+  - `flowctl codex plan-review` and `flowctl codex impl-review` commands
+  - Uses GPT 5.2 High by default (no user config needed)
+  - Session continuity via thread IDs in receipts
+  - Context hints from changed files (symbols + references)
+  - Same Carmack-level review criteria as RepoPrompt (7 plan + 7 impl)
+- Backend selection: `flowctl config set review.backend codex` or `FLOW_REVIEW_BACKEND` env
+- Comprehensive smoke tests for codex commands and context hints
+
+### Changed
+- Plan review prompts now use plan-specific criteria (was using impl-style criteria)
+- Docs recommend RepoPrompt when available, codex as cross-platform alternative
+
 ## [flow-next 0.4.3] - 2026-01-11
 
 ### Fixed
