@@ -453,12 +453,7 @@ npm install -g @openai/codex
 codex auth
 ```
 
-**Model configuration:**
-```bash
-# Default: gpt-5.2 with high reasoning effort (GPT 5.2 High)
-# Override model via environment variable:
-export FLOW_CODEX_MODEL=gpt-5.2
-```
+**Model:** Uses GPT 5.2 High by default (no user config needed). Override with `FLOW_CODEX_MODEL` env var.
 
 **Commands:**
 

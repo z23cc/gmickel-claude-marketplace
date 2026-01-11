@@ -360,6 +360,7 @@ OpenAI Codex CLI works on any platform (macOS, Linux, Windows).
 - Terminal-based (no GUI needed)
 - Session continuity via thread IDs
 - Same Carmack-level review criteria as RepoPrompt
+- Uses GPT 5.2 High by default (no config needed)
 
 **Trade-off:** Uses heuristic context hints from changed files rather than RepoPrompt's intelligent file selection.
 
