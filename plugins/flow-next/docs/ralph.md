@@ -316,4 +316,6 @@ Permanently: delete `hooks/` directory and remove `"hooks"` from `plugin.json`.
 
 - [flowctl CLI reference](flowctl.md)
 - [Flow-Next README](../README.md)
-- Test scripts: `plugins/flow-next/scripts/ralph_e2e_rp_test.sh`
+- Test scripts:
+  - Full: `plugins/flow-next/scripts/ralph_e2e_rp_test.sh`
+  - Short (2 tasks): `plugins/flow-next/scripts/ralph_e2e_short_rp_test.sh`
