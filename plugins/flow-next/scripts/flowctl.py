@@ -633,39 +633,67 @@ def build_review_prompt(
     """Build XML-structured review prompt for codex.
 
     review_type: 'impl' or 'plan'
+
+    Uses same Carmack-level criteria as RepoPrompt workflow to ensure parity.
     """
     if review_type == "impl":
-        instruction = """Review this implementation with John Carmack-level rigor.
+        instruction = """Conduct a John Carmack-level review of this implementation.
 
-Check for:
-- Logic errors and edge cases
-- Performance issues
-- Security vulnerabilities
-- Code clarity and maintainability
-- Test coverage gaps
+## Review Criteria
+
+1. **Correctness** - Matches spec? Logic errors?
+2. **Simplicity** - Simplest solution? Over-engineering?
+3. **DRY** - Duplicated logic? Existing patterns?
+4. **Architecture** - Data flow? Clear boundaries?
+5. **Edge Cases** - Failure modes? Race conditions?
+6. **Tests** - Adequate coverage? Testing behavior?
+7. **Security** - Injection? Auth gaps?
+
+## Output Format
+
+For each issue found:
+- **Severity**: Critical / Major / Minor / Nitpick
+- **File:Line**: Exact location
+- **Problem**: What's wrong
+- **Suggestion**: How to fix
 
 Be critical. Find real issues.
 
-End your review with exactly one of:
+**REQUIRED**: End your response with exactly one verdict tag:
 <verdict>SHIP</verdict> - Ready to merge
 <verdict>NEEDS_WORK</verdict> - Has issues that must be fixed
-<verdict>MAJOR_RETHINK</verdict> - Fundamental approach problems"""
-    else:  # plan
-        instruction = """Review this plan with John Carmack-level rigor.
+<verdict>MAJOR_RETHINK</verdict> - Fundamental approach problems
 
-Check for:
-- Missing requirements or edge cases
-- Technical feasibility issues
-- Unclear specifications
-- Potential blockers
-- Over-engineering or under-engineering
+Do NOT skip this tag. The automation depends on it."""
+    else:  # plan
+        instruction = """Conduct a John Carmack-level review of this plan.
+
+## Review Criteria
+
+1. **Completeness** - All requirements covered? Missing edge cases?
+2. **Feasibility** - Technically sound? Dependencies clear?
+3. **Clarity** - Specs unambiguous? Acceptance criteria testable?
+4. **Architecture** - Right abstractions? Clean boundaries?
+5. **Risks** - Blockers identified? Mitigation strategies?
+6. **Scope** - Right-sized? Over/under-engineering?
+7. **Testability** - How will we verify this works?
+
+## Output Format
+
+For each issue found:
+- **Severity**: Critical / Major / Minor / Nitpick
+- **Location**: Which task or section
+- **Problem**: What's wrong
+- **Suggestion**: How to fix
 
 Be critical. Find real issues.
 
-End your review with exactly one of:
+**REQUIRED**: End your response with exactly one verdict tag:
 <verdict>SHIP</verdict> - Plan is solid, ready to implement
 <verdict>NEEDS_WORK</verdict> - Plan has gaps that need addressing
-<verdict>MAJOR_RETHINK</verdict> - Fundamental approach problems"""
+<verdict>MAJOR_RETHINK</verdict> - Fundamental approach problems
+
+Do NOT skip this tag. The automation depends on it."""
 
     parts = []
 

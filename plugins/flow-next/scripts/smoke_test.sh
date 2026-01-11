@@ -248,7 +248,138 @@ else
   FAIL=$((FAIL + 1))
 fi
 
+echo -e "${YELLOW}--- context hints ---${NC}"
+# Create files in same commit, then modify one to test context hints
+mkdir -p "$TEST_DIR/repo/src"
+# First commit: both auth.py and handler.py together
+cat > "$TEST_DIR/repo/src/auth.py" << 'EOF'
+def validate_token(token: str) -> bool:
+    """Validate JWT token."""
+    return len(token) > 10
+
+class User:
+    def __init__(self, name: str):
+        self.name = name
+EOF
+cat > "$TEST_DIR/repo/src/handler.py" << 'EOF'
+from auth import validate_token, User
+
+def handle_request(token: str):
+    if validate_token(token):
+        return User("test")
+    return None
+EOF
+git -C "$TEST_DIR/repo" add src/
+git -C "$TEST_DIR/repo" commit -m "Add auth and handler" >/dev/null
+
+# Second commit: only modify auth.py (handler.py stays unchanged)
+cat > "$TEST_DIR/repo/src/auth.py" << 'EOF'
+def validate_token(token: str) -> bool:
+    """Validate JWT token with expiry check."""
+    if len(token) < 10:
+        return False
+    return True
+
+class User:
+    def __init__(self, name: str, email: str = ""):
+        self.name = name
+        self.email = email
+EOF
+git -C "$TEST_DIR/repo" add src/auth.py
+git -C "$TEST_DIR/repo" commit -m "Update auth with expiry" >/dev/null
+
+# Test context hints: should find handler.py referencing validate_token/User
+cd "$TEST_DIR/repo"
+hints_output="$(PYTHONPATH="$SCRIPT_DIR" python3 -c "
+from flowctl import gather_context_hints
+hints = gather_context_hints('HEAD~1')
+print(hints)
+" 2>&1)"
+
+# Verify hints mention handler.py referencing validate_token or User
+if echo "$hints_output" | grep -q "handler.py"; then
+  echo -e "${GREEN}✓${NC} context hints finds references"
+  PASS=$((PASS + 1))
+else
+  echo -e "${RED}✗${NC} context hints finds references (got: $hints_output)"
+  FAIL=$((FAIL + 1))
+fi
+
+echo -e "${YELLOW}--- build_review_prompt ---${NC}"
+# Go back to plugin root for Python tests
+cd "$TEST_DIR/repo"
+# Test that build_review_prompt generates proper structure
+python3 - "$SCRIPT_DIR" <<'PY'
+import sys
+sys.path.insert(0, sys.argv[1])
+from flowctl import build_review_prompt
+
+# Test impl prompt has all 7 criteria
+impl_prompt = build_review_prompt("impl", "Test spec", "Test hints", "Test diff")
+assert "<review_instructions>" in impl_prompt
+assert "Correctness" in impl_prompt
+assert "Simplicity" in impl_prompt
+assert "DRY" in impl_prompt
+assert "Architecture" in impl_prompt
+assert "Edge Cases" in impl_prompt
+assert "Tests" in impl_prompt
+assert "Security" in impl_prompt
+assert "<verdict>SHIP</verdict>" in impl_prompt
+assert "File:Line" in impl_prompt  # Structured output format
+
+# Test plan prompt has all 7 criteria
+plan_prompt = build_review_prompt("plan", "Test spec", "Test hints")
+assert "Completeness" in plan_prompt
+assert "Feasibility" in plan_prompt
+assert "Clarity" in plan_prompt
+assert "Architecture" in plan_prompt
+assert "Risks" in plan_prompt
+assert "Scope" in plan_prompt
+assert "Testability" in plan_prompt
+assert "<verdict>SHIP</verdict>" in plan_prompt
+
+# Test context hints and diff are included
+assert "<context_hints>" in impl_prompt
+assert "Test hints" in impl_prompt
+assert "<diff_summary>" in impl_prompt
+assert "Test diff" in impl_prompt
+assert "<spec>" in impl_prompt
+assert "Test spec" in impl_prompt
+PY
+echo -e "${GREEN}✓${NC} build_review_prompt has full criteria"
+PASS=$((PASS + 1))
+
+echo -e "${YELLOW}--- parse_receipt_path ---${NC}"
+# Test receipt path parsing for Ralph gating
+python3 - "$SCRIPT_DIR/hooks" <<'PY'
+import sys
+hooks_dir = sys.argv[1]
+sys.path.insert(0, hooks_dir)
+from importlib.util import spec_from_file_location, module_from_spec
+spec = spec_from_file_location("ralph_guard", f"{hooks_dir}/ralph-guard.py")
+guard = module_from_spec(spec)
+spec.loader.exec_module(guard)
+
+# Test plan receipt parsing
+rtype, rid = guard.parse_receipt_path("/tmp/receipts/plan-fn-1.json")
+assert rtype == "plan_review", f"Expected plan_review, got {rtype}"
+assert rid == "fn-1", f"Expected fn-1, got {rid}"
+
+# Test impl receipt parsing
+rtype, rid = guard.parse_receipt_path("/tmp/receipts/impl-fn-1.3.json")
+assert rtype == "impl_review", f"Expected impl_review, got {rtype}"
+assert rid == "fn-1.3", f"Expected fn-1.3, got {rid}"
+
+# Test fallback
+rtype, rid = guard.parse_receipt_path("/tmp/unknown.json")
+assert rtype == "impl_review"
+assert rid == "UNKNOWN"
+PY
+echo -e "${GREEN}✓${NC} parse_receipt_path works"
+PASS=$((PASS + 1))
+
 echo -e "${YELLOW}--- depends_on_epics gate ---${NC}"
+cd "$TEST_DIR/repo"  # Back to test repo
 scripts/flowctl epic create --title "Dep base" --json >/dev/null
 scripts/flowctl task create --epic fn-3 --title "Base task" --json >/dev/null
 scripts/flowctl epic create --title "Dep child" --json >/dev/null
