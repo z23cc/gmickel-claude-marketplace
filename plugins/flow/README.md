@@ -15,6 +15,8 @@
 
 </div>
 
+> **Note:** flow is stable. New features go to [flow-next](../flow-next/). Use flow if you need Beads integration or standalone plan files and are not interested in autonomous Ralph mode.
+
 ---
 
 ## The Problem

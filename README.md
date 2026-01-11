@@ -42,7 +42,7 @@ This marketplace ships plugins that fix these problems.
 | Plugin | What It Does |
 |--------|--------------|
 | [**flow-next**](#flow-next) | Plan-first workflow with `.flow/` task tracking. Zero deps. Multi-user safe. **Recommended.** |
-| [**flow**](#flow) | Full-featured plan+work with optional Beads integration |
+| [**flow**](#flow) | Stable. Beads integration, standalone plan files. No Ralph mode. |
 
 ## Pick a plugin
 
