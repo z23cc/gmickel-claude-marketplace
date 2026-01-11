@@ -259,7 +259,7 @@ All notable changes to the gmickel-claude-marketplace.
 
 ### Ralph: Autonomous Coding with Multi-Model Review Gates
 
-This release introduces **Ralph**, a production-ready autonomous coding loop that goes beyond simple "code until tests pass" agents. Ralph implements **multi-model review gates** using [RepoPrompt](https://repoprompt.com) to send your plans and implementations to a different AI model for review.
+This release introduces **Ralph**, a production-ready autonomous coding loop that goes beyond simple "code until tests pass" agents. Ralph implements **multi-model review gates** using [RepoPrompt](https://repoprompt.com/?atp=KJbuL4) to send your plans and implementations to a different AI model for review.
 
 **Why Ralph is different:**
 
