@@ -40,9 +40,8 @@ Update Ralph templates to support codex as review backend option.
 - [ ] ralph.sh UI shows "Codex" when PLAN_REVIEW=codex or WORK_REVIEW=codex
 - [ ] Ralph loop works with PLAN_REVIEW=codex WORK_REVIEW=codex
 ## Done summary
-TBD
-
+Updated Ralph templates for codex backend support: config.env with option docs, prompt_plan.md and prompt_work.md with codex dispatch, ralph.sh with UI and receipt verification for both rp and codex modes.
 ## Evidence
-- Commits:
-- Tests:
+- Commits: 72263cd
+- Tests: smoke_test.sh
 - PRs:

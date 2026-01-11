@@ -13,12 +13,14 @@ Steps:
    - git log -10 --oneline
 
 Ralph mode rules (must follow):
-- Use `flowctl rp` wrappers only (setup-review, select-add, prompt-get, chat-send).
+- If PLAN_REVIEW=rp: use `flowctl rp` wrappers (setup-review, select-add, prompt-get, chat-send).
+- If PLAN_REVIEW=codex: use `flowctl codex` wrappers (plan-review with --receipt).
 - Write receipt via bash heredoc (no Write tool) if `REVIEW_RECEIPT_PATH` set.
 - If any rule is violated, output `<promise>RETRY</promise>` and stop.
 
 2) Plan review gate:
    - If PLAN_REVIEW=rp: run `/flow-next:plan-review {{EPIC_ID}} --mode=rp`
+   - If PLAN_REVIEW=codex: run `/flow-next:plan-review {{EPIC_ID}} --mode=codex`
    - If PLAN_REVIEW=export: run `/flow-next:plan-review {{EPIC_ID}} --mode=export`
    - If PLAN_REVIEW=none:
      - If REQUIRE_PLAN_REVIEW=1: output `<promise>RETRY</promise>` and stop.
@@ -31,7 +33,7 @@ Ralph mode rules (must follow):
    - Repeats until SHIP
    - Only returns to Ralph after SHIP or MAJOR_RETHINK
 
-4) IMMEDIATELY after SHIP verdict, write receipt:
+4) IMMEDIATELY after SHIP verdict, write receipt (for rp mode):
    ```bash
    mkdir -p "$(dirname '{{REVIEW_RECEIPT_PATH}}')"
    ts="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
@@ -39,6 +41,7 @@ Ralph mode rules (must follow):
    {"type":"plan_review","id":"{{EPIC_ID}}","mode":"rp","timestamp":"$ts"}
    EOF
    ```
+   For codex mode, receipt is written automatically by `flowctl codex plan-review --receipt`.
    **CRITICAL: Copy EXACTLY. The `"id":"{{EPIC_ID}}"` field is REQUIRED.**
    Missing id = verification fails = forced retry.
 

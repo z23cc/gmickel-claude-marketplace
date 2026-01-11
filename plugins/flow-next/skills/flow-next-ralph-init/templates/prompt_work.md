@@ -12,7 +12,8 @@ Inputs:
 /flow-next:work {{TASK_ID}} --branch={{BRANCH_MODE_EFFECTIVE}} --review={{WORK_REVIEW}}
 ```
 When `--review=rp`, the work skill MUST invoke `/flow-next:impl-review` internally (see Phase 7 in skill).
-The impl-review skill handles RepoPrompt coordination and requires `<verdict>SHIP|NEEDS_WORK|MAJOR_RETHINK</verdict>` from reviewer.
+When `--review=codex`, the work skill uses `flowctl codex impl-review` for review.
+The impl-review skill handles review coordination and requires `<verdict>SHIP|NEEDS_WORK|MAJOR_RETHINK</verdict>` from reviewer.
 Do NOT improvise review prompts - the skill has the correct format.
 
 **Step 2: Verify task done** (AFTER skill returns)
@@ -21,7 +22,8 @@ scripts/ralph/flowctl show {{TASK_ID}} --json
 ```
 If status != `done`, output `<promise>RETRY</promise>` and stop.
 
-**Step 3: Write impl receipt** (MANDATORY if WORK_REVIEW=rp)
+**Step 3: Write impl receipt** (MANDATORY if WORK_REVIEW=rp or codex)
+For rp mode:
 ```bash
 mkdir -p "$(dirname '{{REVIEW_RECEIPT_PATH}}')"
 ts="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
@@ -30,6 +32,7 @@ cat > '{{REVIEW_RECEIPT_PATH}}' <<EOF
 EOF
 echo "Receipt written: {{REVIEW_RECEIPT_PATH}}"
 ```
+For codex mode, receipt is written automatically by `flowctl codex impl-review --receipt`.
 **CRITICAL: Copy the command EXACTLY. The `"id":"{{TASK_ID}}"` field is REQUIRED.**
 Ralph verifies receipts match this exact schema. Missing id = verification fails = forced retry.
 
