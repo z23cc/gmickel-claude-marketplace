@@ -1,6 +1,6 @@
 ---
 name: flow-next-impl-review
-description: John Carmack-level implementation review via flowctl rp wrappers. Use when reviewing code changes, PRs, or implementations. Triggers on /flow-next:impl-review.
+description: John Carmack-level implementation review via RepoPrompt or Codex. Use when reviewing code changes, PRs, or implementations. Triggers on /flow-next:impl-review.
 model: claude-opus-4-5-20251101
 ---
 
@@ -8,33 +8,65 @@ model: claude-opus-4-5-20251101
 
 **Read [workflow.md](workflow.md) for detailed phases and anti-patterns.**
 
-Conduct a John Carmack-level review of implementation changes on the current branch using RepoPrompt's context builder and chat.
+Conduct a John Carmack-level review of implementation changes on the current branch.
 
 **Role**: Code Review Coordinator (NOT the reviewer)
-**Tool**: `flowctl rp` wrappers ONLY
+**Backends**: RepoPrompt (rp) or Codex CLI (codex)
 
 **CRITICAL: flowctl is BUNDLED — NOT installed globally.** `which flowctl` will fail (expected). Always use:
 ```bash
 FLOWCTL="${CLAUDE_PLUGIN_ROOT}/scripts/flowctl"
-$FLOWCTL rp <command>
+```
+
+## Backend Selection
+
+**Priority** (first match wins):
+1. `FLOW_REVIEW_BACKEND` env var (`rp`, `codex`, `none`)
+2. `.flow/config.json` → `review.backend`
+3. Interactive prompt if both rp-cli and codex available
+4. Default: whichever is available (rp preferred)
+
+```bash
+# Check available backends
+HAVE_RP=$(which rp-cli >/dev/null 2>&1 && echo 1 || echo 0)
+HAVE_CODEX=$(which codex >/dev/null 2>&1 && echo 1 || echo 0)
+
+# Get configured backend
+BACKEND="${FLOW_REVIEW_BACKEND:-}"
+if [[ -z "$BACKEND" ]]; then
+  BACKEND="$($FLOWCTL config get review.backend 2>/dev/null | jq -r '.value // empty')"
+fi
+
+# Fallback to available
+if [[ -z "$BACKEND" ]]; then
+  if [[ "$HAVE_RP" == "1" ]]; then BACKEND="rp"
+  elif [[ "$HAVE_CODEX" == "1" ]]; then BACKEND="codex"
+  else BACKEND="none"; fi
+fi
 ```
 
 ## Critical Rules
 
+**For rp backend:**
 1. **DO NOT REVIEW CODE YOURSELF** - you coordinate, RepoPrompt reviews
-2. **MUST WAIT for actual RP response** - never simulate/skip the review, even in test environments
+2. **MUST WAIT for actual RP response** - never simulate/skip the review
 3. **MUST use `setup-review`** - handles window selection + builder atomically
 4. **DO NOT add --json flag to chat-send** - it suppresses the review response
 5. **Re-reviews MUST stay in SAME chat** - omit `--new-chat` after first review
-6. If `REVIEW_RECEIPT_PATH` set: write receipt after chat returns (any verdict)
-7. Any failure → output `<promise>RETRY</promise>` and stop
+
+**For codex backend:**
+1. Use `$FLOWCTL codex impl-review` exclusively
+2. Pass `--receipt` for session continuity on re-reviews
+3. Parse verdict from command output
+
+**For all backends:**
+- If `REVIEW_RECEIPT_PATH` set: write receipt after review (any verdict)
+- Any failure → output `<promise>RETRY</promise>` and stop
 
 **FORBIDDEN**:
-- Saying "this is a test" or "simulated" or "mock environment"
-- Self-declaring SHIP without actual RP verdict
-- Adding `--json` to chat-send (suppresses review text)
-- Interpreting `{"chat": null}` as success (means you used --json incorrectly)
-- Using `--new-chat` on re-reviews (loses reviewer context)
+- Self-declaring SHIP without actual backend verdict
+- Mixing backends mid-review (stick to one)
+- Skipping review when backend is "none" without user consent
 
 ## Input
 
@@ -45,80 +77,50 @@ Reviews all changes on **current branch** vs main/master.
 
 ## Workflow
 
+**See [workflow.md](workflow.md) for full details on each backend.**
+
 ```bash
 FLOWCTL="${CLAUDE_PLUGIN_ROOT}/scripts/flowctl"
 REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
 ```
 
-### Step 1: Identify Changes
+### Step 0: Detect Backend
+
+Run backend detection from SKILL.md above. Then branch:
+
+### Codex Backend
 
 ```bash
+TASK_ID="${1:-}"
+BASE_BRANCH="main"
+RECEIPT_PATH="${REVIEW_RECEIPT_PATH:-/tmp/impl-review-receipt.json}"
+
+$FLOWCTL codex impl-review "$TASK_ID" --base "$BASE_BRANCH" --receipt "$RECEIPT_PATH"
+# Output includes VERDICT=SHIP|NEEDS_WORK|MAJOR_RETHINK
+```
+
+On NEEDS_WORK: fix code, commit, re-run (receipt enables session continuity).
+
+### RepoPrompt Backend
+
+```bash
+# Step 1: Identify changes
 git branch --show-current
 git log main..HEAD --oneline 2>/dev/null || git log master..HEAD --oneline
 git diff main..HEAD --name-only 2>/dev/null || git diff master..HEAD --name-only
-```
 
-Compose a 1-2 sentence summary of what the changes accomplish.
-
-### Step 2: Atomic Setup (MANDATORY)
-
-```bash
+# Step 2: Atomic setup
 eval "$($FLOWCTL rp setup-review --repo-root "$REPO_ROOT" --summary "Review implementation: <summary>")"
-```
+# Outputs W=<window> T=<tab>. If fails → <promise>RETRY</promise>
 
-Outputs `W=<window> T=<tab>`. If fails → `<promise>RETRY</promise>`.
-
-### Step 3: Augment Selection
-
-```bash
-$FLOWCTL rp select-get --window "$W" --tab "$T"
-# Add ALL changed files
+# Step 3: Augment selection
 $FLOWCTL rp select-add --window "$W" --tab "$T" path/to/changed/files...
-```
 
-### Step 4: Build Review Prompt
-
-```bash
-$FLOWCTL rp prompt-get --window "$W" --tab "$T"
-```
-
-Write prompt to `/tmp/review-prompt.md` with:
-- Builder's handoff prompt
-- Branch, files, commits summary
-- Review criteria (correctness, simplicity, DRY, architecture, edge cases, tests, security)
-- Required verdict tag: `<verdict>SHIP|NEEDS_WORK|MAJOR_RETHINK</verdict>`
-
-### Step 5: Execute Review
-
-```bash
+# Step 4: Build and send review prompt (see workflow.md)
 $FLOWCTL rp chat-send --window "$W" --tab "$T" --message-file /tmp/review-prompt.md --new-chat --chat-name "Impl Review: [BRANCH]"
+
+# Step 5: Write receipt if REVIEW_RECEIPT_PATH set
 ```
-
-**This command BLOCKS and returns the full review text** (1-5+ minutes). DO NOT add `--json`.
-
-Expected output format:
-```
-## Chat Send ✅
-[Full review text from RP...]
-<verdict>SHIP|NEEDS_WORK|MAJOR_RETHINK</verdict>
-```
-
-If you see `{"chat": ...}` instead of review text, you incorrectly added `--json` → RETRY.
-
-### Step 6: Write Receipt
-
-```bash
-if [[ -n "${REVIEW_RECEIPT_PATH:-}" ]]; then
-  ts="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
-  mkdir -p "$(dirname "$REVIEW_RECEIPT_PATH")"
-  cat > "$REVIEW_RECEIPT_PATH" <<EOF
-{"type":"impl_review","id":"<TASK_ID>","mode":"rp","timestamp":"$ts"}
-EOF
-  echo "REVIEW_RECEIPT_WRITTEN: $REVIEW_RECEIPT_PATH"
-fi
-```
-
-If no verdict tag → `<promise>RETRY</promise>`.
 
 ## Fix Loop (INTERNAL - do not exit to Ralph)
 
@@ -126,17 +128,10 @@ If verdict is NEEDS_WORK, loop internally until SHIP:
 
 1. **Parse issues** from reviewer feedback (Critical → Major → Minor)
 2. **Fix code** and run tests/lints
-3. **Re-review in SAME chat** (NO `--new-chat`):
-   ```bash
-   cat > /tmp/re-review.md << 'EOF'
-   ## Fixes Applied
-   [List each fix with file:line and explanation]
+3. **Commit fixes** (mandatory before re-review)
+4. **Re-review**:
+   - **Codex**: Re-run `flowctl codex impl-review` (receipt enables context)
+   - **RP**: `$FLOWCTL rp chat-send --window "$W" --tab "$T" --message-file /tmp/re-review.md` (NO `--new-chat`)
+5. **Repeat** until `<verdict>SHIP</verdict>`
 
-   Please re-review. Verify the actual code changes, not just this summary.
-   EOF
-
-   $FLOWCTL rp chat-send --window "$W" --tab "$T" --message-file /tmp/re-review.md
-   ```
-4. **Repeat** until `<verdict>SHIP</verdict>`
-
-**CRITICAL**: Re-reviews must stay in the SAME chat so reviewer has context of previous feedback. Only use `--new-chat` on the FIRST review.
+**CRITICAL**: For RP, re-reviews must stay in the SAME chat so reviewer has context. Only use `--new-chat` on the FIRST review.

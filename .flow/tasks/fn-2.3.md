@@ -37,9 +37,18 @@ Update `/flow-next:impl-review` skill to support codex backend alongside rp.
 - [ ] `none` skips review
 - [ ] Verdict returned correctly from both backends
 ## Done summary
-TBD
+- Updated SKILL.md with backend selection logic
+- Updated workflow.md with codex backend workflow (Phase 0 + codex section)
+- Labeled RP phases for clarity
+- Updated anti-patterns for both backends
 
+Why:
+- Enable codex as alternative to RepoPrompt for cross-platform support
+- No regression on RP workflow
+
+Verification:
+- smoke_test.sh passes
 ## Evidence
-- Commits:
-- Tests:
+- Commits: 828c815859bad499bb92052a21b074f346587703
+- Tests: smoke_test.sh
 - PRs:
