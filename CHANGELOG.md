@@ -2,6 +2,15 @@
 
 All notable changes to the gmickel-claude-marketplace.
 
+## [flow-next 0.5.1] - 2026-01-11
+
+### Added
+- Codex option in plan/work skill setup questions (was missing from interactive flow)
+
+### Fixed
+- Plan and work skills now ask about Codex backend when available (not just RepoPrompt)
+- Backend detection checks for both `codex` and `rp-cli` availability
+
 ## [flow-next 0.5.0] - 2026-01-11
 
 ### Added

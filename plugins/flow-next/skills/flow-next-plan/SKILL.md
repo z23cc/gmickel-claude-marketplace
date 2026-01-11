@@ -40,7 +40,11 @@ If empty, ask: "What should I plan? Give me the feature or bug in 1-5 sentences.
 
 ## FIRST: Parse Options or Ask Questions
 
-Check: `which rp-cli >/dev/null 2>&1`
+Check available backends:
+```bash
+HAVE_RP=$(which rp-cli >/dev/null 2>&1 && echo 1 || echo 0)
+HAVE_CODEX=$(which codex >/dev/null 2>&1 && echo 1 || echo 0)
+```
 
 ### Option Parsing (skip questions if found in arguments)
 
@@ -51,14 +55,16 @@ Parse the arguments for these patterns. If found, use them and skip questions:
 - `--research=grep` or `--research grep` or "use grep" or "repo-scout" or "fast" → repo-scout
 
 **Review mode**:
+- `--review=codex` or "review with codex" or "codex review" or "use codex" → Codex CLI (GPT 5.2 High)
 - `--review=rp` or "review with rp" or "rp chat" or "repoprompt review" → RepoPrompt chat (via `flowctl rp chat-send`)
 - `--review=export` or "export review" or "external llm" → export for external LLM
 - `--review=none` or `--no-review` or "no review" or "skip review" → no review
 
 ### If options NOT found in arguments
 
-If rp-cli available, output these questions as text (do NOT use AskUserQuestion tool):
+Output questions based on available backends (do NOT use AskUserQuestion tool):
 
+**If both rp-cli AND codex available:**
 ```
 Quick setup before planning:
 
@@ -67,22 +73,51 @@ Quick setup before planning:
    b) No, repo-scout (faster)
 
 2. **Review** — Run Carmack-level review after?
-   a) Yes, RepoPrompt chat (`flowctl rp chat-send`)
-   b) Yes, export for external LLM (ChatGPT, Claude web)
+   a) Yes, Codex CLI (cross-platform, GPT 5.2 High)
+   b) Yes, RepoPrompt chat (macOS, visual builder)
+   c) Yes, export for external LLM (ChatGPT, Claude web)
+   d) No
+
+(Reply: "1a 2a", "1b 2d", or just tell me naturally)
+```
+
+**If only rp-cli available:**
+```
+Quick setup before planning:
+
+1. **Research approach** — Use RepoPrompt for deeper context?
+   a) Yes, context-scout (slower, thorough)
+   b) No, repo-scout (faster)
+
+2. **Review** — Run Carmack-level review after?
+   a) Yes, RepoPrompt chat
+   b) Yes, export for external LLM
    c) No
 
 (Reply: "1a 2a", "1b 2c", or just tell me naturally)
 ```
 
+**If only codex available:**
+```
+Quick setup before planning:
+
+**Review** — Run Carmack-level review after?
+a) Yes, Codex CLI (GPT 5.2 High)
+b) Yes, export for external LLM
+c) No
+
+(Reply: "a", "b", or just tell me naturally)
+```
+
 Wait for response. Parse naturally — user may reply terse ("1a 2b") or ramble via voice.
 
-**Defaults when empty/ambiguous (rp-cli available):**
+**Defaults when empty/ambiguous:**
 - Research = `grep` (repo-scout)
-- Review = `rp`
+- Review = `codex` if available, else `rp` if available, else `none`
 
-If rp-cli NOT available: skip questions, use repo-scout by default, no review.
+If neither rp-cli nor codex available: skip review questions, use repo-scout, no review.
 
-**Defaults when rp-cli NOT available:**
+**Defaults when no review backend available:**
 - Research = `grep`
 - Review = `none`
 

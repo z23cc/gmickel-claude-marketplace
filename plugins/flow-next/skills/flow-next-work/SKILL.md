@@ -53,7 +53,11 @@ If no input provided, ask for it.
 
 ## FIRST: Parse Options or Ask Questions
 
-Check if rp-cli available: `which rp-cli >/dev/null 2>&1`
+Check available backends:
+```bash
+HAVE_RP=$(which rp-cli >/dev/null 2>&1 && echo 1 || echo 0)
+HAVE_CODEX=$(which codex >/dev/null 2>&1 && echo 1 || echo 0)
+```
 
 ### Option Parsing (skip questions if found in arguments)
 
@@ -64,14 +68,17 @@ Parse the arguments for these patterns. If found, use them and skip correspondin
 - `--branch=new` or `--new-branch` or "new branch" or "create branch" → new branch
 - `--branch=worktree` or `--worktree` or "isolated worktree" or "worktree" → isolated worktree
 
-**Review mode** (only if rp-cli available):
+**Review mode**:
+- `--review=codex` or "review with codex" or "codex review" or "use codex" → Codex CLI (GPT 5.2 High)
 - `--review=rp` or "review with rp" or "rp chat" or "repoprompt review" → RepoPrompt chat (via `flowctl rp chat-send`)
 - `--review=export` or "export review" or "external llm" → export for external LLM
 - `--review=none` or `--no-review` or "no review" or "skip review" → no review
 
 ### If options NOT found in arguments
 
-If rp-cli available, output these questions as text (do NOT use AskUserQuestion tool):
+Output questions based on available backends (do NOT use AskUserQuestion tool):
+
+**If both rp-cli AND codex available:**
 ```
 Quick setup before starting:
 
@@ -81,14 +88,49 @@ Quick setup before starting:
    c) Isolated worktree
 
 2. **Review** — Run Carmack-level review after?
-   a) Yes, RepoPrompt chat (`flowctl rp chat-send`)
-   b) Yes, export for external LLM (ChatGPT, Claude web)
+   a) Yes, Codex CLI (cross-platform, GPT 5.2 High)
+   b) Yes, RepoPrompt chat (macOS, visual builder)
+   c) Yes, export for external LLM (ChatGPT, Claude web)
+   d) No
+
+(Reply: "1a 2a", "current branch, codex review", or just tell me naturally)
+```
+
+**If only rp-cli available:**
+```
+Quick setup before starting:
+
+1. **Branch** — Where to work?
+   a) Current branch
+   b) New branch
+   c) Isolated worktree
+
+2. **Review** — Run Carmack-level review after?
+   a) Yes, RepoPrompt chat
+   b) Yes, export for external LLM
    c) No
 
 (Reply: "1a 2a", "current branch, export review", or just tell me naturally)
 ```
 
-If rp-cli NOT available, ask only branch:
+**If only codex available:**
+```
+Quick setup before starting:
+
+1. **Branch** — Where to work?
+   a) Current branch
+   b) New branch
+   c) Isolated worktree
+
+2. **Review** — Run Carmack-level review after?
+   a) Yes, Codex CLI (GPT 5.2 High)
+   b) Yes, export for external LLM
+   c) No
+
+(Reply: "1a 2a", "current branch, codex", or just tell me naturally)
+```
+
+**If neither rp-cli nor codex available:**
 ```
 Quick setup: Where to work?
 a) Current branch  b) New branch  c) Isolated worktree
@@ -98,11 +140,11 @@ a) Current branch  b) New branch  c) Isolated worktree
 
 Wait for response. Parse naturally — user may reply terse or ramble via voice.
 
-**Defaults when empty/ambiguous (rp-cli available):**
+**Defaults when empty/ambiguous:**
 - Branch = `new`
-- Review = `rp`
+- Review = `codex` if available, else `rp` if available, else `none`
 
-**Defaults when rp-cli NOT available:**
+**Defaults when no review backend available:**
 - Branch = `new`
 - Review = `none`
 

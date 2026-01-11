@@ -204,12 +204,12 @@ Then push + open PR if user wants.
 
 ## Phase 7: Review (if chosen at start)
 
-If user chose "Yes" to review in setup questions or `--review=rp` was passed:
+If user chose "Yes" to review in setup questions or `--review=codex` / `--review=rp` was passed:
 
 **CRITICAL: You MUST invoke the `/flow-next:impl-review` skill. Do NOT improvise your own review format.**
 
 The impl-review skill:
-- Coordinates with RepoPrompt (setup-review, select-add, chat-send)
+- Auto-detects backend (Codex CLI or RepoPrompt) based on config/availability
 - Uses the correct prompt template requiring `<verdict>SHIP|NEEDS_WORK|MAJOR_RETHINK</verdict>`
 - Handles the fix loop internally
 
@@ -222,7 +222,7 @@ Steps:
    - Re-run `/flow-next:impl-review`
 3. Repeat until review returns SHIP
 
-**Anti-pattern**: Sending your own review prompts to RepoPrompt without invoking the skill.
+**Anti-pattern**: Sending your own review prompts directly without invoking the skill.
 The skill has the correct format; improvised prompts ask for "LGTM" which breaks automation.
 
 **No human gates here** — the review-fix-review loop is fully automated.
