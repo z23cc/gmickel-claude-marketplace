@@ -162,17 +162,19 @@ cat > /tmp/review-prompt.md << 'EOF'
 
 Conduct a John Carmack-level review:
 
-1. **Simplicity** - Simplest solution? Unnecessary abstraction?
-2. **DRY** - Duplicated logic? Existing patterns?
-3. **Architecture** - Data flow? Clear boundaries?
-4. **Edge Cases** - Failure modes? Race conditions?
-5. **Security** - Injection? Auth gaps?
+1. **Completeness** - All requirements covered? Missing edge cases?
+2. **Feasibility** - Technically sound? Dependencies clear?
+3. **Clarity** - Specs unambiguous? Acceptance criteria testable?
+4. **Architecture** - Right abstractions? Clean boundaries?
+5. **Risks** - Blockers identified? Security gaps? Mitigation?
+6. **Scope** - Right-sized? Over/under-engineering?
+7. **Testability** - How will we verify this works?
 
 ## Output Format
 
 For each issue:
 - **Severity**: Critical / Major / Minor / Nitpick
-- **Location**: Where in the plan
+- **Location**: Which task or section
 - **Problem**: What's wrong
 - **Suggestion**: How to fix
 

@@ -674,7 +674,7 @@ Do NOT skip this tag. The automation depends on it."""
 2. **Feasibility** - Technically sound? Dependencies clear?
 3. **Clarity** - Specs unambiguous? Acceptance criteria testable?
 4. **Architecture** - Right abstractions? Clean boundaries?
-5. **Risks** - Blockers identified? Mitigation strategies?
+5. **Risks** - Blockers identified? Security gaps? Mitigation?
 6. **Scope** - Right-sized? Over/under-engineering?
 7. **Testability** - How will we verify this works?
 
