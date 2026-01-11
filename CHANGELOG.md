@@ -2,6 +2,11 @@
 
 All notable changes to the gmickel-claude-marketplace.
 
+## [flow-next 0.3.21] - 2026-01-11
+
+### Fixed
+- ralph-init skill now explicitly tells user to run scripts from terminal
+
 ## [flow-next 0.3.20] - 2026-01-11
 
 ### Fixed

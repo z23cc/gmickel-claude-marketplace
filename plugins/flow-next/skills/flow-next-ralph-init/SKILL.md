@@ -25,7 +25,7 @@ Scaffold repo-local Ralph harness. Opt-in only.
    - otherwise `PLAN_REVIEW=none`, `WORK_REVIEW=none`
    - replace `{{PLAN_REVIEW}}` and `{{WORK_REVIEW}}` placeholders in the template
 5. Copy templates and flowctl files.
-6. Print next steps:
-   - `./scripts/ralph/ralph_once.sh` (one iteration)
-   - `./scripts/ralph/ralph.sh` (full loop)
+6. Print next steps (run from terminal, NOT inside Claude Code):
+   - `./scripts/ralph/ralph_once.sh` (one iteration, observe)
+   - `./scripts/ralph/ralph.sh` (full loop, AFK)
    - Uninstall: `rm -rf scripts/ralph/`
