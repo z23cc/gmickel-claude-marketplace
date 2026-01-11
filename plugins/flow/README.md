@@ -7,6 +7,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](../../LICENSE)
 [![Claude Code](https://img.shields.io/badge/Claude_Code-Plugin-blueviolet)](https://claude.ai/code)
 [![Version](https://img.shields.io/badge/Version-0.8.4-green)](../../CHANGELOG.md)
+[![Status](https://img.shields.io/badge/Status-Legacy-orange)](../flow-next/)
 [![Commands](https://img.shields.io/badge/Commands-5-green)](commands/)
 [![Agents](https://img.shields.io/badge/Agents-6-yellow)](agents/)
 [![Skills](https://img.shields.io/badge/Skills-7-blue)](skills/)
@@ -15,7 +16,9 @@
 
 </div>
 
-> **Note:** flow is stable. New features go to [flow-next](../flow-next/). Use flow if you need Beads integration or standalone plan files and are not interested in autonomous Ralph mode.
+> **⚠️ Legacy plugin.** New users should install [flow-next](../flow-next/) instead.
+>
+> Flow is stable but no longer developed. Flow-next has Ralph mode, better tooling, and works with Beads/plan files too. Flow is kept for existing users only.
 
 ---
 

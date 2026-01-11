@@ -4,7 +4,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Claude Code](https://img.shields.io/badge/Claude_Code-Plugin_Marketplace-blueviolet)](https://claude.ai/code)
-[![Flow-next](https://img.shields.io/badge/Flow--next-v0.5.7-green)](plugins/flow-next/)
+[![Flow-next](https://img.shields.io/badge/Flow--next-v0.5.8-green)](plugins/flow-next/)
 [![Flow](https://img.shields.io/badge/Flow-v0.8.4-blue)](plugins/flow/)
 [![Author](https://img.shields.io/badge/Author-Gordon_Mickel-orange)](https://mickel.tech)
 [![Twitter](https://img.shields.io/badge/@gmickel-black?logo=x)](https://twitter.com/gmickel)
@@ -42,12 +42,9 @@ This marketplace ships plugins that fix these problems.
 | Plugin | What It Does |
 |--------|--------------|
 | [**flow-next**](#flow-next) | Plan-first workflow with `.flow/` task tracking. Zero deps. Multi-user safe. **Recommended.** |
-| [**flow**](#flow) | Stable. Beads integration, standalone plan files. No Ralph mode. |
+| ~~flow~~ | Legacy. Use flow-next instead. |
 
-## Pick a plugin
-
-- **flow-next**: `.flow/` + bundled `flowctl` + Ralph mode (autonomous overnight loop) via `/flow-next:ralph-init`
-- **flow**: original behavior (plan files, optional external tracker)
+> **New here?** Install **flow-next**. It does everything flow does plus Ralph mode, better tooling, and active development. Flow is kept for existing users only.
 
 ---
 
@@ -340,12 +337,11 @@ All commands accept flags to bypass interactive questions:
 
 ---
 
-## Flow
+## Flow (Legacy)
 
-> **Requires RepoPrompt v1.5.62+** for review features.
-> Using older RepoPrompt? Downgrade: `/plugin install flow@0.8.0`
+> **⚠️ Legacy plugin.** New users should install [flow-next](#flow-next) instead.
 
-**Plan first, work second.** The original, with optional Beads integration.
+**Plan first, work second.** The original, with optional Beads integration. Kept for existing users.
 
 ```bash
 /plugin install flow

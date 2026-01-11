@@ -2,6 +2,17 @@
 
 All notable changes to the gmickel-claude-marketplace.
 
+## [flow-next 0.5.8] - 2026-01-11
+
+### Added
+- Context gathering prompt for Codex reviews (cross-boundary checks, related patterns)
+- Rust, C/C++, Java symbol extraction in `gather_context_hints`
+- Extended `find_references` to search `.rs`, `.c`, `.h`, `.cpp`, `.hpp`, `.java` files
+
+### Changed
+- Mark flow plugin as legacy with clearer messaging
+- Wrap `extract_symbols_from_file` in try/except for graceful failure
+
 ## [flow-next 0.5.7] - 2026-01-11
 
 ### Changed
