@@ -272,6 +272,7 @@ set +a
 MAX_ITERATIONS="${MAX_ITERATIONS:-25}"
 MAX_TURNS="${MAX_TURNS:-}"  # empty = no limit; Claude stops via promise tags
 MAX_ATTEMPTS_PER_TASK="${MAX_ATTEMPTS_PER_TASK:-5}"
+WORKER_TIMEOUT="${WORKER_TIMEOUT:-1800}"  # 30min default; prevents stuck workers
 BRANCH_MODE="${BRANCH_MODE:-new}"
 PLAN_REVIEW="${PLAN_REVIEW:-none}"
 WORK_REVIEW="${WORK_REVIEW:-none}"
@@ -664,9 +665,15 @@ Violations break automation and leave the user with incomplete work. Be precise,
   ui_waiting
 
   set +e
-  claude_out="$("$CLAUDE_BIN" "${claude_args[@]}" "$prompt" 2>&1)"
+  claude_out="$(timeout "$WORKER_TIMEOUT" "$CLAUDE_BIN" "${claude_args[@]}" "$prompt" 2>&1)"
   claude_rc=$?
   set -e
+
+  # Handle timeout (exit code 124)
+  if [[ "$claude_rc" -eq 124 ]]; then
+    echo "ralph: worker timed out after ${WORKER_TIMEOUT}s" >> "$iter_log"
+    log "worker timeout after ${WORKER_TIMEOUT}s"
+  fi
 
   printf '%s\n' "$claude_out" > "$iter_log"
   log "claude rc=$claude_rc log=$iter_log"
