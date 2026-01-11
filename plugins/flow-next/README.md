@@ -4,7 +4,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](../../LICENSE)
 [![Claude Code](https://img.shields.io/badge/Claude_Code-Plugin-blueviolet)](https://claude.ai/code)
-[![Version](https://img.shields.io/badge/Version-0.3.19-green)](../../CHANGELOG.md)
+[![Version](https://img.shields.io/badge/Version-0.3.20-green)](../../CHANGELOG.md)
 [![Status](https://img.shields.io/badge/Status-Experimental-orange)]()
 
 **Plan first, work second. Zero external dependencies.**
@@ -450,10 +450,10 @@ What it automates (one unit per iteration, fresh context each time):
 Enable:
 ```bash
 /flow-next:ralph-init
-./scripts/ralph/ralph_once.sh   # one iteration (interactive)
+./scripts/ralph/ralph_once.sh   # one iteration (observe)
 ./scripts/ralph/ralph.sh        # full loop (AFK)
 ```
-`ralph_once.sh` runs a single unit in interactive Claude so you can follow along step-by-step.
+Run scripts from terminal (not inside Claude Code). `ralph_once.sh` runs one iteration so you can observe before going fully autonomous.
 
 ### Ralph defaults vs recommended (plan review gate)
 

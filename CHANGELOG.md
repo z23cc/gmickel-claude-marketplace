@@ -2,6 +2,11 @@
 
 All notable changes to the gmickel-claude-marketplace.
 
+## [flow-next 0.3.20] - 2026-01-11
+
+### Fixed
+- Clarified Ralph docs: run scripts from terminal, not inside Claude Code
+
 ## [flow-next 0.3.19] - 2026-01-11
 
 ### Changed
