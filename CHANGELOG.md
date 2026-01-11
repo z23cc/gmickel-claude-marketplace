@@ -2,6 +2,13 @@
 
 All notable changes to the gmickel-claude-marketplace.
 
+## [flow-next 0.4.3] - 2026-01-11
+
+### Fixed
+- Stop hook no longer blocks when `PLAN_REVIEW=none` and `WORK_REVIEW=none` (#8)
+- `REVIEW_RECEIPT_PATH` only exported when review is enabled
+- Smoke test `write_config()` now properly updates PLAN_REVIEW/WORK_REVIEW on subsequent calls
+
 ## [flow-next 0.4.2] - 2026-01-11
 
 ### Fixed

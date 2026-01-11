@@ -60,7 +60,11 @@ import re, sys
 plan, work, require, branch, max_iter, max_turns, max_attempts = sys.argv[1:8]
 cfg = Path("scripts/ralph/config.env")
 text = cfg.read_text()
+# Replace template placeholders first (for initial setup)
 text = text.replace("{{PLAN_REVIEW}}", plan).replace("{{WORK_REVIEW}}", work)
+# Then use re.sub for subsequent calls (when values are already set)
+text = re.sub(r"^PLAN_REVIEW=.*$", f"PLAN_REVIEW={plan}", text, flags=re.M)
+text = re.sub(r"^WORK_REVIEW=.*$", f"WORK_REVIEW={work}", text, flags=re.M)
 text = re.sub(r"^REQUIRE_PLAN_REVIEW=.*$", f"REQUIRE_PLAN_REVIEW={require}", text, flags=re.M)
 text = re.sub(r"^BRANCH_MODE=.*$", f"BRANCH_MODE={branch}", text, flags=re.M)
 text = re.sub(r"^MAX_ITERATIONS=.*$", f"MAX_ITERATIONS={max_iter}", text, flags=re.M)
@@ -163,6 +167,8 @@ scripts/ralph/flowctl epic create --title "Ralph Epic" --json >/dev/null
 scripts/ralph/flowctl task create --epic fn-1 --title "Ralph Task" --json >/dev/null
 write_config "none" "none" "0" "new" "3" "5" "2"
 CLAUDE_BIN="$TEST_DIR/bin/claude" scripts/ralph/ralph_once.sh >/dev/null
+# Mark fn-1 plan review done so it doesn't block fn-2 tests when REQUIRE_PLAN_REVIEW=1
+scripts/ralph/flowctl epic set-plan-review-status fn-1 --status ship --json >/dev/null
 echo -e "${GREEN}✓${NC} ralph_once runs"
 PASS=$((PASS + 1))
 
@@ -170,7 +176,8 @@ echo -e "${YELLOW}--- ralph.sh completes epic ---${NC}"
 scripts/ralph/flowctl epic create --title "Ralph Epic 2" --json >/dev/null
 scripts/ralph/flowctl task create --epic fn-2 --title "Task 1" --json >/dev/null
 scripts/ralph/flowctl task create --epic fn-2 --title "Task 2" --json >/dev/null
-write_config "rp" "none" "1" "new" "6" "5" "2"
+# Use rp for both to test receipt generation (none skips receipts correctly via fix for #8)
+write_config "rp" "rp" "1" "new" "6" "5" "2"
 STUB_MODE=success STUB_WRITE_RECEIPT=1 CLAUDE_BIN="$TEST_DIR/bin/claude" scripts/ralph/ralph.sh >/dev/null
 python3 - <<'PY'
 import json

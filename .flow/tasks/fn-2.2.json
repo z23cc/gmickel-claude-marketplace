@@ -11,6 +11,6 @@
   "priority": null,
   "spec_path": ".flow/tasks/fn-2.2.md",
   "status": "todo",
-  "title": "Implement context hints for codex reviews",
-  "updated_at": "2026-01-10T22:46:01.062573Z"
+  "title": "Add flowctl codex command group",
+  "updated_at": "2026-01-11T12:00:00.000000Z"
 }

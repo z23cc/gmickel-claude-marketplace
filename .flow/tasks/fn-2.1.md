@@ -1,70 +1,49 @@
-# fn-2.1 Add flowctl codex command group
+# fn-2.1 Implement context hints for codex reviews
 
 ## Description
 
-Add `flowctl codex` command group to flowctl.py, following the existing `flowctl rp` pattern.
+Implement context hints gathering for codex reviews. This replaces RP's context builder with a lightweight grep-based approach.
 
-### Commands to implement
+### Approach
 
-```bash
-flowctl codex check                           # Verify codex installed + version
-flowctl codex impl-review <task> --base <br>  # Impl review via codex exec
-flowctl codex plan-review <epic>              # Plan review via codex exec
+Use repo-scout-style pattern (inline in flowctl, not subagent):
+1. Get changed files from `git diff --name-only <base>`
+2. Extract imports/references from changed files
+3. Find files that reference changed exports (simple grep)
+4. Format as hints: `- path/to/file.ts:42 - reason`
+
+### Output format
+
+```
+Consider these related files:
+- src/auth.ts:15 - imports validateToken (called by changed code)
+- src/types.ts:42 - defines User interface (used in diff)
+- src/middleware/session.ts:8 - session management pattern
 ```
 
-### Implementation details
+### Implementation
 
-**`codex check`**
-- Use `shutil.which("codex")` to detect availability
-- Run `codex --version` to get version
-- Return JSON: `{"available": true, "version": "X.Y.Z"}`
+Add to flowctl.py:
+```python
+def gather_context_hints(base_branch: str) -> str:
+    # 1. git diff --name-only base_branch
+    # 2. For each changed file, extract imports
+    # 3. grep for references to changed symbols
+    # 4. Format and return hints
+```
 
-**`codex impl-review`**
-- Load task info for context
-- Call context-hints (fn-2.2) if available
-- Build prompt with XML structure (context_hints + review_instructions)
-- **Session handling**:
-  - Check for existing receipt with `session_id` → use `codex exec resume <id>`
-  - No session → use `codex exec --json` and parse `thread_id` from output
-- Run: `codex exec [resume <id>] --sandbox read-only --json "prompt"`
-- Parse JSON output for verdict and thread_id
-- Write receipt with `session_id` for re-review continuity
-- Print `VERDICT=X` for eval
-
-**`codex plan-review`**
-- Read `.flow/specs/{epic_id}.md`
-- Call context-hints for plan context
-- Build prompt with XML structure (plan_spec + context_hints + review_instructions)
-- **Session handling**: Same as impl-review (check receipt → resume or new)
-- Run: `codex exec [resume <id>] --sandbox read-only --json "prompt"`
-- Parse JSON, extract verdict, write receipt with session_id
-
-**Session continuity design**:
-- First review: `codex exec --json` → parse `thread_id` from `{"type":"thread.started","thread_id":"..."}`
-- Store in receipt: `{"session_id": "019baa19-...", ...}`
-- Re-review: Read receipt → `codex exec resume <session_id> "prompt"`
-- Fallback: If resume fails (session expired), start new session
-- **Never use `--last`** - conflicts with parallel usage
-
-### Key patterns to follow
-
-- `/Users/gordon/work/gmickel-claude-marketplace/plugins/flow-next/scripts/flowctl.py:157-173` - `require_rp_cli()` pattern
-- `/Users/gordon/work/gmickel-claude-marketplace/plugins/flow-next/scripts/flowctl.py:2660-2726` - `cmd_rp_setup_review` atomic pattern
-- `/Users/gordon/work/gmickel-claude-marketplace/plugins/flow-next/scripts/flowctl.py:3109-3185` - argparse setup
+This will be called from `codex impl-review` and `codex plan-review` (fn-2.2).
 
 ### Files to modify
 
-- `plugins/flow-next/scripts/flowctl.py` - add codex command group
+- `plugins/flow-next/scripts/flowctl.py` - add context hints function
 ## Acceptance
-- [ ] `flowctl codex check --json` returns `{"available": true/false, "version": "X.Y.Z"}`
-- [ ] `flowctl codex impl-review fn-1.1 --base main --json` executes codex review
-- [ ] `flowctl codex plan-review fn-1 --json` executes codex plan review
-- [ ] Verdict extracted from output: SHIP or NEEDS_WORK
-- [ ] Receipt includes `"mode": "codex"` and `"session_id": "..."`
-- [ ] Re-review uses `codex exec resume <session_id>` when receipt exists
-- [ ] Fallback to new session if resume fails
-- [ ] Graceful error when codex not installed
-- [ ] Existing `flowctl rp` commands still work (no regression)
+- [ ] Context hints gathered from git diff
+- [ ] Imports/exports extracted from changed files
+- [ ] Related files found via grep
+- [ ] Output format: `- path:line - reason`
+- [ ] Works with empty diff (returns empty hints, no error)
+- [ ] Works with large diff (reasonable limit, not 1000 files)
 ## Done summary
 TBD
 

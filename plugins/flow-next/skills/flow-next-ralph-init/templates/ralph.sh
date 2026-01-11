@@ -595,8 +595,12 @@ while (( iter <= MAX_ITERATIONS )); do
     export EPIC_ID="$epic_id"
     export PLAN_REVIEW
     export REQUIRE_PLAN_REVIEW
-    export REVIEW_RECEIPT_PATH="$RECEIPTS_DIR/plan-${epic_id}.json"
-    log "plan epic=$epic_id review=$PLAN_REVIEW receipt=$REVIEW_RECEIPT_PATH require=$REQUIRE_PLAN_REVIEW"
+    if [[ "$PLAN_REVIEW" != "none" ]]; then
+      export REVIEW_RECEIPT_PATH="$RECEIPTS_DIR/plan-${epic_id}.json"
+    else
+      unset REVIEW_RECEIPT_PATH
+    fi
+    log "plan epic=$epic_id review=$PLAN_REVIEW receipt=${REVIEW_RECEIPT_PATH:-} require=$REQUIRE_PLAN_REVIEW"
     ui_plan_review "$PLAN_REVIEW" "$epic_id"
     prompt="$(render_template "$SCRIPT_DIR/prompt_plan.md")"
   elif [[ "$status" == "work" ]]; then
@@ -608,8 +612,12 @@ while (( iter <= MAX_ITERATIONS )); do
     fi
     export BRANCH_MODE_EFFECTIVE
     export WORK_REVIEW
-    export REVIEW_RECEIPT_PATH="$RECEIPTS_DIR/impl-${task_id}.json"
-    log "work task=$task_id review=$WORK_REVIEW receipt=$REVIEW_RECEIPT_PATH branch=$BRANCH_MODE_EFFECTIVE"
+    if [[ "$WORK_REVIEW" != "none" ]]; then
+      export REVIEW_RECEIPT_PATH="$RECEIPTS_DIR/impl-${task_id}.json"
+    else
+      unset REVIEW_RECEIPT_PATH
+    fi
+    log "work task=$task_id review=$WORK_REVIEW receipt=${REVIEW_RECEIPT_PATH:-} branch=$BRANCH_MODE_EFFECTIVE"
     ui_impl_review "$WORK_REVIEW" "$task_id"
     prompt="$(render_template "$SCRIPT_DIR/prompt_work.md")"
   else
