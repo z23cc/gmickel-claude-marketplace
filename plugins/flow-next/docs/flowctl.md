@@ -453,6 +453,13 @@ npm install -g @openai/codex
 codex auth
 ```
 
+**Model configuration:**
+```bash
+# Default: o3 (high-quality reasoning model)
+# Override via environment variable:
+export FLOW_CODEX_MODEL=o3  # or gpt-4.1, etc.
+```
+
 **Commands:**
 
 ```bash
