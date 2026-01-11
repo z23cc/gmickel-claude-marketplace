@@ -312,6 +312,66 @@ Permanently: delete `hooks/` directory and remove `"hooks"` from `plugin.json`.
 
 ---
 
+## Morning Review Workflow
+
+After Ralph completes overnight, here's how to review and merge the work.
+
+### 1. Check what happened
+
+```bash
+cat scripts/ralph/runs/*/progress.txt   # run summary
+ls scripts/ralph/runs/*/receipts/       # all reviews passed
+git log --oneline                        # all commits
+```
+
+### 2. Review commits by epic
+
+Commits include task IDs (e.g., `feat(fn-1.1): ...` or `... (fn-2.1)`):
+
+```bash
+git log --oneline --grep="fn-1"   # all fn-1 commits
+git log --oneline --grep="fn-2"   # all fn-2 commits
+```
+
+### 3. If everything looks good
+
+```bash
+git checkout main
+git merge ralph-<run-id>
+# or create PR: gh pr create
+```
+
+### 4. If one epic is bad
+
+**Option A: Cherry-pick good epics**
+
+```bash
+git checkout main
+git cherry-pick <fn-1-commits>
+git cherry-pick <fn-2-commits>
+# skip fn-3
+git cherry-pick <fn-4-commits>
+```
+
+**Option B: Revert bad epic, merge rest**
+
+```bash
+git checkout ralph-<run-id>
+git revert <fn-3-commits>
+git checkout main
+git merge ralph-<run-id>
+```
+
+### 5. Finding commit SHAs
+
+Use `git log --grep` or check task evidence:
+
+```bash
+flowctl show fn-1.1 --json | jq '.evidence.commits'
+```
+
+---
+
 ## References
 
 - [flowctl CLI reference](flowctl.md)
