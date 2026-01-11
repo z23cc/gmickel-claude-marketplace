@@ -39,7 +39,7 @@ def load_state(session_id: str) -> dict:
             state.setdefault("chat_send_succeeded", False)
             state.setdefault("flowctl_done_called", set())
             return state
-        except:
+        except (json.JSONDecodeError, KeyError, TypeError):
             pass
     return {
         "chats_sent": 0,
@@ -154,6 +154,23 @@ def handle_pre_tool_use(data: dict) -> None:
                 "BLOCKED: select-add requires --window flag. "
                 "Use: select-add --window \"$W\" --tab \"$T\" <path>"
             )
+
+    # Enforce flowctl done requires --evidence-json and --summary-file
+    if " done " in command and ("flowctl" in command or "FLOWCTL" in command):
+        # Skip if it's just "flowctl done --help" or similar
+        if not re.search(r"--help|-h", command):
+            if not re.search(r"--evidence-json|--evidence", command):
+                output_block(
+                    "BLOCKED: flowctl done requires --evidence-json flag. "
+                    "You must capture commit SHAs and test commands. "
+                    "Use: flowctl done <task> --summary-file <s.md> --evidence-json <e.json>"
+                )
+            if not re.search(r"--summary-file|--summary", command):
+                output_block(
+                    "BLOCKED: flowctl done requires --summary-file flag. "
+                    "You must write a done summary. "
+                    "Use: flowctl done <task> --summary-file <s.md> --evidence-json <e.json>"
+                )
 
     # Block receipt writes unless chat-send has succeeded + validate format
     receipt_path = os.environ.get("REVIEW_RECEIPT_PATH", "")
@@ -412,7 +429,7 @@ def main():
     # Only process Bash tool calls for Pre/Post
     if event in ("PreToolUse", "PostToolUse") and tool_name != "Bash":
         with debug_file.open("a") as f:
-            f.write(f"  -> Skipping: not Bash\n")
+            f.write("  -> Skipping: not Bash\n")
         sys.exit(0)
 
     # Route to handler

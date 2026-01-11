@@ -2,6 +2,15 @@
 
 All notable changes to the gmickel-claude-marketplace.
 
+## [flow-next 0.4.1] - 2026-01-11
+
+### Added
+- Hook enforcement: `flowctl done` now requires `--evidence-json` and `--summary-file` flags
+- Morning review workflow guide in ralph.md
+
+### Fixed
+- Evidence field was empty because Claude drifted and skipped --evidence-json flag
+
 ## [flow-next 0.4.0] - 2026-01-11
 
 ### Changed
