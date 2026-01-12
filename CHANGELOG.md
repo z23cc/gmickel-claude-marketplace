@@ -2,6 +2,13 @@
 
 All notable changes to the gmickel-claude-marketplace.
 
+## [flow-next 0.6.1] - 2026-01-12
+
+### Fixed
+- Skip artifact files in `.flow/tasks/` that don't have `id` field (GH-21)
+  - Prevents `KeyError` crash when Claude writes temp files like `fn-1.1-evidence.json`
+  - Affects: `next`, `list`, `ready`, `show`, `validate` commands
+
 ## [flow-next 0.6.0] - 2026-01-12
 
 ### Added
@@ -553,7 +560,7 @@ Builder is AI-powered—its strength is discovering related patterns, architectu
   - Escape hatch for genuine disagreements preserved
   - Updated anti-patterns to flag "documenting instead of fixing"
 
-## [0.6.0] - 2025-12-30
+## [0.6.1] - 2025-12-30
 
 ### Added
 - Tab isolation docs for parallel agents using rp-cli (#3)
@@ -609,7 +616,7 @@ Builder is AI-powered—its strength is discovering related patterns, architectu
 ### Fixed
 - Restructured chat command examples so `--new-chat` flags aren't buried
 
-## [0.6.0] - 2025-12-29
+## [0.6.1] - 2025-12-29
 
 ### Added
 - Chat session targeting for re-reviews

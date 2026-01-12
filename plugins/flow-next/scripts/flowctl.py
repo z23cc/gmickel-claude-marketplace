@@ -1676,6 +1676,8 @@ def cmd_show(args: argparse.Namespace) -> None:
                         task_file, f"Task {task_file.stem}", use_json=args.json
                     )
                 )
+                if "id" not in task_data:
+                    continue  # Skip artifact files (GH-21)
                 tasks.append(
                     {
                         "id": task_data["id"],
@@ -1815,6 +1817,8 @@ def cmd_tasks(args: argparse.Namespace) -> None:
             task_data = normalize_task(
                 load_json_or_exit(task_file, f"Task {stem}", use_json=args.json)
             )
+            if "id" not in task_data:
+                continue  # Skip artifact files (GH-21)
             # Filter by status if requested
             if args.status and task_data["status"] != args.status:
                 continue
@@ -1896,6 +1900,8 @@ def cmd_list(args: argparse.Namespace) -> None:
             task_data = normalize_task(
                 load_json_or_exit(task_file, f"Task {stem}", use_json=args.json)
             )
+            if "id" not in task_data:
+                continue  # Skip artifact files (GH-21)
             epic_id = task_data["epic"]
             if epic_id not in tasks_by_epic:
                 tasks_by_epic[epic_id] = []
@@ -2203,6 +2209,8 @@ def cmd_ready(args: argparse.Namespace) -> None:
         task_data = normalize_task(
             load_json_or_exit(task_file, f"Task {task_file.stem}", use_json=args.json)
         )
+        if "id" not in task_data:
+            continue  # Skip artifact files (GH-21)
         tasks[task_data["id"]] = task_data
 
     # Find ready tasks (status=todo, all deps done)
@@ -2396,6 +2404,8 @@ def cmd_next(args: argparse.Namespace) -> None:
                     task_file, f"Task {task_file.stem}", use_json=args.json
                 )
             )
+            if "id" not in task_data:
+                continue  # Skip artifact files (GH-21)
             tasks[task_data["id"]] = task_data
 
         # Resume in_progress tasks owned by current actor
@@ -2861,6 +2871,8 @@ def validate_epic(
                     task_file, f"Task {task_file.stem}", use_json=use_json
                 )
             )
+            if "id" not in task_data:
+                continue  # Skip artifact files (GH-21)
             tasks[task_data["id"]] = task_data
 
     # Validate each task
@@ -3916,7 +3928,10 @@ def main() -> None:
 
     p_codex_impl = codex_sub.add_parser("impl-review", help="Implementation review")
     p_codex_impl.add_argument(
-        "task", nargs="?", default=None, help="Task ID (fn-N.M), optional for standalone"
+        "task",
+        nargs="?",
+        default=None,
+        help="Task ID (fn-N.M), optional for standalone",
     )
     p_codex_impl.add_argument("--base", required=True, help="Base branch for diff")
     p_codex_impl.add_argument(

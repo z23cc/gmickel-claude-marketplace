@@ -77,6 +77,78 @@ PY
 echo -e "${GREEN}✓${NC} next none"
 PASS=$((PASS + 1))
 
+echo -e "${YELLOW}--- artifact files in tasks dir (GH-21) ---${NC}"
+# Create artifact files that match glob but aren't valid task files
+# This simulates Claude writing evidence/summary files to .flow/tasks/
+cat > .flow/tasks/fn-1.1-evidence.json << 'EOF'
+{"commits":["abc123"],"tests":["npm test"],"prs":[]}
+EOF
+cat > .flow/tasks/fn-1.1-summary.json << 'EOF'
+{"summary":"Task completed successfully"}
+EOF
+# Test that next still works with artifact files present
+set +e
+next_result="$(scripts/flowctl next --json 2>&1)"
+next_rc=$?
+set -e
+if [[ "$next_rc" -eq 0 ]]; then
+  echo -e "${GREEN}✓${NC} next ignores artifact files"
+  PASS=$((PASS + 1))
+else
+  echo -e "${RED}✗${NC} next crashes on artifact files: $next_result"
+  FAIL=$((FAIL + 1))
+fi
+# Test that list still works
+set +e
+list_result="$(scripts/flowctl list --json 2>&1)"
+list_rc=$?
+set -e
+if [[ "$list_rc" -eq 0 ]]; then
+  echo -e "${GREEN}✓${NC} list ignores artifact files"
+  PASS=$((PASS + 1))
+else
+  echo -e "${RED}✗${NC} list crashes on artifact files: $list_result"
+  FAIL=$((FAIL + 1))
+fi
+# Test that ready still works
+set +e
+ready_result="$(scripts/flowctl ready --epic fn-1 --json 2>&1)"
+ready_rc=$?
+set -e
+if [[ "$ready_rc" -eq 0 ]]; then
+  echo -e "${GREEN}✓${NC} ready ignores artifact files"
+  PASS=$((PASS + 1))
+else
+  echo -e "${RED}✗${NC} ready crashes on artifact files: $ready_result"
+  FAIL=$((FAIL + 1))
+fi
+# Test that show (with tasks) still works
+set +e
+show_result="$(scripts/flowctl show fn-1 --json 2>&1)"
+show_rc=$?
+set -e
+if [[ "$show_rc" -eq 0 ]]; then
+  echo -e "${GREEN}✓${NC} show ignores artifact files"
+  PASS=$((PASS + 1))
+else
+  echo -e "${RED}✗${NC} show crashes on artifact files: $show_result"
+  FAIL=$((FAIL + 1))
+fi
+# Test that validate still works
+set +e
+validate_result="$(scripts/flowctl validate --epic fn-1 --json 2>&1)"
+validate_rc=$?
+set -e
+if [[ "$validate_rc" -eq 0 ]]; then
+  echo -e "${GREEN}✓${NC} validate ignores artifact files"
+  PASS=$((PASS + 1))
+else
+  echo -e "${RED}✗${NC} validate crashes on artifact files: $validate_result"
+  FAIL=$((FAIL + 1))
+fi
+# Cleanup artifact files
+rm -f .flow/tasks/fn-1.1-evidence.json .flow/tasks/fn-1.1-summary.json
+
 echo -e "${YELLOW}--- plan_review_status default ---${NC}"
 python3 - <<'PY'
 import json
