@@ -53,6 +53,12 @@ scripts/ralph/ralph.sh
 
 Ralph spawns Claude sessions via `claude -p`, loops until done, and applies review gates.
 
+**Watch mode** - see what's happening in real-time:
+```bash
+scripts/ralph/ralph.sh --watch           # Stream tool calls
+scripts/ralph/ralph.sh --watch verbose   # Also stream model responses
+```
+
 ### Step 3: Uninstall
 
 ```bash
@@ -372,6 +378,15 @@ docker sandbox run -w ~/my-project claude "scripts/ralph/ralph.sh"
 ```
 
 See [Docker sandbox docs](https://docs.docker.com/ai/sandboxes/claude-code/) for details.
+
+### Watch mode
+
+```bash
+scripts/ralph/ralph.sh --watch           # Stream tool calls in real-time
+scripts/ralph/ralph.sh --watch verbose   # Also stream model responses
+```
+
+Watch mode shows you what Claude is doing without blocking autonomy. Tool calls display with icons and colors. Logs still captured to `runs/<run>/iter-*.log`.
 
 ### Verbose logging
 

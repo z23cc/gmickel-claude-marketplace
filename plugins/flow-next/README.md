@@ -621,6 +621,13 @@ Enable:
 ./scripts/ralph/ralph_once.sh   # one iteration (observe)
 ./scripts/ralph/ralph.sh        # full loop (AFK)
 ```
+
+**Watch mode** - see what Claude is doing:
+```bash
+./scripts/ralph/ralph.sh --watch           # Stream tool calls in real-time
+./scripts/ralph/ralph.sh --watch verbose   # Also stream model responses
+```
+
 Run scripts from terminal (not inside Claude Code). `ralph_once.sh` runs one iteration so you can observe before going fully autonomous.
 
 ### Ralph defaults vs recommended (plan review gate)
