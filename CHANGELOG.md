@@ -2,12 +2,42 @@
 
 All notable changes to the gmickel-claude-marketplace.
 
+## [flow-next-tui 0.1.1] - 2026-01-13
+
+### Added
+- **CI/CD workflow**: `.github/workflows/publish-tui.yml`
+  - Triggers on push to main (flow-next-tui/**) or workflow_dispatch
+  - Test matrix: ubuntu + macos, lint, test, pack-test
+  - npm publish with OIDC trusted publishing (no NPM_TOKEN needed)
+  - Version detection: only publishes when version differs from npm
+- **Bump script**: `scripts/bump.sh` for semver version management
+- Screenshot in README (replaces ASCII layout diagram)
+
+### Changed
+- README intro now explains what Flow-Next and Ralph are
+
+## [flow-next 0.6.2] - 2026-01-13
+
+### Added
+- **TUI documentation**: Ralph docs now include TUI quickstart with screenshot
+- TUI links in README and ralph.md
+
 ## [flow-next 0.6.1] - 2026-01-12
 
+### Changed
+- Ralph now always outputs stream-json to logs (TUI compatibility)
+  - `--watch` flag only controls terminal display, not log format
+  - Logs always parseable by TUI regardless of watch mode
+
 ### Fixed
+- Add `--verbose` to quiet mode (required by Claude CLI for `stream-json` + `--print`)
+  - Without this, quiet mode errored: "output-format=stream-json requires --verbose"
 - Skip artifact files in `.flow/tasks/` that don't have `id` field (GH-21)
   - Prevents `KeyError` crash when Claude writes temp files like `fn-1.1-evidence.json`
   - Affects: `next`, `list`, `ready`, `show`, `validate` commands
+- Ralph now exports `FLOW_REVIEW_BACKEND` based on `PLAN_REVIEW`/`WORK_REVIEW`
+  - Skills inside Claude now see consistent backend config
+  - Previously skills would re-detect and potentially choose different backend
 
 ## [flow-next 0.6.0] - 2026-01-12
 

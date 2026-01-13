@@ -853,6 +853,33 @@ Do NOT skip this tag. The automation depends on it."""
     return "\n\n".join(parts)
 
 
+def build_rereview_preamble(changed_files: list[str], review_type: str) -> str:
+    """Build preamble for re-reviews telling Codex to re-read changed files.
+
+    When resuming a Codex session, file contents may be cached from the original review.
+    This preamble explicitly instructs Codex to re-read the files that may have changed.
+    """
+    files_list = "\n".join(f"- {f}" for f in changed_files[:30])  # Cap at 30 files
+    if len(changed_files) > 30:
+        files_list += f"\n- ... and {len(changed_files) - 30} more files"
+
+    return f"""## IMPORTANT: Re-review After Fixes
+
+This is a RE-REVIEW. Code has been modified since your last review.
+
+**You MUST re-read these files before reviewing** - your cached view is stale:
+{files_list}
+
+Use your file reading tools to get the CURRENT content of these files.
+Do NOT rely on what you saw in the previous review - the code has changed.
+
+After re-reading, conduct a fresh {review_type} review on the updated code.
+
+---
+
+"""
+
+
 def get_actor() -> str:
     """Determine current actor for soft-claim semantics.
 
@@ -995,6 +1022,12 @@ def patch_task_section(content: str, section: str, new_content: str) -> str:
         raise ValueError(
             f"Cannot patch: duplicate heading '{section}' found ({matches} times)"
         )
+
+    # Strip leading section heading from new_content if present (defensive)
+    # Handles case where agent includes "## Description" in temp file
+    new_lines = new_content.lstrip().split("\n")
+    if new_lines and new_lines[0].strip() == section:
+        new_content = "\n".join(new_lines[1:]).lstrip()
 
     lines = content.split("\n")
     result = []
@@ -2598,11 +2631,17 @@ def cmd_done(args: argparse.Namespace) -> None:
 
     # MU-2: Require in_progress status (unless --force)
     if not args.force and task_data["status"] != "in_progress":
-        error_exit(
-            f"Cannot complete task {args.id}: status is '{task_data['status']}', expected 'in_progress'. "
-            f"Use --force to override.",
-            use_json=args.json,
-        )
+        status = task_data["status"]
+        if status == "done":
+            error_exit(
+                f"Task {args.id} is already done.",
+                use_json=args.json,
+            )
+        else:
+            error_exit(
+                f"Task {args.id} is '{status}', not 'in_progress'. Use --force to override.",
+                use_json=args.json,
+            )
 
     # MU-2: Prevent cross-actor completion (unless --force)
     current_actor = get_actor()
@@ -2614,19 +2653,35 @@ def cmd_done(args: argparse.Namespace) -> None:
             use_json=args.json,
         )
 
-    # Read summary from file
-    summary = read_text_or_exit(
-        Path(args.summary_file), "Summary file", use_json=args.json
-    )
+    # Get summary: file > inline > default
+    summary: str
+    if args.summary_file:
+        summary = read_text_or_exit(
+            Path(args.summary_file), "Summary file", use_json=args.json
+        )
+    elif args.summary:
+        summary = args.summary
+    else:
+        summary = "- Task completed"
 
-    # Read evidence from JSON file
-    evidence_raw = read_text_or_exit(
-        Path(args.evidence_json), "Evidence file", use_json=args.json
-    )
-    try:
-        evidence = json.loads(evidence_raw)
-    except json.JSONDecodeError as e:
-        error_exit(f"Evidence file invalid JSON: {e}", use_json=args.json)
+    # Get evidence: file > inline > default
+    evidence: dict
+    if args.evidence_json:
+        evidence_raw = read_text_or_exit(
+            Path(args.evidence_json), "Evidence file", use_json=args.json
+        )
+        try:
+            evidence = json.loads(evidence_raw)
+        except json.JSONDecodeError as e:
+            error_exit(f"Evidence file invalid JSON: {e}", use_json=args.json)
+    elif args.evidence:
+        try:
+            evidence = json.loads(args.evidence)
+        except json.JSONDecodeError as e:
+            error_exit(f"Evidence invalid JSON: {e}", use_json=args.json)
+    else:
+        evidence = {"commits": [], "tests": [], "prs": []}
+
     if not isinstance(evidence, dict):
         error_exit(
             "Evidence JSON must be an object with keys: commits/tests/prs",
@@ -3326,17 +3381,26 @@ def cmd_codex_impl_review(args: argparse.Namespace) -> None:
         context_hints = gather_context_hints(base_branch)
         prompt = build_review_prompt("impl", task_spec, context_hints, diff_summary)
 
-    # Check for existing session in receipt
+    # Check for existing session in receipt (indicates re-review)
     receipt_path = args.receipt if hasattr(args, "receipt") and args.receipt else None
     session_id = None
+    is_rereview = False
     if receipt_path:
         receipt_file = Path(receipt_path)
         if receipt_file.exists():
             try:
                 receipt_data = json.loads(receipt_file.read_text(encoding="utf-8"))
                 session_id = receipt_data.get("session_id")
+                is_rereview = session_id is not None
             except (json.JSONDecodeError, Exception):
                 pass
+
+    # For re-reviews, prepend instruction to re-read changed files
+    if is_rereview:
+        changed_files = get_changed_files(base_branch)
+        if changed_files:
+            rereview_preamble = build_rereview_preamble(changed_files, "implementation")
+            prompt = rereview_preamble + prompt
 
     # Run codex
     output, thread_id = run_codex_exec(prompt, session_id=session_id)
@@ -3410,17 +3474,26 @@ def cmd_codex_plan_review(args: argparse.Namespace) -> None:
     # Build prompt
     prompt = build_review_prompt("plan", epic_spec, context_hints)
 
-    # Check for existing session in receipt
+    # Check for existing session in receipt (indicates re-review)
     receipt_path = args.receipt if hasattr(args, "receipt") and args.receipt else None
     session_id = None
+    is_rereview = False
     if receipt_path:
         receipt_file = Path(receipt_path)
         if receipt_file.exists():
             try:
                 receipt_data = json.loads(receipt_file.read_text(encoding="utf-8"))
                 session_id = receipt_data.get("session_id")
+                is_rereview = session_id is not None
             except (json.JSONDecodeError, Exception):
                 pass
+
+    # For re-reviews, prepend instruction to re-read spec file
+    if is_rereview:
+        # For plan reviews, the spec file is what changes
+        spec_files = [str(epic_spec_path)]
+        rereview_preamble = build_rereview_preamble(spec_files, "plan")
+        prompt = rereview_preamble + prompt
 
     # Run codex
     output, thread_id = run_codex_exec(prompt, session_id=session_id)
@@ -3793,10 +3866,10 @@ def main() -> None:
     # done
     p_done = subparsers.add_parser("done", help="Complete task")
     p_done.add_argument("id", help="Task ID (fn-N.M)")
-    p_done.add_argument(
-        "--summary-file", required=True, help="Done summary markdown file"
-    )
-    p_done.add_argument("--evidence-json", required=True, help="Evidence JSON file")
+    p_done.add_argument("--summary-file", help="Done summary markdown file")
+    p_done.add_argument("--summary", help="Done summary (inline text)")
+    p_done.add_argument("--evidence-json", help="Evidence JSON file")
+    p_done.add_argument("--evidence", help="Evidence JSON (inline string)")
     p_done.add_argument("--force", action="store_true", help="Skip status checks")
     p_done.add_argument("--json", action="store_true", help="JSON output")
     p_done.set_defaults(func=cmd_done)

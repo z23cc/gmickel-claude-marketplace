@@ -162,6 +162,14 @@ cat > /tmp/review-prompt.md << 'EOF'
 
 ---
 
+## IMPORTANT: File Contents
+RepoPrompt includes the actual source code of selected files in a `<file_contents>` XML section at the end of this message. You MUST:
+1. Locate the `<file_contents>` section
+2. Read and analyze the actual source code within it
+3. Base your review on the code, not summaries or descriptions
+
+If you cannot find `<file_contents>`, ask for the files to be re-attached before proceeding.
+
 ## Changes Under Review
 Branch: [BRANCH_NAME]
 Files: [LIST CHANGED FILES]
@@ -246,21 +254,29 @@ If verdict is NEEDS_WORK:
    **If you skip this and re-review without committing changes, reviewer will return NEEDS_WORK again.**
 
 5. **Re-review with fix summary** (only AFTER step 4):
+
+   **IMPORTANT**: Do NOT re-add files already in the selection. RepoPrompt auto-refreshes
+   file contents on every message. Only use `select-add` for NEW files created during fixes:
+   ```bash
+   # Only if fixes created new files not in original selection
+   if [[ -n "$NEW_FILES" ]]; then
+     $FLOWCTL rp select-add --window "$W" --tab "$T" $NEW_FILES
+   fi
+   ```
+
+   Then send re-review request (NO --new-chat, stay in same chat):
    ```bash
    cat > /tmp/re-review.md << 'EOF'
-   ## Fixes Applied
-   - [Fix 1]: [file:line] [what changed]
-   - [Fix 2]: [file:line] [what changed]
-   ...
+   Re-review the implementation.
 
-   Please re-review. Verify the actual code changes, not just this summary.
+   **REQUIRED**: End with `<verdict>SHIP</verdict>` or `<verdict>NEEDS_WORK</verdict>` or `<verdict>MAJOR_RETHINK</verdict>`
    EOF
 
    $FLOWCTL rp chat-send --window "$W" --tab "$T" --message-file /tmp/re-review.md
    ```
 6. **Repeat** until Ship
 
-**Anti-pattern**: Re-reviewing without committing fixes. This wastes reviewer time and loops forever.
+**Anti-pattern**: Re-adding already-selected files before re-review. RP auto-refreshes; re-adding can cause issues.
 
 ---
 

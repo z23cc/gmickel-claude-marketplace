@@ -152,6 +152,14 @@ cat > /tmp/review-prompt.md << 'EOF'
 
 ---
 
+## IMPORTANT: File Contents
+RepoPrompt includes the actual source code of selected files in a `<file_contents>` XML section at the end of this message. You MUST:
+1. Locate the `<file_contents>` section
+2. Read and analyze the actual source code within it
+3. Base your review on the code, not summaries or descriptions
+
+If you cannot find `<file_contents>`, ask for the files to be re-attached before proceeding.
+
 ## Plan Under Review
 [PASTE flowctl show OUTPUT]
 
@@ -240,14 +248,18 @@ If verdict is NEEDS_WORK:
    **If you skip this step and re-review with same content, reviewer will return NEEDS_WORK again.**
 
 4. **Re-review with fix summary** (only AFTER step 3):
+
+   First, refresh the file selection to get updated contents:
+   ```bash
+   $FLOWCTL rp select-add --window "$W" --tab "$T" .flow/specs/<epic-id>.md
+   ```
+
+   Then send re-review request (NO --new-chat, stay in same chat):
    ```bash
    cat > /tmp/re-review.md << 'EOF'
-   ## Fixes Applied
-   - [Fix 1]: [what changed]
-   - [Fix 2]: [what changed]
-   ...
+   Re-review the plan.
 
-   Please re-review the updated plan.
+   **REQUIRED**: End with `<verdict>SHIP</verdict>` or `<verdict>NEEDS_WORK</verdict>` or `<verdict>MAJOR_RETHINK</verdict>`
    EOF
 
    $FLOWCTL rp chat-send --window "$W" --tab "$T" --message-file /tmp/re-review.md
