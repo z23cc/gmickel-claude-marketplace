@@ -264,10 +264,13 @@ If verdict is NEEDS_WORK:
    fi
    ```
 
-   Then send re-review request (NO --new-chat, stay in same chat):
+   Then send re-review request (NO --new-chat, stay in same chat).
+
+   **Keep this message minimal. Do NOT enumerate issues or reference file_contents - the reviewer already has context from the previous exchange.**
+
    ```bash
    cat > /tmp/re-review.md << 'EOF'
-   Re-review the implementation.
+   All issues from your previous review have been addressed. Please verify the updated implementation and provide final verdict.
 
    **REQUIRED**: End with `<verdict>SHIP</verdict>` or `<verdict>NEEDS_WORK</verdict>` or `<verdict>MAJOR_RETHINK</verdict>`
    EOF

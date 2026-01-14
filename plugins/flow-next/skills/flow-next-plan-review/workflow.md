@@ -249,15 +249,22 @@ If verdict is NEEDS_WORK:
 
 4. **Re-review with fix summary** (only AFTER step 3):
 
-   First, refresh the file selection to get updated contents:
+   **IMPORTANT**: Do NOT re-add files already in the selection. RepoPrompt auto-refreshes
+   file contents on every message. Only use `select-add` for NEW files created during fixes:
    ```bash
-   $FLOWCTL rp select-add --window "$W" --tab "$T" .flow/specs/<epic-id>.md
+   # Only if fixes created new files not in original selection
+   if [[ -n "$NEW_FILES" ]]; then
+     $FLOWCTL rp select-add --window "$W" --tab "$T" $NEW_FILES
+   fi
    ```
 
-   Then send re-review request (NO --new-chat, stay in same chat):
+   Then send re-review request (NO --new-chat, stay in same chat).
+
+   **Keep this message minimal. Do NOT enumerate issues or reference file_contents - the reviewer already has context from the previous exchange.**
+
    ```bash
    cat > /tmp/re-review.md << 'EOF'
-   Re-review the plan.
+   All issues from your previous review have been addressed. Please verify the updated plan and provide final verdict.
 
    **REQUIRED**: End with `<verdict>SHIP</verdict>` or `<verdict>NEEDS_WORK</verdict>` or `<verdict>MAJOR_RETHINK</verdict>`
    EOF
@@ -265,6 +272,8 @@ If verdict is NEEDS_WORK:
    $FLOWCTL rp chat-send --window "$W" --tab "$T" --message-file /tmp/re-review.md
    ```
 5. **Repeat** until Ship
+
+**Anti-pattern**: Re-adding already-selected files before re-review. RP auto-refreshes; re-adding can cause issues.
 
 **Anti-pattern**: Re-reviewing without calling `epic set-plan` first. This wastes reviewer time and loops forever.
 
