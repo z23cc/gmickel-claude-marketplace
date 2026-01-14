@@ -729,9 +729,7 @@ There are no task IDs outside an epic. If you want a single task, create an epic
 
 ## flowctl CLI
 
-> **Note:** You don't need to use flowctl directly. The integrated workflows (`/flow-next:plan`, `/flow-next:work`, etc.) handle all epic/task management automatically. This section is for debugging, scripting, or manual overrides.
-
-Bundled Python script for managing `.flow/`:
+Bundled Python script for managing `.flow/`. Flow-Next's commands handle epic/task creation automatically—use `flowctl` for direct inspection, fixes, or advanced workflows:
 
 ```bash
 # Setup
