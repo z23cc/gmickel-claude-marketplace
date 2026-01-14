@@ -406,9 +406,9 @@ Reviews block progress until `<verdict>SHIP</verdict>`. Fix → re-review cycles
 [RepoPrompt](https://repoprompt.com/?atp=KJbuL4) provides the best review experience on macOS.
 
 **Why recommended:**
-- Builder provides full file context with intelligent selection
-- Visual interface for reviewing diffs
-- Maintains conversation history across reviews
+- Best-in-class context builder for reviews (full file context, smart selection)
+- Powers the planning **context-scout** for deeper codebase discovery
+- Visual diff review UI + persistent chat threads
 
 **Setup:**
 ```bash
@@ -835,9 +835,8 @@ This creates a complete audit trail: what was planned, what was done, how it was
 
 - Python 3.8+
 - git
-- For reviews (optional but highly recommended), one of:
-  - [rp-cli](https://repoprompt.com/?atp=KJbuL4) ([RepoPrompt](https://repoprompt.com/?atp=KJbuL4)) — macOS, GUI-based
-  - OpenAI Codex CLI (`npm install -g @openai/codex`) — cross-platform, terminal-based
+- Optional: [RepoPrompt](https://repoprompt.com/?atp=KJbuL4) for macOS GUI reviews + its context builder (also powers the planning **context-scout**). Reviews work without it when using the Codex backend.
+- Optional: OpenAI Codex CLI (`npm install -g @openai/codex`) for cross-platform terminal-based reviews
 
 Without a review backend, reviews are skipped.
 
