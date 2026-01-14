@@ -12,6 +12,13 @@ All notable changes to the gmickel-claude-marketplace.
 ### Fixed
 - Resolved oxlint warnings (useless escapes, control-regex disable comments)
 
+## [flow-next 0.7.1] - 2026-01-14
+
+### Added
+- **C# symbol support** in flowctl.py (GH-36, thanks @clairernovotny)
+  - Symbol extraction for `.cs` files: classes, interfaces, structs, enums, records, methods
+  - Added `*.cs` to git grep reference search patterns
+
 ## [flow-next 0.7.0] - 2026-01-14
 
 ### Added
