@@ -869,7 +869,7 @@ Flow-Next partially works in OpenAI Codex with some limitations:
 
 | Project | Platform | Based On |
 |---------|----------|----------|
-| OpenCode port | OpenCode | Flow-Next (coming soon) |
+| [flow-next-opencode](https://github.com/gmickel/flow-next-opencode) | OpenCode | Flow-Next |
 | [FlowFactory](https://github.com/Gitmaxd/flowfactory) | Factory.ai Droid | Flow |
 
 ---
