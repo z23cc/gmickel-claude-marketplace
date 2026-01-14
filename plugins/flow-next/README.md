@@ -729,7 +729,9 @@ There are no task IDs outside an epic. If you want a single task, create an epic
 
 ## flowctl CLI
 
-Bundled Python script for managing `.flow/`. Skills call this automatically, but you can use it directly:
+> **Note:** You don't need to use flowctl directly. The integrated workflows (`/flow-next:plan`, `/flow-next:work`, etc.) handle all epic/task management automatically. This section is for debugging, scripting, or manual overrides.
+
+Bundled Python script for managing `.flow/`:
 
 ```bash
 # Setup
