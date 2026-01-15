@@ -256,15 +256,23 @@ PASS=$((PASS + 1))
 echo -e "${YELLOW}--- planSync config ---${NC}"
 scripts/flowctl config set planSync.enabled true --json >/dev/null
 config_json="$(scripts/flowctl config get planSync.enabled --json)"
-val="$(echo "$config_json" | "$PYTHON_BIN" -c 'import json,sys; print(json.load(sys.stdin)["value"])')"
-if [[ "$val" == "True" ]]; then
-  echo -e "${GREEN}✓${NC} planSync config set/get"
-  PASS=$((PASS + 1))
-else
-  echo -e "${RED}✗${NC} planSync config set/get: expected True, got $val"
-  FAIL=$((FAIL + 1))
-fi
+"$PYTHON_BIN" - <<'PY' "$config_json"
+import json, sys
+data = json.loads(sys.argv[1])
+assert data["value"] is True, f"Expected True, got {data['value']}"
+PY
+echo -e "${GREEN}✓${NC} planSync config set/get"
+PASS=$((PASS + 1))
+
 scripts/flowctl config set planSync.enabled false --json >/dev/null
+config_json="$(scripts/flowctl config get planSync.enabled --json)"
+"$PYTHON_BIN" - <<'PY' "$config_json"
+import json, sys
+data = json.loads(sys.argv[1])
+assert data["value"] is False, f"Expected False, got {data['value']}"
+PY
+echo -e "${GREEN}✓${NC} planSync config toggle"
+PASS=$((PASS + 1))
 
 echo -e "${YELLOW}--- memory commands ---${NC}"
 scripts/flowctl config set memory.enabled true --json >/dev/null
