@@ -39,9 +39,13 @@ jq . plugins/flow-next/.claude-plugin/plugin.json
 - [ ] Entry lists all new commands
 - [ ] JSON files validate with jq
 ## Done summary
-TBD
+- Bumped version to 0.8.0 in plugin.json, marketplace.json, README badges
+- Added CHANGELOG entry with all new features
 
+Why: Release new version with async control features
+
+Verification: JSON validates with jq, CI 40/40
 ## Evidence
-- Commits:
-- Tests:
+- Commits: 466b0c49cf569a23c90828d7d41be793199cec51
+- Tests: plugins/flow-next/scripts/ci_test.sh
 - PRs:

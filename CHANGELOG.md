@@ -12,6 +12,26 @@ All notable changes to the gmickel-claude-marketplace.
 ### Fixed
 - Resolved oxlint warnings (useless escapes, control-regex disable comments)
 
+## [flow-next 0.8.0] - 2026-01-15
+
+### Added
+- **Ralph async control** (GH-14)
+  - `flowctl status [--json]` - Show epic/task counts + active Ralph runs
+  - `flowctl ralph pause/resume/stop/status [--run <id>]` - Control Ralph runs externally
+  - Sentinel file mechanism in ralph.sh (PAUSE/STOP files at iteration boundaries)
+  - All exit paths in ralph.sh now write `promise=COMPLETE` marker
+- **Task reset command**
+  - `flowctl task reset <id> [--cascade]` - Reset done/blocked tasks to todo
+  - Clears evidence, claim fields, blocked_reason
+  - `--cascade` resets dependent tasks in same epic
+- **Epic dependency CLI**
+  - `flowctl epic add-dep <epic> <dep>` - Add epic-level dependency
+  - `flowctl epic rm-dep <epic> <dep>` - Remove epic-level dependency
+- **CI tests** for all new async control commands (40 total, +9 new)
+
+### Fixed
+- README Troubleshooting: replaced nonexistent `task set` with `task reset`
+
 ## [flow-next 0.7.2] - 2026-01-14
 
 ### Added
