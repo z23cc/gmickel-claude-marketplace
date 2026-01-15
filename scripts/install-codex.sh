@@ -56,19 +56,13 @@ fi
 mkdir -p "$CODEX_DIR/skills"
 mkdir -p "$CODEX_DIR/prompts"
 
-# Get skill list based on plugin
-if [ "$PLUGIN" = "flow" ]; then
-    SKILLS=(flow-plan flow-work flow-interview flow-plan-review flow-impl-review rp-explorer worktree-kit)
-else
-    SKILLS=(flow-next-plan flow-next-work flow-next-interview flow-next-plan-review flow-next-impl-review)
-fi
-
-# Install skills
+# Install all skills from plugin
 echo "Installing skills..."
-for skill in "${SKILLS[@]}"; do
-    if [ -d "$REPO_ROOT/plugins/$PLUGIN/skills/$skill" ]; then
+for skill_dir in "$REPO_ROOT/plugins/$PLUGIN/skills/"*/; do
+    if [ -d "$skill_dir" ]; then
+        skill=$(basename "$skill_dir")
         rm -rf "$CODEX_DIR/skills/$skill"
-        cp -r "$REPO_ROOT/plugins/$PLUGIN/skills/$skill" "$CODEX_DIR/skills/"
+        cp -r "$skill_dir" "$CODEX_DIR/skills/"
         echo -e "  ${GREEN}✓${NC} $skill"
     fi
 done
