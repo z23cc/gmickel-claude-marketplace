@@ -5,9 +5,9 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](../../LICENSE)
 [![Claude Code](https://img.shields.io/badge/Claude_Code-Plugin-blueviolet)](https://claude.ai/code)
 
-[![Version](https://img.shields.io/badge/Version-0.8.0-green)](../../CHANGELOG.md)
+[![Version](https://img.shields.io/badge/Version-0.9.0-green)](../../CHANGELOG.md)
 
-[![Version](https://img.shields.io/badge/Version-0.8.0-green)](../../CHANGELOG.md)
+[![Version](https://img.shields.io/badge/Version-0.9.0-green)](../../CHANGELOG.md)
 
 [![Status](https://img.shields.io/badge/Status-Active_Development-brightgreen)](../../CHANGELOG.md)
 
@@ -412,6 +412,17 @@ Everything is bundled:
 - No external tracker CLI to install
 - No external services
 - Just Python 3
+
+### Bundled Skills
+
+Utility skills available during planning and implementation:
+
+| Skill | Use Case |
+|-------|----------|
+| `browser` | Web automation via agent-browser CLI (verify UI, scrape docs, test flows) |
+| `flow-next-rp-explorer` | Token-efficient codebase exploration via RepoPrompt |
+| `flow-next-worktree-kit` | Git worktree management for parallel work |
+| `flow-next-export-context` | Export context for external LLM review |
 
 ### Non-invasive
 

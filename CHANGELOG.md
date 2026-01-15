@@ -2,6 +2,18 @@
 
 All notable changes to the gmickel-claude-marketplace.
 
+## [flow-next 0.9.0] - 2026-01-15
+
+### Added
+- **Browser automation skill** - Web testing, form filling, screenshots, scraping via agent-browser CLI
+  - Core workflow: snapshot → ref-based interaction (@e1, @e2)
+  - Progressive disclosure: main skill + debugging/auth/advanced references
+  - Triggers on UI verification, doc lookup, baseline capture, e2e testing
+- **Bundled Skills** section in README documenting utility skills
+
+### Fixed
+- `install-codex.sh` now auto-discovers all skills (was hardcoded, missing 7 skills)
+
 ## [flow-next-tui 0.1.2] - 2026-01-14
 
 ### Added
