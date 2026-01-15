@@ -18,6 +18,8 @@
 
 > 🔄 **Update issues?** Run: `claude plugin update flow-next@gmickel-claude-marketplace`
 >
+> 🆕 **v0.8.0**: Async control for Ralph — `flowctl ralph pause/resume/stop`, `flowctl task reset --cascade`, external agent integration
+>
 > 🤖 **[Ralph mode](plugins/flow-next/docs/ralph.md)**: Ship features while you sleep. Fresh context per iteration, multi-model review gates, auto-blocks stuck tasks.
 >
 > 💪 **Stable features**: Plan-first workflow, re-anchoring, receipt-based gating, structured task management
