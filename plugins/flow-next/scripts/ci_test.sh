@@ -438,6 +438,65 @@ set -e
 [[ $NEXT_RC -eq 0 ]] && pass "next ignores artifact files" || fail "next with artifact files (rc=$NEXT_RC)"
 
 # ─────────────────────────────────────────────────────────────────────────────
+# 9. Async Control Commands
+# ─────────────────────────────────────────────────────────────────────────────
+echo -e "\n${YELLOW}--- Async Control Commands ---${NC}"
+
+# Test status command
+flowctl status >/dev/null 2>&1
+[[ $? -eq 0 ]] && pass "status command" || fail "status command"
+
+# Test status --json (Python validates JSON, not jq)
+STATUS_OUT="$(flowctl status --json)"
+echo "$STATUS_OUT" | "$PYTHON_BIN" -c 'import json,sys; json.load(sys.stdin)' 2>/dev/null
+[[ $? -eq 0 ]] && pass "status --json" || fail "status --json invalid JSON"
+
+# Test ralph pause/resume/stop commands
+mkdir -p scripts/ralph/runs/test-run
+echo "iteration: 1" > scripts/ralph/runs/test-run/progress.txt
+
+flowctl ralph pause --run test-run >/dev/null
+[[ -f scripts/ralph/runs/test-run/PAUSE ]] && pass "ralph pause" || fail "ralph pause"
+
+flowctl ralph resume --run test-run >/dev/null
+[[ ! -f scripts/ralph/runs/test-run/PAUSE ]] && pass "ralph resume" || fail "ralph resume"
+
+flowctl ralph stop --run test-run >/dev/null
+[[ -f scripts/ralph/runs/test-run/STOP ]] && pass "ralph stop" || fail "ralph stop"
+
+rm -rf scripts/ralph/runs/test-run
+
+# Test task reset
+RESET_EPIC="$(flowctl epic create --title "Reset test" --json | "$PYTHON_BIN" -c 'import json,sys; print(json.load(sys.stdin)["id"])')"
+RESET_TASK="$(flowctl task create --epic "$RESET_EPIC" --title "Test task" --json | "$PYTHON_BIN" -c 'import json,sys; print(json.load(sys.stdin)["id"])')"
+
+flowctl start "$RESET_TASK" --json >/dev/null
+flowctl done "$RESET_TASK" --json >/dev/null
+flowctl task reset "$RESET_TASK" --json >/dev/null
+RESET_STATUS="$(flowctl show "$RESET_TASK" --json | "$PYTHON_BIN" -c 'import json,sys; print(json.load(sys.stdin)["status"])')"
+[[ "$RESET_STATUS" == "todo" ]] && pass "task reset" || fail "task reset: status=$RESET_STATUS"
+
+# Test task reset errors on in_progress
+flowctl start "$RESET_TASK" --json >/dev/null
+set +e
+flowctl task reset "$RESET_TASK" --json 2>/dev/null
+RESET_RC=$?
+set -e
+[[ $RESET_RC -ne 0 ]] && pass "task reset rejects in_progress" || fail "task reset should reject in_progress"
+
+# Test epic add-dep/rm-dep
+DEP_BASE="$(flowctl epic create --title "Dep base" --json | "$PYTHON_BIN" -c 'import json,sys; print(json.load(sys.stdin)["id"])')"
+DEP_CHILD="$(flowctl epic create --title "Dep child" --json | "$PYTHON_BIN" -c 'import json,sys; print(json.load(sys.stdin)["id"])')"
+
+flowctl epic add-dep "$DEP_CHILD" "$DEP_BASE" --json >/dev/null
+DEPS="$(flowctl show "$DEP_CHILD" --json | "$PYTHON_BIN" -c 'import json,sys; print(",".join(json.load(sys.stdin).get("depends_on_epics",[])))')"
+[[ "$DEPS" == "$DEP_BASE" ]] && pass "epic add-dep" || fail "epic add-dep: deps=$DEPS"
+
+flowctl epic rm-dep "$DEP_CHILD" "$DEP_BASE" --json >/dev/null
+DEPS="$(flowctl show "$DEP_CHILD" --json | "$PYTHON_BIN" -c 'import json,sys; print(",".join(json.load(sys.stdin).get("depends_on_epics",[])))')"
+[[ -z "$DEPS" ]] && pass "epic rm-dep" || fail "epic rm-dep: deps=$DEPS"
+
+# ─────────────────────────────────────────────────────────────────────────────
 # Summary
 # ─────────────────────────────────────────────────────────────────────────────
 echo -e "\n${YELLOW}=== Results ===${NC}"

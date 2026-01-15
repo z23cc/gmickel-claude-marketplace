@@ -107,9 +107,14 @@ Add CI tests for all new async control commands.
 - [ ] `./ci_test.sh` passes with all new tests
 - [ ] No jq dependency anywhere in tests
 ## Done summary
-TBD
+- Added 9 new CI tests for async control commands
+- Tests: status, ralph pause/resume/stop, task reset (basic + in_progress error), epic add-dep/rm-dep
+- All jq-free (Python JSON parsing for Windows Git Bash compatibility)
 
+Why: Verify new async control commands work correctly
+
+Verification: CI 40/40 (was 31/31, +9 new tests)
 ## Evidence
-- Commits:
-- Tests:
+- Commits: e297f762e8c921c4c7bb228b564ca32ffa2e3aa0
+- Tests: plugins/flow-next/scripts/ci_test.sh
 - PRs:
