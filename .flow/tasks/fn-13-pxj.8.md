@@ -134,9 +134,16 @@ test_epic_add_dep() {
 - [ ] smoke_test.sh updated to use CLI
 - [ ] ci_test.sh test added and passes
 ## Done summary
-TBD
+- Added `cmd_epic_add_dep()` to add epic-level dependencies
+- Added `cmd_epic_rm_dep()` to remove epic-level dependencies
+- Validation: self-dep error, non-existent epic error
+- Idempotent: duplicate add/remove non-existent is no-op success
 
+Why: Enable CLI management of epic deps (currently requires JSON editing)
+
+Verification: Manual tests for add/rm/errors; CI 31/31
+Follow-up: CI test + doc updates in tasks .5/.6
 ## Evidence
-- Commits:
-- Tests:
+- Commits: 47f74c62247d40acc2bfe23688f81dfbda25150b
+- Tests: plugins/flow-next/scripts/ci_test.sh
 - PRs:

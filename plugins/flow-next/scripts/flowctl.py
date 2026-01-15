@@ -2504,6 +2504,132 @@ def cmd_epic_set_branch(args: argparse.Namespace) -> None:
         print(f"Epic {args.id} branch_name set to {args.branch}")
 
 
+def cmd_epic_add_dep(args: argparse.Namespace) -> None:
+    """Add epic-level dependency."""
+    if not ensure_flow_exists():
+        error_exit(
+            ".flow/ does not exist. Run 'flowctl init' first.", use_json=args.json
+        )
+
+    epic_id = args.epic
+    dep_id = args.depends_on
+
+    if not is_epic_id(epic_id):
+        error_exit(
+            f"Invalid epic ID: {epic_id}. Expected format: fn-N or fn-N-xxx",
+            use_json=args.json,
+        )
+    if not is_epic_id(dep_id):
+        error_exit(
+            f"Invalid epic ID: {dep_id}. Expected format: fn-N or fn-N-xxx",
+            use_json=args.json,
+        )
+    if epic_id == dep_id:
+        error_exit("Epic cannot depend on itself", use_json=args.json)
+
+    flow_dir = get_flow_dir()
+    epic_path = flow_dir / EPICS_DIR / f"{epic_id}.json"
+    dep_path = flow_dir / EPICS_DIR / f"{dep_id}.json"
+
+    if not epic_path.exists():
+        error_exit(f"Epic {epic_id} not found", use_json=args.json)
+    if not dep_path.exists():
+        error_exit(f"Epic {dep_id} not found", use_json=args.json)
+
+    epic_data = load_json_or_exit(epic_path, f"Epic {epic_id}", use_json=args.json)
+    deps = epic_data.get("depends_on_epics", [])
+
+    if dep_id in deps:
+        # Already exists, no-op success
+        if args.json:
+            json_output(
+                {
+                    "success": True,
+                    "id": epic_id,
+                    "depends_on_epics": deps,
+                    "message": f"{dep_id} already in dependencies",
+                }
+            )
+        else:
+            print(f"{dep_id} already in {epic_id} dependencies")
+        return
+
+    deps.append(dep_id)
+    epic_data["depends_on_epics"] = deps
+    epic_data["updated_at"] = now_iso()
+    atomic_write_json(epic_path, epic_data)
+
+    if args.json:
+        json_output(
+            {
+                "success": True,
+                "id": epic_id,
+                "depends_on_epics": deps,
+                "message": f"Added {dep_id} to {epic_id} dependencies",
+            }
+        )
+    else:
+        print(f"Added {dep_id} to {epic_id} dependencies")
+
+
+def cmd_epic_rm_dep(args: argparse.Namespace) -> None:
+    """Remove epic-level dependency."""
+    if not ensure_flow_exists():
+        error_exit(
+            ".flow/ does not exist. Run 'flowctl init' first.", use_json=args.json
+        )
+
+    epic_id = args.epic
+    dep_id = args.depends_on
+
+    if not is_epic_id(epic_id):
+        error_exit(
+            f"Invalid epic ID: {epic_id}. Expected format: fn-N or fn-N-xxx",
+            use_json=args.json,
+        )
+
+    flow_dir = get_flow_dir()
+    epic_path = flow_dir / EPICS_DIR / f"{epic_id}.json"
+
+    if not epic_path.exists():
+        error_exit(f"Epic {epic_id} not found", use_json=args.json)
+
+    epic_data = load_json_or_exit(epic_path, f"Epic {epic_id}", use_json=args.json)
+    deps = epic_data.get("depends_on_epics", [])
+
+    if dep_id not in deps:
+        # Not in deps, no-op success
+        if args.json:
+            json_output(
+                {
+                    "success": True,
+                    "id": epic_id,
+                    "depends_on_epics": deps,
+                    "message": f"{dep_id} not in dependencies",
+                }
+            )
+        else:
+            print(f"{dep_id} not in {epic_id} dependencies")
+        return
+
+    deps.remove(dep_id)
+    epic_data["depends_on_epics"] = deps
+    epic_data["updated_at"] = now_iso()
+    atomic_write_json(epic_path, epic_data)
+
+    if args.json:
+        json_output(
+            {
+                "success": True,
+                "id": epic_id,
+                "depends_on_epics": deps,
+                "message": f"Removed {dep_id} from {epic_id} dependencies",
+            }
+        )
+    else:
+        print(f"Removed {dep_id} from {epic_id} dependencies")
+
+
 def cmd_task_set_description(args: argparse.Namespace) -> None:
     """Set task description section."""
     _task_set_section(args.id, "## Description", args.file, args.json)
@@ -4235,6 +4361,18 @@ def main() -> None:
     p_epic_close.add_argument("id", help="Epic ID (fn-N)")
     p_epic_close.add_argument("--json", action="store_true", help="JSON output")
     p_epic_close.set_defaults(func=cmd_epic_close)
+
+    p_epic_add_dep = epic_sub.add_parser("add-dep", help="Add epic-level dependency")
+    p_epic_add_dep.add_argument("epic", help="Epic ID")
+    p_epic_add_dep.add_argument("depends_on", help="Epic ID to depend on")
+    p_epic_add_dep.add_argument("--json", action="store_true", help="JSON output")
+    p_epic_add_dep.set_defaults(func=cmd_epic_add_dep)
+
+    p_epic_rm_dep = epic_sub.add_parser("rm-dep", help="Remove epic-level dependency")
+    p_epic_rm_dep.add_argument("epic", help="Epic ID")
+    p_epic_rm_dep.add_argument("depends_on", help="Epic ID to remove from deps")
+    p_epic_rm_dep.add_argument("--json", action="store_true", help="JSON output")
+    p_epic_rm_dep.set_defaults(func=cmd_epic_rm_dep)
 
     # task create
     p_task = subparsers.add_parser("task", help="Task commands")
