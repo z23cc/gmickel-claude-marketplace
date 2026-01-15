@@ -5,9 +5,9 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](../../LICENSE)
 [![Claude Code](https://img.shields.io/badge/Claude_Code-Plugin-blueviolet)](https://claude.ai/code)
 
-[![Version](https://img.shields.io/badge/Version-0.7.2-green)](../../CHANGELOG.md)
+[![Version](https://img.shields.io/badge/Version-0.8.0-green)](../../CHANGELOG.md)
 
-[![Version](https://img.shields.io/badge/Version-0.7.2-green)](../../CHANGELOG.md)
+[![Version](https://img.shields.io/badge/Version-0.8.0-green)](../../CHANGELOG.md)
 
 [![Status](https://img.shields.io/badge/Status-Active_Development-brightgreen)](../../CHANGELOG.md)
 
@@ -182,10 +182,13 @@ Want to run overnight? See [Ralph Mode](#ralph-autonomous-mode).
 
 ```bash
 # Check task status
-flowctl show fn-1.2 --json | jq '.status'
+flowctl show fn-1.2 --json
 
-# Mark as pending to retry
-flowctl task set fn-1.2 --status pending
+# Reset to todo (from done/blocked)
+flowctl task reset fn-1.2
+
+# Reset + dependents in same epic
+flowctl task reset fn-1.2 --cascade
 ```
 
 ### Clean up `.flow/` safely
@@ -277,6 +280,47 @@ Autonomous coding agents are taking the industry by storm—loop until done, com
 **Atomic window selection**: The `setup-review` command handles RepoPrompt window matching atomically. Claude can't skip steps or invent window IDs—the entire sequence runs as one unit or fails.
 
 The result: code that's been reviewed by two models, tested, linted, and iteratively refined. Not perfect, but meaningfully more robust than single-model autonomous loops.
+
+### Controlling Ralph
+
+External agents (Clawdbot, GitHub Actions, etc.) can pause/resume/stop Ralph runs without killing processes.
+
+**CLI commands:**
+```bash
+# Check status
+flowctl status                    # Epic/task counts + active runs
+flowctl status --json             # JSON for automation
+
+# Control active run
+flowctl ralph pause               # Pause run (auto-detects if single)
+flowctl ralph resume              # Resume paused run
+flowctl ralph stop                # Request graceful stop
+flowctl ralph status              # Show run state
+
+# Specify run when multiple active
+flowctl ralph pause --run <id>
+```
+
+**Sentinel files (manual control):**
+```bash
+# Pause: touch PAUSE file in run directory
+touch scripts/ralph/runs/<run-id>/PAUSE
+# Resume: remove PAUSE file
+rm scripts/ralph/runs/<run-id>/PAUSE
+# Stop: touch STOP file (kept for audit)
+touch scripts/ralph/runs/<run-id>/STOP
+```
+
+Ralph checks sentinels at iteration boundaries (after Claude returns, before next iteration).
+
+**Task retry/rollback:**
+```bash
+# Reset completed/blocked task to todo
+flowctl task reset fn-1-abc.3
+
+# Reset + cascade to dependent tasks (same epic)
+flowctl task reset fn-1-abc.2 --cascade
+```
 
 ---
 

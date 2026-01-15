@@ -438,6 +438,107 @@ set -e
 [[ $NEXT_RC -eq 0 ]] && pass "next ignores artifact files" || fail "next with artifact files (rc=$NEXT_RC)"
 
 # ─────────────────────────────────────────────────────────────────────────────
+# 9. Async Control Commands
+# ─────────────────────────────────────────────────────────────────────────────
+echo -e "\n${YELLOW}--- Async Control Commands ---${NC}"
+
+# Test status command
+flowctl status >/dev/null 2>&1
+[[ $? -eq 0 ]] && pass "status command" || fail "status command"
+
+# Test status --json (Python validates JSON, not jq)
+STATUS_OUT="$(flowctl status --json)"
+echo "$STATUS_OUT" | "$PYTHON_BIN" -c 'import json,sys; json.load(sys.stdin)' 2>/dev/null
+[[ $? -eq 0 ]] && pass "status --json" || fail "status --json invalid JSON"
+
+# Test ralph pause/resume/stop commands
+mkdir -p scripts/ralph/runs/test-run
+echo "iteration: 1" > scripts/ralph/runs/test-run/progress.txt
+
+flowctl ralph pause --run test-run >/dev/null
+[[ -f scripts/ralph/runs/test-run/PAUSE ]] && pass "ralph pause" || fail "ralph pause"
+
+flowctl ralph resume --run test-run >/dev/null
+[[ ! -f scripts/ralph/runs/test-run/PAUSE ]] && pass "ralph resume" || fail "ralph resume"
+
+flowctl ralph stop --run test-run >/dev/null
+[[ -f scripts/ralph/runs/test-run/STOP ]] && pass "ralph stop" || fail "ralph stop"
+
+rm -rf scripts/ralph/runs/test-run
+
+# Test task reset
+RESET_EPIC="$(flowctl epic create --title "Reset test" --json | "$PYTHON_BIN" -c 'import json,sys; print(json.load(sys.stdin)["id"])')"
+RESET_TASK="$(flowctl task create --epic "$RESET_EPIC" --title "Test task" --json | "$PYTHON_BIN" -c 'import json,sys; print(json.load(sys.stdin)["id"])')"
+
+flowctl start "$RESET_TASK" --json >/dev/null
+flowctl done "$RESET_TASK" --json >/dev/null
+flowctl task reset "$RESET_TASK" --json >/dev/null
+RESET_STATUS="$(flowctl show "$RESET_TASK" --json | "$PYTHON_BIN" -c 'import json,sys; print(json.load(sys.stdin)["status"])')"
+[[ "$RESET_STATUS" == "todo" ]] && pass "task reset" || fail "task reset: status=$RESET_STATUS"
+
+# Test task reset errors on in_progress
+flowctl start "$RESET_TASK" --json >/dev/null
+set +e
+flowctl task reset "$RESET_TASK" --json 2>/dev/null
+RESET_RC=$?
+set -e
+[[ $RESET_RC -ne 0 ]] && pass "task reset rejects in_progress" || fail "task reset should reject in_progress"
+
+# Test epic add-dep/rm-dep
+DEP_BASE="$(flowctl epic create --title "Dep base" --json | "$PYTHON_BIN" -c 'import json,sys; print(json.load(sys.stdin)["id"])')"
+DEP_CHILD="$(flowctl epic create --title "Dep child" --json | "$PYTHON_BIN" -c 'import json,sys; print(json.load(sys.stdin)["id"])')"
+
+flowctl epic add-dep "$DEP_CHILD" "$DEP_BASE" --json >/dev/null
+DEPS="$(flowctl show "$DEP_CHILD" --json | "$PYTHON_BIN" -c 'import json,sys; print(",".join(json.load(sys.stdin).get("depends_on_epics",[])))')"
+[[ "$DEPS" == "$DEP_BASE" ]] && pass "epic add-dep" || fail "epic add-dep: deps=$DEPS"
+
+flowctl epic rm-dep "$DEP_CHILD" "$DEP_BASE" --json >/dev/null
+DEPS="$(flowctl show "$DEP_CHILD" --json | "$PYTHON_BIN" -c 'import json,sys; print(",".join(json.load(sys.stdin).get("depends_on_epics",[])))')"
+[[ -z "$DEPS" ]] && pass "epic rm-dep" || fail "epic rm-dep: deps=$DEPS"
+
+# Test ralph auto-detection (single active run)
+mkdir -p scripts/ralph/runs/auto-test
+echo "iteration: 1" > scripts/ralph/runs/auto-test/progress.txt
+flowctl ralph pause >/dev/null 2>&1  # Should auto-detect single run
+[[ -f scripts/ralph/runs/auto-test/PAUSE ]] && pass "ralph auto-detect single run" || fail "ralph auto-detect"
+rm -rf scripts/ralph/runs/auto-test
+
+# Test multiple active runs error
+mkdir -p scripts/ralph/runs/run-a scripts/ralph/runs/run-b
+echo "iteration: 1" > scripts/ralph/runs/run-a/progress.txt
+echo "iteration: 1" > scripts/ralph/runs/run-b/progress.txt
+set +e
+flowctl ralph pause 2>/dev/null
+MULTI_RC=$?
+set -e
+[[ $MULTI_RC -ne 0 ]] && pass "ralph rejects multiple active runs" || fail "ralph should reject multiple runs"
+rm -rf scripts/ralph/runs/run-a scripts/ralph/runs/run-b
+
+# Test completion marker detection (run with markers not detected as active)
+mkdir -p scripts/ralph/runs/completed-test
+cat > scripts/ralph/runs/completed-test/progress.txt << 'PROGRESS'
+iteration: 5
+promise=RETRY
+
+completion_reason=DONE
+promise=COMPLETE
+PROGRESS
+ACTIVE_COUNT="$(flowctl status --json | "$PYTHON_BIN" -c 'import json,sys; d=json.load(sys.stdin); print(len(d.get("active_runs",[])))')"
+[[ "$ACTIVE_COUNT" == "0" ]] && pass "completed run excluded from active" || fail "completed run still active: count=$ACTIVE_COUNT"
+rm -rf scripts/ralph/runs/completed-test
+
+# Test task reset --cascade
+CASCADE_EPIC="$(flowctl epic create --title "Cascade test" --json | "$PYTHON_BIN" -c 'import json,sys; print(json.load(sys.stdin)["id"])')"
+CASCADE_T1="$(flowctl task create --epic "$CASCADE_EPIC" --title "Base task" --json | "$PYTHON_BIN" -c 'import json,sys; print(json.load(sys.stdin)["id"])')"
+CASCADE_T2="$(flowctl task create --epic "$CASCADE_EPIC" --title "Dependent task" --json | "$PYTHON_BIN" -c 'import json,sys; print(json.load(sys.stdin)["id"])')"
+flowctl dep add "$CASCADE_T2" "$CASCADE_T1" --json >/dev/null  # T2 depends on T1
+flowctl start "$CASCADE_T1" >/dev/null && flowctl done "$CASCADE_T1" >/dev/null
+flowctl start "$CASCADE_T2" >/dev/null && flowctl done "$CASCADE_T2" >/dev/null
+flowctl task reset "$CASCADE_T1" --cascade --json >/dev/null
+T2_STATUS="$(flowctl show "$CASCADE_T2" --json | "$PYTHON_BIN" -c 'import json,sys; print(json.load(sys.stdin)["status"])')"
+[[ "$T2_STATUS" == "todo" ]] && pass "task reset --cascade" || fail "cascade reset: t2 status=$T2_STATUS"
+
+# ─────────────────────────────────────────────────────────────────────────────
 # Summary
 # ─────────────────────────────────────────────────────────────────────────────
 echo -e "\n${YELLOW}=== Results ===${NC}"
