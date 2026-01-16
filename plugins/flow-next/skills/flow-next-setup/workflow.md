@@ -79,7 +79,7 @@ Before asking questions, detect available review tools:
 HAVE_RP=$(which rp-cli >/dev/null 2>&1 && echo 1 || echo 0)
 HAVE_CODEX=$(which codex >/dev/null 2>&1 && echo 1 || echo 0)
 
-# Read current config value if exists
+# Read current config value if exists (requires jq)
 CURRENT_BACKEND=$("${PLUGIN_ROOT}/scripts/flowctl" config get review.backend --json 2>/dev/null | jq -r '.value // empty')
 ```
 
@@ -126,8 +126,8 @@ Now use `AskUserQuestion` with all questions at once:
       "header": "Review",
       "question": "Which review backend for Carmack-level reviews?",
       "options": [
-        {"label": "Codex CLI (Recommended)", "description": "Cross-platform, uses GPT 5.2 High. Detected: <yes if HAVE_CODEX=1, no if HAVE_CODEX=0>"},
-        {"label": "RepoPrompt", "description": "macOS only, visual context builder. Detected: <yes if HAVE_RP=1, no if HAVE_RP=0>"},
+        {"label": "Codex CLI (Recommended)", "description": "Cross-platform, uses GPT 5.2 High. <detected if HAVE_CODEX=1, (not detected) if HAVE_CODEX=0>"},
+        {"label": "RepoPrompt", "description": "macOS only, visual context builder. <detected if HAVE_RP=1, (not detected) if HAVE_RP=0>"},
         {"label": "None", "description": "Skip reviews, can configure later with --review flag"}
       ],
       "multiSelect": false
