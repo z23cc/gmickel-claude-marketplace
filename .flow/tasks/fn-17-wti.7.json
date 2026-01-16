@@ -10,10 +10,21 @@
     "fn-17-wti.6"
   ],
   "epic": "fn-17-wti",
+  "evidence": {
+    "commits": [
+      "326f3e3",
+      "09314f8"
+    ],
+    "prs": [],
+    "tests": [
+      "smoke_test.sh (43/43 passed)",
+      "grep verification for detection removal"
+    ]
+  },
   "id": "fn-17-wti.7",
   "priority": null,
   "spec_path": ".flow/tasks/fn-17-wti.7.md",
-  "status": "in_progress",
+  "status": "done",
   "title": "Run smoke tests and update docs",
-  "updated_at": "2026-01-16T11:20:51.698229Z"
+  "updated_at": "2026-01-16T11:28:45.122568Z"
 }
