@@ -131,11 +131,8 @@ echo "Review backend: $BACKEND (override: --review=rp|codex|none)"
 - [ ] Success output shows override hint: "Review backend: X (override: --review=rp|codex|none)"
 
 ## Done summary
-
-TBD
-
+Removed runtime `which rp-cli` / `which codex` detection from plan-review skill files (SKILL.md and workflow.md). Now uses config-only priority: --review flag > env > config > error. Error message guides users to /flow-next:setup or --review flag.
 ## Evidence
-
-- Commits:
-- Tests:
+- Commits: a3f73d520510e68b61a720422c66e327d3b4b991
+- Tests: grep -r 'which rp-cli' plugins/flow-next/skills/flow-next-plan-review/ (no matches)
 - PRs:
