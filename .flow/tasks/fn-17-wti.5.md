@@ -43,12 +43,13 @@ Replace the complex "If both rp-cli AND codex available" / "If only rp-cli avail
 
 ### If backend already configured (env or config)
 
-Skip review question, only ask branch:
+Skip review question, only ask branch (but show override hint):
 ```
 Quick setup: Where to work?
 a) Current branch  b) New branch  c) Isolated worktree
 
 (Reply: "a", "current", or just tell me)
+(Tip: --review=rp|codex|none overrides configured backend)
 ```
 
 ### If no backend configured
@@ -92,6 +93,7 @@ To:
 - [ ] Review question appears when no backend configured
 - [ ] Review question skipped when backend configured (env or config)
 - [ ] Default behavior: if no review choice and no config, skip review (user can pass --review flag)
+- [ ] Override hint shown when backend configured: "(Tip: --review=rp|codex|none overrides configured backend)"
 
 ## Done summary
 

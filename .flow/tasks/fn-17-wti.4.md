@@ -117,7 +117,7 @@ if [[ -z "$BACKEND" || "$BACKEND" == "null" ]]; then
   exit 1
 fi
 
-echo "Review backend: $BACKEND"
+echo "Review backend: $BACKEND (override: --review=rp|codex|none)"
 ```
 
 ## Acceptance
@@ -128,6 +128,7 @@ echo "Review backend: $BACKEND"
 - [ ] Priority order: --review flag > FLOW_REVIEW_BACKEND env > config
 - [ ] Clear error message when no backend configured
 - [ ] Error message mentions both /flow-next:setup and --review flag
+- [ ] Success output shows override hint: "Review backend: X (override: --review=rp|codex|none)"
 
 ## Done summary
 

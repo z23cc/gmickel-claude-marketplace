@@ -43,13 +43,14 @@ Replace the complex "If both rp-cli AND codex available" / "If only rp-cli avail
 
 ### If backend already configured (env or config)
 
-Skip review question, only ask research:
+Skip review question, only ask research (but show override hint):
 ```
 Quick setup: Use RepoPrompt for deeper context?
 a) Yes, context-scout (slower, thorough)
 b) No, repo-scout (faster)
 
 (Reply: "a", "b", or just tell me)
+(Tip: --review=rp|codex|none overrides configured backend)
 ```
 
 ### If no backend configured
@@ -92,6 +93,7 @@ To:
 - [ ] Review question appears when no backend configured
 - [ ] Review question skipped when backend configured (env or config)
 - [ ] Research question always shows both options (context-scout errors at runtime if rp-cli missing)
+- [ ] Override hint shown when backend configured: "(Tip: --review=rp|codex|none overrides configured backend)"
 
 ## Done summary
 

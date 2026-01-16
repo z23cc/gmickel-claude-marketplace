@@ -62,10 +62,22 @@ Replace with: error message telling user to run setup or pass flag.
 
 ### Remove Phase 0 detection (lines ~21-35)
 
-Same pattern as SKILL.md:
-- Remove `HAVE_RP`, `HAVE_CODEX` detection
-- Remove fallback logic
-- Add error when no backend configured
+Delete detection and fallback, replace with:
+```bash
+# Priority: --review flag > env > config (flag parsed in SKILL.md)
+BACKEND="${FLOW_REVIEW_BACKEND:-}"
+if [[ -z "$BACKEND" ]]; then
+  BACKEND="$($FLOWCTL config get review.backend 2>/dev/null | jq -r '.value // empty' 2>/dev/null || echo "")"
+fi
+
+if [[ -z "$BACKEND" || "$BACKEND" == "null" ]]; then
+  echo "Error: No review backend configured."
+  echo "Run /flow-next:setup to configure, or pass --review=rp|codex|none"
+  exit 1
+fi
+
+echo "Review backend: $BACKEND (override: --review=rp|codex|none)"
+```
 ## Acceptance
 - [ ] No `which rp-cli` or `which codex` in SKILL.md
 - [ ] No `which rp-cli` or `which codex` in workflow.md
@@ -73,6 +85,7 @@ Same pattern as SKILL.md:
 - [ ] Priority order: --review flag > FLOW_REVIEW_BACKEND env > config
 - [ ] Clear error message when no backend configured
 - [ ] Error message mentions both /flow-next:setup and --review flag
+- [ ] Success output shows override hint: "Review backend: X (override: --review=rp|codex|none)"
 - [ ] Smoke tests pass
 ## Done summary
 TBD
