@@ -7,10 +7,19 @@
     "fn-17-wti.1"
   ],
   "epic": "fn-17-wti",
+  "evidence": {
+    "commits": [
+      "4fde7a6f6d822f5c4528cd0f0fe0853b496a9c6b"
+    ],
+    "prs": [],
+    "tests": [
+      "plugins/flow-next/scripts/smoke_test.sh"
+    ]
+  },
   "id": "fn-17-wti.3",
   "priority": null,
   "spec_path": ".flow/tasks/fn-17-wti.3.md",
-  "status": "in_progress",
+  "status": "done",
   "title": "Remove runtime detection from flow-next-impl-review",
-  "updated_at": "2026-01-16T11:01:55.577770Z"
+  "updated_at": "2026-01-16T11:07:21.047427Z"
 }
