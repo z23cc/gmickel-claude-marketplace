@@ -6,6 +6,7 @@
 [![Claude Code](https://img.shields.io/badge/Claude_Code-Plugin_Marketplace-blueviolet)](https://claude.ai/code)
 
 [![Flow-next](https://img.shields.io/badge/Flow--next-v0.11.4-green)](plugins/flow-next/)
+[![Flow-next Docs](https://img.shields.io/badge/Docs-📖_Full_Guide-informational)](plugins/flow-next/README.md)
 
 [![Flow](https://img.shields.io/badge/Flow-v0.8.4-blue)](plugins/flow/)
 [![Author](https://img.shields.io/badge/Author-Gordon_Mickel-orange)](https://mickel.tech)
@@ -55,6 +56,8 @@ This marketplace ships plugins that fix these problems.
 ---
 
 ## Flow-Next
+
+📖 **Full guide (CLI, workflow, .flow layout):** [plugins/flow-next/README.md](plugins/flow-next/README.md)
 
 🌐 **Prefer a visual overview?** See the [Flow-Next app page](https://mickel.tech/apps/flow-next) for diagrams and examples.
 
@@ -120,8 +123,6 @@ flowchart TD
   classDef optional stroke-dasharray: 6 4,stroke:#999;
   class C,J,S optional;
 ```
-
-📖 **Full guide (CLI, workflow, .flow layout):** [plugins/flow-next/README.md](plugins/flow-next/README.md)
 
 <table>
 <tr>
