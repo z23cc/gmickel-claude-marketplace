@@ -81,9 +81,8 @@ Configuration:
 - [ ] Summary shows configured review backend
 - [ ] Works when neither tool detected (defaults to "none")
 ## Done summary
-TBD
-
+Added review backend question to /flow-next:setup workflow with detection for rp-cli and codex, answer mapping to config, and summary output. Includes jq dependency note.
 ## Evidence
-- Commits:
-- Tests:
+- Commits: 97f49822c8b4b4f8dc7d3f0baec4b9e6cd58eb0e, f2cb6f59e0c9cd1b1c5cf7fe152946837321d8f2
+- Tests: Manual inspection of workflow.md
 - PRs:

@@ -88,9 +88,8 @@ echo "Review backend: $BACKEND (override: --review=rp|codex|none)"
 - [ ] Success output shows override hint: "Review backend: X (override: --review=rp|codex|none)"
 - [ ] Smoke tests pass
 ## Done summary
-TBD
-
+Removed runtime `which rp-cli` and `which codex` detection from impl-review skill. Backend selection now uses flag > env > config priority with clear error when unconfigured.
 ## Evidence
-- Commits:
-- Tests:
+- Commits: 4fde7a6f6d822f5c4528cd0f0fe0853b496a9c6b
+- Tests: plugins/flow-next/scripts/smoke_test.sh
 - PRs:

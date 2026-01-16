@@ -79,11 +79,8 @@ Bump version in:
 - [ ] Version bumped
 
 ## Done summary
-
-TBD
-
+Ran smoke tests (43/43 passed), verified detection removed from key skills. Updated README/CHANGELOG/flowctl docs to remove auto-detect from priority. Bumped version to 0.11.10. Review verdict: SHIP.
 ## Evidence
-
-- Commits:
-- Tests:
+- Commits: 326f3e3, 09314f8
+- Tests: smoke_test.sh (43/43 passed), grep verification for detection removal
 - PRs:

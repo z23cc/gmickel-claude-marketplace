@@ -2,6 +2,47 @@
 
 All notable changes to the gmickel-claude-marketplace.
 
+## [flow-next 0.12.0] - 2026-01-16
+
+### ⚠️ Migration Required
+
+**Review backend no longer auto-detects.** Users who relied on automatic `which rp-cli` / `which codex` detection will see behavior changes:
+
+**Why this change:**
+- LLMs deviated from instructions, checking wrong binaries (`rp`, `repoprompt` instead of `rp-cli`)
+- 12+ redundant subprocess calls per session (same detection in every skill)
+- Ralph mode already handled this correctly via config—now all skills do too
+
+| Command | Old behavior | New behavior |
+|---------|--------------|--------------|
+| `/flow-next:plan`, `/flow-next:work` | Auto-detect, pick first available | Asks which backend to use (discovery flow) |
+| `/flow-next:impl-review`, `/flow-next:plan-review` | Auto-detect, pick first available | Error if no backend configured |
+
+**To migrate:** Run `/flow-next:setup` once per repo, or pass `--review=rp|codex|none` explicitly.
+
+**Backwards compatible:** All existing `.flow/` data works unchanged. Only review invocation behavior changed.
+
+### Added
+- **`flowctl review-backend` command** - Returns explicit `ASK` or configured backend (`rp`/`codex`/`none`)
+  - Skills use this instead of complex jq checks
+  - LLMs handle explicit string matching better than empty/non-empty checks
+  - Reduces LLM deviation on conditional logic
+
+### Changed
+- **Remove runtime `which` detection from skills** - Skills no longer auto-detect review backends
+  - Removed `which rp-cli` / `which codex` from impl-review, plan-review, work, plan skills
+  - Priority order: `--review=X` flag > `FLOW_REVIEW_BACKEND` env > `.flow/config.json` > error
+  - Run `/flow-next:setup` to configure preferred backend (one-time)
+  - Reduces LLM deviation (agents checking wrong binary names)
+  - Reduces subprocess overhead (12+ calls per session)
+- **Simplified skill conditionals** - All skills now use `$FLOWCTL review-backend`
+  - Check for `ASK` (not configured) vs actual value (configured)
+  - No more jq parsing or empty string checks
+- **Setup asks review backend** - `/flow-next:setup` now prompts for RepoPrompt/Codex/None
+  - Writes to `.flow/config.json` under `review.backend`
+  - Shows detection status (detected / not detected) for each option
+- **README updated** - Removed "auto-detect" from priority documentation
+
 ## [flow-next 0.11.9] - 2026-01-16
 
 ### Fixed
