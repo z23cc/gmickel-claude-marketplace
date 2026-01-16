@@ -96,11 +96,8 @@ To:
 - [ ] Override hint shown when backend configured: "(Tip: --review=rp|codex|none overrides configured backend)"
 
 ## Done summary
-
-TBD
-
+Removed runtime `which rp-cli`/`which codex` detection from flow-next-work skill. Simplified question logic: ask review question only when no backend configured (env or config), show override hint otherwise.
 ## Evidence
-
-- Commits:
-- Tests:
+- Commits: cbc75d45a1af57e72614b24a2197f5ce32b26e16
+- Tests: grep verification: no which rp-cli/codex or HAVE_* in SKILL.md
 - PRs:

@@ -40,12 +40,8 @@ If empty, ask: "What should I plan? Give me the feature or bug in 1-5 sentences.
 
 ## FIRST: Parse Options or Ask Questions
 
-Check available backends and configured preference:
+Check configured backend (priority: env > config):
 ```bash
-HAVE_RP=$(which rp-cli >/dev/null 2>&1 && echo 1 || echo 0)
-HAVE_CODEX=$(which codex >/dev/null 2>&1 && echo 1 || echo 0)
-
-# Check configured backend (priority: env > config)
 CONFIGURED_BACKEND="${FLOW_REVIEW_BACKEND:-}"
 if [[ -z "$CONFIGURED_BACKEND" ]]; then
   CONFIGURED_BACKEND="$($FLOWCTL config get review.backend 2>/dev/null | jq -r '.value // empty')"
@@ -56,8 +52,8 @@ fi
 
 Parse the arguments for these patterns. If found, use them and skip questions:
 
-**Research approach** (only if rp-cli available):
-- `--research=rp` or `--research rp` or "use rp" or "context-scout" or "use repoprompt" → context-scout
+**Research approach**:
+- `--research=rp` or `--research rp` or "use rp" or "context-scout" or "use repoprompt" → context-scout (errors at runtime if rp-cli missing)
 - `--research=grep` or `--research grep` or "use grep" or "repo-scout" or "fast" → repo-scout
 
 **Review mode**:
@@ -68,7 +64,7 @@ Parse the arguments for these patterns. If found, use them and skip questions:
 
 ### If options NOT found in arguments
 
-**Skip review question if**: Ralph mode (`FLOW_RALPH=1`) OR backend already configured (`CONFIGURED_BACKEND` not empty). In these cases, only ask research question (if rp-cli available):
+**If backend already configured** (`CONFIGURED_BACKEND` not empty, from env or config): Only ask research question, skip review question. Show override hint:
 
 ```
 Quick setup: Use RepoPrompt for deeper context?
@@ -76,13 +72,11 @@ a) Yes, context-scout (slower, thorough)
 b) No, repo-scout (faster)
 
 (Reply: "a", "b", or just tell me)
+(Tip: --review=rp|codex|none overrides configured backend)
 ```
 
-If rp-cli not available, skip questions entirely and use defaults.
+**If no backend configured** (`CONFIGURED_BACKEND` is empty): Ask both research AND review questions (do NOT use AskUserQuestion tool):
 
-**Otherwise**, output questions based on available backends (do NOT use AskUserQuestion tool):
-
-**If both rp-cli AND codex available:**
 ```
 Quick setup before planning:
 
@@ -91,53 +85,19 @@ Quick setup before planning:
    b) No, repo-scout (faster)
 
 2. **Review** — Run Carmack-level review after?
-   a) Yes, Codex CLI (cross-platform, GPT 5.2 High)
-   b) Yes, RepoPrompt chat (macOS, visual builder)
-   c) Yes, export for external LLM (ChatGPT, Claude web)
-   d) No
+   a) Codex CLI
+   b) RepoPrompt
+   c) Export for external LLM
+   d) None (configure later with --review flag)
 
 (Reply: "1a 2a", "1b 2d", or just tell me naturally)
-```
-
-**If only rp-cli available:**
-```
-Quick setup before planning:
-
-1. **Research approach** — Use RepoPrompt for deeper context?
-   a) Yes, context-scout (slower, thorough)
-   b) No, repo-scout (faster)
-
-2. **Review** — Run Carmack-level review after?
-   a) Yes, RepoPrompt chat
-   b) Yes, export for external LLM
-   c) No
-
-(Reply: "1a 2a", "1b 2c", or just tell me naturally)
-```
-
-**If only codex available:**
-```
-Quick setup before planning:
-
-**Review** — Run Carmack-level review after?
-a) Yes, Codex CLI (GPT 5.2 High)
-b) Yes, export for external LLM
-c) No
-
-(Reply: "a", "b", or just tell me naturally)
 ```
 
 Wait for response. Parse naturally — user may reply terse ("1a 2b") or ramble via voice.
 
 **Defaults when empty/ambiguous:**
 - Research = `grep` (repo-scout)
-- Review = configured backend if set, else `codex` if available, else `rp` if available, else `none`
-
-If neither rp-cli nor codex available: skip review questions, use repo-scout, no review.
-
-**Defaults when no review backend available:**
-- Research = `grep`
-- Review = `none`
+- Review = configured backend if set, else `none` (user should run /flow-next:setup or pass --review flag)
 
 ## Workflow
 
