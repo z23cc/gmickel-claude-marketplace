@@ -120,7 +120,7 @@ scripts/ralph/ralph.sh          # Run from terminal
 # Install flow-next
 /plugin install flow-next
 
-# Optional: CLI access + project docs
+# Setup (configures review backend + CLI tools)
 /flow-next:setup
 ```
 
