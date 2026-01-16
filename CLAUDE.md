@@ -197,7 +197,28 @@ Install flow or flow-next to OpenAI Codex:
 ./scripts/install-codex.sh flow
 ```
 
-**Note**: Subagents won't run in Codex (no Task tool support). Core plan/work flow still works.
+**What gets installed:**
+- `~/.codex/bin/flowctl` + `flowctl.py` - CLI tool
+- `~/.codex/skills/` - Skill definitions (patched for Codex paths)
+- `~/.codex/prompts/` - Command prompts
+- `~/.codex/scripts/` - Helper scripts (worktree.sh)
+- `~/.codex/templates/` - Ralph/setup templates
+
+**Path patching:** All `${CLAUDE_PLUGIN_ROOT}` references are automatically replaced with `~/.codex` paths during install.
+
+**Limitations:**
+- Subagents won't run (Codex lacks Task tool)
+- Hooks not supported
+- Core `/flow-next:plan` and `/flow-next:work` commands work
+
+**Usage in Codex:**
+```bash
+# Add to PATH (optional)
+export PATH="$HOME/.codex/bin:$PATH"
+
+# Use flowctl directly
+~/.codex/bin/flowctl --help
+```
 
 <!-- BEGIN FLOW-NEXT -->
 ## Flow-Next
