@@ -1019,10 +1019,41 @@ Flow-Next partially works in OpenAI Codex with some limitations:
 
 **Caveats:**
 - No subagent support (research scouts run inline or are skipped)
+- `/flow-next:setup` not supported — use manual project setup below
 
 **Install:**
 ```bash
 ./scripts/install-codex.sh flow-next
+```
+
+**Per-project setup** (run in each project):
+```bash
+# Initialize .flow/ directory
+~/.codex/bin/flowctl init
+
+# Optional: copy flowctl locally for project portability
+mkdir -p .flow/bin
+cp ~/.codex/bin/flowctl .flow/bin/
+cp ~/.codex/bin/flowctl.py .flow/bin/
+chmod +x .flow/bin/flowctl
+
+# Optional: configure review backend (codex recommended for Codex CLI)
+~/.codex/bin/flowctl config set review.backend codex
+```
+
+**Optional AGENTS.md snippet** (helps Codex understand flow-next):
+```markdown
+<!-- BEGIN FLOW-NEXT -->
+## Flow-Next
+
+This project uses Flow-Next for task tracking. Use `.flow/bin/flowctl` or `~/.codex/bin/flowctl`.
+
+Quick commands:
+- `flowctl list` — list epics + tasks
+- `flowctl ready --epic fn-N` — what's ready
+- `flowctl start fn-N.M` — claim task
+- `flowctl done fn-N.M --summary-file s.md --evidence-json e.json`
+<!-- END FLOW-NEXT -->
 ```
 
 ### Community Ports and Inspired Projects
