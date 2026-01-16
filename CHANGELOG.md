@@ -2,6 +2,14 @@
 
 All notable changes to the gmickel-claude-marketplace.
 
+## [flow-next 0.12.1] - 2026-01-16
+
+### Fixed
+- **Single-task mode respects input** - `/flow-next:work fn-N.M` now stops after completing that task
+  - Previously looped to next task after plan-sync (bug in Phase 3f)
+  - Phase 1 now tracks SINGLE_TASK_MODE vs EPIC_MODE
+  - Phase 3f only loops in EPIC_MODE; SINGLE_TASK_MODE goes to quality phase
+
 ## [flow-next 0.12.0] - 2026-01-16
 
 ### ⚠️ Migration Required

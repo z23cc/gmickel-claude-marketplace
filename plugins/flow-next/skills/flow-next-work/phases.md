@@ -23,19 +23,22 @@ FLOWCTL="${CLAUDE_PLUGIN_ROOT}/scripts/flowctl"
 
 Detect input type in this order (first match wins):
 
-1. **Flow task ID** `fn-N.M` (e.g., fn-1.3)
-2. **Flow epic ID** `fn-N` (e.g., fn-1)
-3. **Spec file** `.md` path that exists on disk
-4. **Idea text** everything else
+1. **Flow task ID** `fn-N.M` (e.g., fn-1.3) → **SINGLE_TASK_MODE**
+2. **Flow epic ID** `fn-N` (e.g., fn-1) → **EPIC_MODE**
+3. **Spec file** `.md` path that exists on disk → **EPIC_MODE**
+4. **Idea text** everything else → **EPIC_MODE**
+
+**Track the mode** — it controls looping in Phase 3.
 
 ---
 
-**Flow task ID (fn-N.M)**:
+**Flow task ID (fn-N.M)** → SINGLE_TASK_MODE:
 - Read task: `$FLOWCTL show <id> --json`
 - Read spec: `$FLOWCTL cat <id>`
 - Get epic from task data for context: `$FLOWCTL show <epic-id> --json && $FLOWCTL cat <epic-id>`
+- **This is the only task to execute** — no loop to next task
 
-**Flow epic ID (fn-N)**:
+**Flow epic ID (fn-N)** → EPIC_MODE:
 - Read epic: `$FLOWCTL show <id> --json`
 - Read spec: `$FLOWCTL cat <id>`
 - Get first ready task: `$FLOWCTL ready --epic <id> --json`
@@ -165,9 +168,11 @@ Follow your phases in plan-sync.md exactly.
 
 Plan-sync returns summary. Log it but don't block - task updates are best-effort.
 
-### 3f. Loop
+### 3f. Loop or Finish
 
-Return to 3a for next task.
+**SINGLE_TASK_MODE**: Skip loop. Go directly to Phase 4 (Quality).
+
+**EPIC_MODE**: Return to 3a for next task.
 
 ---
 
