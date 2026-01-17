@@ -125,7 +125,9 @@ $FLOWCTL show <task-id> --json
 
 If status is not `done`, the worker failed. Check output and retry or investigate.
 
-### 3e. Plan Sync (if enabled)
+### 3e. Plan Sync (if enabled) — BOTH MODES
+
+**Runs in SINGLE_TASK_MODE and EPIC_MODE.** Only the loop-back in 3f differs by mode.
 
 Only run plan-sync if the task status is `done` (from step 3d). If not `done`, skip plan-sync and investigate/retry.
 
@@ -170,9 +172,11 @@ Plan-sync returns summary. Log it but don't block - task updates are best-effort
 
 ### 3f. Loop or Finish
 
-**SINGLE_TASK_MODE**: Skip loop. Go directly to Phase 4 (Quality).
+**IMPORTANT**: Steps 3d and 3e ALWAYS run after worker returns, regardless of mode. Only the loop-back behavior differs:
 
-**EPIC_MODE**: Return to 3a for next task.
+**SINGLE_TASK_MODE**: After 3d→3e, go to Phase 4 (Quality). No loop.
+
+**EPIC_MODE**: After 3d→3e, return to 3a for next task.
 
 ---
 
@@ -229,10 +233,13 @@ Confirm before ship:
 - Docs updated if needed
 - Working tree is clean
 
-## Example loop
+## Example flow
 
 ```
-Phase 1 (resolve) → Phase 2 (branch) → Phase 3 loop:
-  ├─ find task → start → spawn worker → verify → repeat
+Phase 1 (resolve) → Phase 2 (branch) → Phase 3:
+  ├─ 3a-c: find task → start → spawn worker
+  ├─ 3d: verify done
+  ├─ 3e: plan-sync (if enabled + downstream tasks exist)
+  ├─ 3f: EPIC_MODE? → loop to 3a | SINGLE_TASK_MODE? → Phase 4
   └─ no more tasks → Phase 4 (quality) → Phase 5 (ship)
 ```
