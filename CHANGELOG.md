@@ -2,7 +2,7 @@
 
 All notable changes to the gmickel-claude-marketplace.
 
-## [flow-next 0.12.5] - 2026-01-17
+## [flow-next 0.12.6] - 2026-01-17
 
 ### Added
 - **github-scout agent** - Cross-repo code search via `gh` CLI
