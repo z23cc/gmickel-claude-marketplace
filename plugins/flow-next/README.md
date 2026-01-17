@@ -318,6 +318,10 @@ rm -rf scripts/ralph/       # Ralph (if enabled)
 > **⚠️ Safety first**: Ralph defaults to `YOLO=1` (skips permission prompts).
 > - Start with `ralph_once.sh` to observe one iteration
 > - Consider [Docker sandbox](https://docs.docker.com/ai/sandboxes/claude-code/) for isolation
+>
+> **Community sandbox setups** (alternative approaches):
+> - [devcontainer-for-claude-yolo-and-flow-next](https://github.com/Ranudar/devcontainer-for-claude-yolo-and-flow-next) — VS Code devcontainer with Playwright, firewall whitelisting, and RepoPrompt MCP bridge
+> - [agent-sandbox](https://github.com/novotnyllc/agent-sandbox) — Docker Sandbox (Desktop 4.50+) with seccomp/user namespace isolation, .NET + Node.js
 
 Ralph is the repo-local autonomous loop that plans and works through tasks end-to-end.
 
