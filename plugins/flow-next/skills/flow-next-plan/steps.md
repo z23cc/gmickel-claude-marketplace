@@ -47,6 +47,7 @@ Run these subagents in parallel using the Task tool:
 - Task flow-next:context-scout(<request>) - uses RepoPrompt builder for AI-powered file discovery
 - Task flow-next:practice-scout(<request>)
 - Task flow-next:docs-scout(<request>)
+- Task flow-next:github-scout(<request>) - cross-repo code search via gh CLI
 - Task flow-next:memory-scout(<request>) - **only if memory.enabled is true**
 
 **If user chose repo-scout (default/faster)** OR rp-cli unavailable:
@@ -54,6 +55,7 @@ Run these subagents in parallel using the Task tool:
 - Task flow-next:repo-scout(<request>) - uses standard Grep/Glob/Read
 - Task flow-next:practice-scout(<request>)
 - Task flow-next:docs-scout(<request>)
+- Task flow-next:github-scout(<request>) - cross-repo code search via gh CLI
 - Task flow-next:memory-scout(<request>) - **only if memory.enabled is true**
 
 Must capture:

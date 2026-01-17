@@ -756,7 +756,7 @@ Override via flags or `scripts/ralph/config.env`.
 
 ### Planning Phase
 
-1. **Research (parallel subagents)**: `repo-scout` (or `context-scout` if rp-cli) + `practice-scout` + `docs-scout`
+1. **Research (parallel subagents)**: `repo-scout` (or `context-scout` if rp-cli) + `practice-scout` + `docs-scout` + `github-scout` (cross-repo code search)
 2. **Gap analysis**: `flow-gap-analyst` finds edge cases + missing requirements
 3. **Epic creation**: Writes spec to `.flow/specs/fn-N.md`
 4. **Task breakdown**: Creates tasks + explicit dependencies in `.flow/tasks/`
