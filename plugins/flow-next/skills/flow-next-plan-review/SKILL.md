@@ -133,6 +133,8 @@ $FLOWCTL epic set-plan-review-status <EPIC_ID> --status ship --json
 
 ## Fix Loop (INTERNAL - do not exit to Ralph)
 
+**CRITICAL: Do NOT ask user for confirmation. Automatically fix ALL valid issues and re-review — our goal is production-grade world-class software and architecture. Never use AskUserQuestion in this loop.**
+
 If verdict is NEEDS_WORK, loop internally until SHIP:
 
 1. **Parse issues** from reviewer feedback

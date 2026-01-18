@@ -240,6 +240,8 @@ If no verdict tag, output `<promise>RETRY</promise>` and stop.
 
 ## Fix Loop (RP)
 
+**CRITICAL: Do NOT ask user for confirmation. Automatically fix ALL valid issues and re-review — our goal is production-grade world-class software and architecture. Never use AskUserQuestion in this loop.**
+
 **CRITICAL: You MUST fix the plan BEFORE re-reviewing. Never re-review without making changes.**
 
 If verdict is NEEDS_WORK:

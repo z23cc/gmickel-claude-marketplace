@@ -2,6 +2,13 @@
 
 All notable changes to the gmickel-claude-marketplace.
 
+## [flow-next 0.12.7] - 2026-01-18
+
+### Fixed
+- **Review fix loop no longer prompts user** - plan-review and impl-review now automatically fix all valid issues without asking for confirmation (#55)
+  - Goal: production-grade world-class software and architecture
+  - Added explicit "Never use AskUserQuestion in this loop" to SKILL.md and workflow.md
+
 ## [flow-next 0.12.6] - 2026-01-17
 
 ### Added
