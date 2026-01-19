@@ -861,6 +861,21 @@ a thorough review requires understanding the system, not just the diff.
 6. **Tests** - Adequate coverage? Testing behavior?
 7. **Security** - Injection? Auth gaps?
 
+## Scenario Exploration (for changed code only)
+
+Walk through these scenarios for new/modified code paths:
+- Happy path: Normal operation with valid inputs
+- Invalid inputs: Null, empty, malformed data
+- Boundary conditions: Min/max values, empty collections
+- Concurrent access: Race conditions, deadlocks
+- Network issues: Timeouts, partial failures
+- Resource exhaustion: Memory, disk, connections
+- Security attacks: Injection, overflow, DoS vectors
+- Data corruption: Partial writes, inconsistency
+- Cascading failures: Downstream service issues
+
+Only flag issues in the **changed code** - not pre-existing patterns.
+
 ## Verdict Scope
 
 Explore broadly to understand impact, but your VERDICT must only consider:
@@ -4114,6 +4129,21 @@ Review all changes on the current branch compared to {base_branch}.
 3. **Simplicity** - Is this the simplest solution?
 4. **Security** - Injection, auth gaps, resource exhaustion?
 5. **Edge Cases** - Failure modes, race conditions, malformed input?
+
+## Scenario Exploration (for changed code only)
+
+Walk through these scenarios for new/modified code paths:
+- Happy path: Normal operation with valid inputs
+- Invalid inputs: Null, empty, malformed data
+- Boundary conditions: Min/max values, empty collections
+- Concurrent access: Race conditions, deadlocks
+- Network issues: Timeouts, partial failures
+- Resource exhaustion: Memory, disk, connections
+- Security attacks: Injection, overflow, DoS vectors
+- Data corruption: Partial writes, inconsistency
+- Cascading failures: Downstream service issues
+
+Only flag issues in the **changed code** - not pre-existing patterns.
 
 ## Verdict Scope
 

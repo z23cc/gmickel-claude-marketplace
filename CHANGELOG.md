@@ -99,6 +99,28 @@ This is a significant change to the planning philosophy. If you find plans are n
 
 We'd rather iterate based on real usage than guess at the right balance.
 
+---
+
+### Implementation Review Improvements
+
+**Scenario exploration checklist** — Reviewers now systematically walk through failure scenarios for changed code:
+
+- Happy path (normal operation)
+- Invalid inputs (null, empty, malformed)
+- Boundary conditions (min/max, empty collections)
+- Concurrent access (race conditions, deadlocks)
+- Network issues (timeouts, partial failures)
+- Resource exhaustion (memory, disk, connections)
+- Security attacks (injection, overflow, DoS)
+- Data corruption (partial writes, inconsistency)
+- Cascading failures (downstream service issues)
+
+**Scope guardrail:** Checklist explicitly scoped to "changed code only" — reviewers flag issues in the changeset, not pre-existing patterns. Reinforces the verdict scope rules added in 0.12.10.
+
+Affects:
+- `skills/flow-next-impl-review/workflow.md` (RP backend)
+- `scripts/flowctl.py` — `build_review_prompt()` and `build_standalone_review_prompt()` (Codex backend)
+
 ## [flow-next 0.12.10] - 2026-01-19
 
 ### Changed

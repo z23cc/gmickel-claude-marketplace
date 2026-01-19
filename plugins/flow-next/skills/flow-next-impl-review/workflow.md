@@ -202,6 +202,22 @@ Conduct a John Carmack-level review:
 6. **Tests** - Adequate coverage? Testing behavior?
 7. **Security** - Injection? Auth gaps?
 
+## Scenario Exploration (for changed code only)
+
+Walk through these scenarios mentally for any new/modified code paths:
+
+- [ ] Happy path - Normal operation with valid inputs
+- [ ] Invalid inputs - Null, empty, malformed data
+- [ ] Boundary conditions - Min/max values, empty collections
+- [ ] Concurrent access - Race conditions, deadlocks
+- [ ] Network issues - Timeouts, partial failures
+- [ ] Resource exhaustion - Memory, disk, connections
+- [ ] Security attacks - Injection, overflow, DoS vectors
+- [ ] Data corruption - Partial writes, inconsistency
+- [ ] Cascading failures - Downstream service issues
+
+Only flag issues that apply to the **changed code** - not pre-existing patterns.
+
 ## Output Format
 
 For each issue:
