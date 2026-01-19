@@ -263,7 +263,7 @@ With `BRANCH_MODE=new`, all epics work on the same run branch. Commits are prefi
 | `MAX_TURNS` | (empty) | Claude turns per iteration (empty = unlimited) |
 | `MAX_ATTEMPTS_PER_TASK` | `5` | Retries before auto-blocking task |
 | `MAX_REVIEW_ITERATIONS` | `5` | Fix+re-review cycles within one impl-review |
-| `WORKER_TIMEOUT` | `1800` | Seconds before killing stuck worker (30min default) |
+| `WORKER_TIMEOUT` | `2700` | Seconds before killing stuck worker (45min default) |
 
 ### Scope
 

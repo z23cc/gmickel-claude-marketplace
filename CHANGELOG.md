@@ -2,6 +2,18 @@
 
 All notable changes to the gmickel-claude-marketplace.
 
+## [flow-next 0.12.10] - 2026-01-19
+
+### Changed
+- **WORKER_TIMEOUT default increased** - 30min → 45min (2700s) to accommodate complex impl-review loops (#59)
+- **Review verdict scope tightened** - Codex impl/plan reviews now focus on issues introduced by the changeset, not pre-existing codebase issues
+  - Reviewers may mention tangential issues as "FYI" without affecting verdict
+  - Prevents review loops from drifting to unrelated improvements
+
+### Added
+- **Iteration tracking in receipts** - Receipts now include `"iteration": N` for debugging timeout/failure patterns
+- **Enhanced timeout logging** - Timeouts now log phase, task/epic ID, iteration, and suggest increasing `WORKER_TIMEOUT`
+
 ## [flow-next 0.12.9] - 2026-01-18
 
 ### Fixed

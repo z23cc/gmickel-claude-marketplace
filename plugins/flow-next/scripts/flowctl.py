@@ -861,6 +861,20 @@ a thorough review requires understanding the system, not just the diff.
 6. **Tests** - Adequate coverage? Testing behavior?
 7. **Security** - Injection? Auth gaps?
 
+## Verdict Scope
+
+Explore broadly to understand impact, but your VERDICT must only consider:
+- Issues **introduced** by this changeset
+- Issues **directly affected** by this changeset (e.g., broken by the change)
+- Pre-existing issues that would **block shipping** this specific change
+
+Do NOT mark NEEDS_WORK for:
+- Pre-existing issues unrelated to the change
+- "Nice to have" improvements outside the change scope
+- Style nitpicks in untouched code
+
+You MAY mention these as "FYI" observations without affecting the verdict.
+
 ## Output Format
 
 For each issue found:
@@ -892,6 +906,20 @@ Do NOT skip this tag. The automation depends on it."""
 5. **Risks** - Blockers identified? Security gaps? Mitigation?
 6. **Scope** - Right-sized? Over/under-engineering?
 7. **Testability** - How will we verify this works?
+
+## Verdict Scope
+
+Explore the codebase to understand context, but your VERDICT must only consider:
+- Issues **within this plan** that block implementation
+- Feasibility problems given the **current codebase state**
+- Missing requirements that are **part of the stated goal**
+
+Do NOT mark NEEDS_WORK for:
+- Pre-existing codebase issues unrelated to this plan
+- Suggestions for features outside the plan scope
+- "While we're at it" improvements
+
+You MAY mention these as "FYI" observations without affecting the verdict.
 
 ## Output Format
 
@@ -4087,6 +4115,20 @@ Review all changes on the current branch compared to {base_branch}.
 4. **Security** - Injection, auth gaps, resource exhaustion?
 5. **Edge Cases** - Failure modes, race conditions, malformed input?
 
+## Verdict Scope
+
+Your VERDICT must only consider issues in the **changed code**:
+- Issues **introduced** by this changeset
+- Issues **directly affected** by this changeset
+- Pre-existing issues that would **block shipping** this specific change
+
+Do NOT mark NEEDS_WORK for:
+- Pre-existing issues in untouched code
+- "Nice to have" improvements outside the diff
+- Style nitpicks in files you didn't change
+
+You MAY mention these as "FYI" observations without affecting the verdict.
+
 ## Output Format
 
 For each issue found:
@@ -4193,6 +4235,13 @@ def cmd_codex_impl_review(args: argparse.Namespace) -> None:
             "timestamp": now_iso(),
             "review": output,  # Full review feedback for fix loop
         }
+        # Add iteration if running under Ralph
+        ralph_iter = os.environ.get("RALPH_ITERATION")
+        if ralph_iter:
+            try:
+                receipt_data["iteration"] = int(ralph_iter)
+            except ValueError:
+                pass
         if focus:
             receipt_data["focus"] = focus
         Path(receipt_path).write_text(
@@ -4282,6 +4331,13 @@ def cmd_codex_plan_review(args: argparse.Namespace) -> None:
             "timestamp": now_iso(),
             "review": output,  # Full review feedback for fix loop
         }
+        # Add iteration if running under Ralph
+        ralph_iter = os.environ.get("RALPH_ITERATION")
+        if ralph_iter:
+            try:
+                receipt_data["iteration"] = int(ralph_iter)
+            except ValueError:
+                pass
         Path(receipt_path).write_text(
             json.dumps(receipt_data, indent=2) + "\n", encoding="utf-8"
         )
