@@ -2,6 +2,12 @@
 
 All notable changes to the gmickel-claude-marketplace.
 
+## [flow-next 0.14.2] - 2026-01-21
+
+### Fixed
+
+- **Task-level interview guard** — When interviewing a task (fn-N.M) that already has planning content (file refs, sizing, approach), interview now preserves that detail instead of overwriting. Only acceptance criteria can be appended, or user is directed to interview the epic instead.
+
 ## [flow-next 0.14.1] - 2026-01-21
 
 ### Fixed

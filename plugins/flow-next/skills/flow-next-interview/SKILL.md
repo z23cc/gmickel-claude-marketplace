@@ -157,7 +157,23 @@ EOF
 
 ### For Flow Task ID (fn-N.M)
 
-Update task with interview findings. Focus on **requirements**, not implementation details.
+**First check if task has existing spec from planning:**
+```bash
+$FLOWCTL cat <id>
+```
+
+**If task has substantial planning content** (description with file refs, sizing, approach):
+- **Do NOT overwrite** — planning detail would be lost
+- Only ADD new acceptance criteria discovered in interview:
+  ```bash
+  # Read existing acceptance, append new criteria
+  $FLOWCTL task set-acceptance <id> --file /tmp/acc.md --json
+  ```
+- Or suggest interviewing the epic instead: `/flow-next:interview <epic-id>`
+
+**If task is minimal** (just title, empty or stub description):
+- Update task with interview findings
+- Focus on **requirements**, not implementation details
 
 ```bash
 $FLOWCTL task set-spec <id> --description /tmp/desc.md --acceptance /tmp/acc.md --json
@@ -168,7 +184,7 @@ Description should capture:
 - Edge cases discovered in interview
 - Constraints and requirements
 
-Do NOT add: file/line refs, sizing, implementation approach — that's already in the task from planning.
+Do NOT add: file/line refs, sizing, implementation approach — that's plan's job.
 
 ### For File Path
 
