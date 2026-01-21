@@ -2,6 +2,12 @@
 
 All notable changes to the gmickel-claude-marketplace.
 
+## [flow-next 0.17.2] - 2026-01-21
+
+### Fixed
+
+- **Windows compatibility** — `fcntl` import now conditional; was causing `ModuleNotFoundError` on Windows since 0.17.0. File locking gracefully degrades to no-op on Windows (acceptable for single-machine use).
+
 ## [flow-next 0.17.1] - 2026-01-21
 
 ### Fixed
