@@ -241,12 +241,29 @@ def load_task_with_state(task_id: str, use_json: bool = True) -> dict:
 
 
 def save_task_runtime(task_id: str, updates: dict) -> None:
-    """Write runtime state only. Never touch definition file."""
+    """Write runtime state only (merge with existing). Never touch definition file."""
     store = get_state_store()
     with store.lock_task(task_id):
         current = store.load_runtime(task_id) or {"status": "todo"}
         merged = {**current, **updates, "updated_at": now_iso()}
         store.save_runtime(task_id, merged)
+
+
+def reset_task_runtime(task_id: str) -> None:
+    """Reset runtime state to baseline (overwrite, not merge). Used by task reset."""
+    store = get_state_store()
+    with store.lock_task(task_id):
+        # Overwrite with clean baseline state
+        store.save_runtime(task_id, {"status": "todo", "updated_at": now_iso()})
+
+
+def delete_task_runtime(task_id: str) -> None:
+    """Delete runtime state file entirely. Used by checkpoint restore when no runtime."""
+    store = get_state_store()
+    with store.lock_task(task_id):
+        state_path = store._state_path(task_id)
+        if state_path.exists():
+            state_path.unlink()
 
 
 def save_task_definition(task_id: str, definition: dict) -> None:
@@ -3083,8 +3100,8 @@ def cmd_task_reset(args: argparse.Namespace) -> None:
             print(f"{task_id} already todo")
         return
 
-    # Reset runtime state to baseline (deletes all runtime fields except status)
-    save_task_runtime(task_id, {"status": "todo"})
+    # Reset runtime state to baseline (overwrite, not merge - clears all runtime fields)
+    reset_task_runtime(task_id)
 
     # Also clear legacy runtime fields from definition file (for backward compat cleanup)
     def_data = load_json_or_exit(task_json_path, f"Task {task_id}", use_json=args.json)
@@ -3119,8 +3136,8 @@ def cmd_task_reset(args: argparse.Namespace) -> None:
             if dep_status == "in_progress" or dep_status == "todo":
                 continue
 
-            # Reset runtime state for dependent
-            save_task_runtime(dep_id, {"status": "todo"})
+            # Reset runtime state for dependent (overwrite, not merge)
+            reset_task_runtime(dep_id)
 
             # Also clear legacy fields from definition
             dep_def = load_json(dep_path)
@@ -4910,11 +4927,15 @@ def cmd_checkpoint_restore(args: argparse.Namespace) -> None:
         if task["spec"]:
             atomic_write(task_spec_path, task["spec"])
 
-        # Restore runtime state if present in checkpoint (schema_version >= 2)
+        # Restore runtime state from checkpoint (schema_version >= 2)
         runtime = task.get("runtime")
         if runtime is not None:
+            # Restore saved runtime state
             with store.lock_task(task_id):
                 store.save_runtime(task_id, runtime)
+        else:
+            # No runtime in checkpoint - delete any existing runtime state
+            delete_task_runtime(task_id)
 
         restored_tasks.append(task_id)
 
