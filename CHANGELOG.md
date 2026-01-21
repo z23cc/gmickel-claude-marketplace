@@ -2,6 +2,14 @@
 
 All notable changes to the gmickel-claude-marketplace.
 
+## [flow-next 0.15.0] - 2026-01-21
+
+### Changed
+
+- **WORKER_TIMEOUT default** — 45min → 1hr (3600s). Timeout is now a safety guard against runaway workers, not flow control. Properly sized tasks shouldn't hit it ([#59](https://github.com/gmickel/gmickel-claude-marketplace/issues/59))
+- **MAX_REVIEW_ITERATIONS default** — 5 → 3. Tighter cap; if 3 fix cycles don't pass review, task/spec is likely too big or ambiguous. Let next Ralph iteration start fresh
+- **Timeout philosophy** — Docs and comments now clarify: time is arbitrary, `MAX_REVIEW_ITERATIONS` is the real control. One Ralph iteration = impl + review, should complete within single context window
+
 ## [flow-next 0.14.4] - 2026-01-21
 
 ### Added
