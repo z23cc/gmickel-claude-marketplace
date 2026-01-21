@@ -2,6 +2,35 @@
 
 All notable changes to the gmickel-claude-marketplace.
 
+## [flow-next 0.17.0] - 2026-01-21
+
+### Added
+
+- **Shared runtime state for parallel worktree execution** — Task runtime state (status, assignee, claim info, evidence) now lives in `.git/flow-state/` instead of the tracked definition files. This enables multiple git worktrees to share task state, unlocking parallel orchestration workflows where different agents work on different tasks simultaneously.
+
+- **StateStore abstraction** — New `LocalFileStateStore` with per-task `fcntl` locking prevents race conditions when multiple processes claim or update tasks concurrently.
+
+- **New commands**:
+  - `flowctl state-path` — Shows resolved state directory (useful for debugging)
+  - `flowctl migrate-state [--clean]` — Migrates existing repos to the new state model. `--clean` removes runtime fields from tracked JSON files after migration.
+
+- **Checkpoint schema v2** — Checkpoints now include runtime state, enabling full restore across worktrees.
+
+### Changed
+
+- **Merged read path** — All task reads now merge definition + runtime state. Fully backward compatible — existing repos work without migration.
+- **Atomic task claiming** — `flowctl start` validates and writes under the same lock, eliminating TOCTOU race conditions.
+- **Reset semantics** — `flowctl task reset` now properly clears runtime state (overwrite, not merge).
+
+### Technical Details
+
+State directory resolution order:
+1. `FLOW_STATE_DIR` environment variable (explicit override)
+2. `git --git-common-dir` + `/flow-state` (worktree-aware, shared)
+3. `.flow/state` fallback (non-git or old git)
+
+Runtime fields moved to state: `status`, `updated_at`, `assignee`, `claimed_at`, `claim_note`, `evidence`, `blocked_reason`
+
 ## [flow-next 0.16.0] - 2026-01-21
 
 ### Added
