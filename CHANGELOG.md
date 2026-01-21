@@ -2,6 +2,13 @@
 
 All notable changes to the gmickel-claude-marketplace.
 
+## [flow-next 0.14.3] - 2026-01-21
+
+### Changed
+
+- **Setup skips already-configured options** — Re-running `/flow-next:setup` now detects existing config (memory, planSync, review.backend) and skips those questions. Shows current config with `flowctl config set` commands for changing values.
+- **Review backend descriptions improved** — RepoPrompt now highlights auto-scoped diffs and ~65% fewer tokens; Codex notes cross-platform + GPT 5.2 High. No "(Recommended)" — user decides based on platform/needs.
+
 ## [flow-next 0.14.2] - 2026-01-21
 
 ### Fixed

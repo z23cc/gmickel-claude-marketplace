@@ -70,20 +70,22 @@ Read current `.flow/meta.json`, add/update these fields (preserve all others):
 
 ## Step 6: Configuration Questions
 
-### 6a: Detect review backends
+### 6a: Detect current config and tools
 
-Before asking questions, detect available review tools:
+Before asking questions, detect available tools and read current config:
 
 ```bash
 # Detect available review backends
 HAVE_RP=$(which rp-cli >/dev/null 2>&1 && echo 1 || echo 0)
 HAVE_CODEX=$(which codex >/dev/null 2>&1 && echo 1 || echo 0)
 
-# Read current config value if exists (requires jq)
+# Read current config values if they exist
 CURRENT_BACKEND=$("${PLUGIN_ROOT}/scripts/flowctl" config get review.backend --json 2>/dev/null | jq -r '.value // empty')
+CURRENT_MEMORY=$("${PLUGIN_ROOT}/scripts/flowctl" config get memory.enabled --json 2>/dev/null | jq -r '.value // empty')
+CURRENT_PLANSYNC=$("${PLUGIN_ROOT}/scripts/flowctl" config get planSync.enabled --json 2>/dev/null | jq -r '.value // empty')
 ```
 
-Store detection results for use in questions.
+Store detection results for use in questions. When showing options, indicate current value if set (e.g., "(current)" after the matching option label).
 
 ### 6b: Check docs status
 
@@ -99,78 +101,112 @@ Determine status for each file:
 - **current**: section exists and matches template
 - **outdated**: section exists but differs from template
 
-Now use `AskUserQuestion` with all questions at once:
+### 6c: Show current config notice
 
+If ANY config values are already set, print a notice before asking questions:
+
+```
+Current configuration:
+- Memory: <enabled|disabled> (change with: flowctl config set memory.enabled <true|false>)
+- Plan-Sync: <enabled|disabled> (change with: flowctl config set planSync.enabled <true|false>)
+- Review backend: <codex|rp|none> (change with: flowctl config set review.backend <codex|rp|none>)
+```
+
+Only include lines for config values that are set. If no config is set, skip this notice.
+
+### 6d: Build questions list
+
+Build the questions array dynamically. **Only include questions for config values that are NOT already set.**
+
+Available questions (include only if corresponding config is unset):
+
+**Memory question** (include if CURRENT_MEMORY is empty):
 ```json
 {
-  "questions": [
-    {
-      "header": "Memory",
-      "question": "Enable memory system? (Auto-captures learnings from NEEDS_WORK reviews)",
-      "options": [
-        {"label": "No (Recommended)", "description": "Off by default. Enable later with: flowctl config set memory.enabled true"},
-        {"label": "Yes", "description": "Auto-capture pitfalls and conventions from review feedback"}
-      ],
-      "multiSelect": false
-    },
-    {
-      "header": "Plan-Sync",
-      "question": "Enable plan-sync? (Updates downstream task specs after implementation drift)",
-      "options": [
-        {"label": "No (Recommended)", "description": "Off by default. Enable later with: flowctl config set planSync.enabled true"},
-        {"label": "Yes", "description": "Sync task specs when implementation differs from original plan"}
-      ],
-      "multiSelect": false
-    },
-    {
-      "header": "Review",
-      "question": "Which review backend for Carmack-level reviews?",
-      "options": [
-        {"label": "Codex CLI (Recommended)", "description": "Cross-platform, uses GPT 5.2 High. <detected if HAVE_CODEX=1, (not detected) if HAVE_CODEX=0>"},
-        {"label": "RepoPrompt", "description": "macOS only, visual context builder. <detected if HAVE_RP=1, (not detected) if HAVE_RP=0>"},
-        {"label": "None", "description": "Skip reviews, can configure later with --review flag"}
-      ],
-      "multiSelect": false
-    },
-    {
-      "header": "Docs",
-      "question": "Update project documentation with Flow-Next instructions?",
-      "options": [
-        {"label": "CLAUDE.md only", "description": "Add flow-next section to CLAUDE.md"},
-        {"label": "AGENTS.md only", "description": "Add flow-next section to AGENTS.md"},
-        {"label": "Both", "description": "Add flow-next section to both files"},
-        {"label": "Skip", "description": "Don't update documentation"}
-      ],
-      "multiSelect": false
-    },
-    {
-      "header": "Star",
-      "question": "Flow-Next is free and open source. Star the repo on GitHub?",
-      "options": [
-        {"label": "Yes, star it", "description": "Uses gh CLI if available, otherwise shows link"},
-        {"label": "No thanks", "description": "Skip starring"}
-      ],
-      "multiSelect": false
-    }
-  ]
+  "header": "Memory",
+  "question": "Enable memory system? (Auto-captures learnings from NEEDS_WORK reviews)",
+  "options": [
+    {"label": "No", "description": "Off by default. Enable later with: flowctl config set memory.enabled true"},
+    {"label": "Yes", "description": "Auto-capture pitfalls and conventions from review feedback"}
+  ],
+  "multiSelect": false
 }
 ```
 
+**Plan-Sync question** (include if CURRENT_PLANSYNC is empty):
+```json
+{
+  "header": "Plan-Sync",
+  "question": "Enable plan-sync? (Updates downstream task specs after implementation drift)",
+  "options": [
+    {"label": "No", "description": "Off by default. Enable later with: flowctl config set planSync.enabled true"},
+    {"label": "Yes", "description": "Sync task specs when implementation differs from original plan"}
+  ],
+  "multiSelect": false
+}
+```
+
+**Review question** (include if CURRENT_BACKEND is empty):
+```json
+{
+  "header": "Review",
+  "question": "Which review backend for Carmack-level reviews?",
+  "options": [
+    {"label": "Codex CLI", "description": "Cross-platform, uses GPT 5.2 High for reviews. Simple setup, works everywhere. <detected if HAVE_CODEX=1, (not detected) if HAVE_CODEX=0>"},
+    {"label": "RepoPrompt", "description": "macOS only. Auto-discovers git diffs + context, reviews scoped to actual changes, ~65% fewer tokens than traditional approaches. <detected if HAVE_RP=1, (not detected) if HAVE_RP=0>"},
+    {"label": "None", "description": "Skip reviews, can configure later with --review flag"}
+  ],
+  "multiSelect": false
+}
+```
+
+**Docs question** (always include):
+```json
+{
+  "header": "Docs",
+  "question": "Update project documentation with Flow-Next instructions?",
+  "options": [
+    {"label": "CLAUDE.md only", "description": "Add flow-next section to CLAUDE.md"},
+    {"label": "AGENTS.md only", "description": "Add flow-next section to AGENTS.md"},
+    {"label": "Both", "description": "Add flow-next section to both files"},
+    {"label": "Skip", "description": "Don't update documentation"}
+  ],
+  "multiSelect": false
+}
+```
+
+**Star question** (always include):
+```json
+{
+  "header": "Star",
+  "question": "Flow-Next is free and open source. Star the repo on GitHub?",
+  "options": [
+    {"label": "Yes, star it", "description": "Uses gh CLI if available, otherwise shows link"},
+    {"label": "No thanks", "description": "Skip starring"}
+  ],
+  "multiSelect": false
+}
+```
+
+Use `AskUserQuestion` with the built questions array.
+
 **Note:** If docs are already current, adjust the Docs question description to mention "(already up to date)" or skip that question entirely.
 
-**Note:** For Review question, if `CURRENT_BACKEND` is set, note it in the question: "Current: <backend>". If neither tool is detected, add note: "Neither rp-cli nor codex detected. Install one for review support."
+**Note:** If neither rp-cli nor codex is detected, add note to the Review question: "Neither rp-cli nor codex detected. Install one for review support."
 
 ## Step 7: Process Answers
 
-Based on user answers:
+Only process answers for questions that were asked (config values that were unset). Skip processing for config that was already set.
 
-**Memory:**
+**Memory** (if question was asked):
 - If "Yes": `"${PLUGIN_ROOT}/scripts/flowctl" config set memory.enabled true --json`
+- If "No": `"${PLUGIN_ROOT}/scripts/flowctl" config set memory.enabled false --json`
 
-**Plan-Sync:**
+**Plan-Sync** (if question was asked):
 - If "Yes": `"${PLUGIN_ROOT}/scripts/flowctl" config set planSync.enabled true --json`
+- If "No": `"${PLUGIN_ROOT}/scripts/flowctl" config set planSync.enabled false --json`
 
-**Review:**
+**Review** (if question was asked):
 Map user's answer to config value and persist:
 
 ```bash
@@ -210,7 +246,7 @@ To use from command line:
   export PATH=".flow/bin:$PATH"
   flowctl --help
 
-Configuration:
+Configuration (use flowctl config set to change):
 - Memory: <enabled|disabled>
 - Plan-Sync: <enabled|disabled>
 - Review backend: <codex|rp|none>
