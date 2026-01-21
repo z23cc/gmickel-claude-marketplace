@@ -18,9 +18,15 @@ All notable changes to the gmickel-claude-marketplace.
 
 ### Changed
 
-- **Merged read path** — All task reads now merge definition + runtime state. Fully backward compatible — existing repos work without migration.
+- **Merged read path** — All task reads now merge definition + runtime state.
 - **Atomic task claiming** — `flowctl start` validates and writes under the same lock, eliminating TOCTOU race conditions.
 - **Reset semantics** — `flowctl task reset` now properly clears runtime state (overwrite, not merge).
+
+### Backward Compatibility
+
+**No action required.** Existing repos work without any migration. The merged read path automatically falls back to reading runtime fields from definition files when no state file exists. Migration is only needed if you want to:
+- Use parallel worktree orchestration
+- Stop tracking runtime state in git (cleaner diffs)
 
 ### Technical Details
 
@@ -30,6 +36,11 @@ State directory resolution order:
 3. `.flow/state` fallback (non-git or old git)
 
 Runtime fields moved to state: `status`, `updated_at`, `assignee`, `claimed_at`, `claim_note`, `evidence`, `blocked_reason`
+
+### Documentation
+
+- TODO: Update `usage.md` with new `state-path` and `migrate-state` commands
+- TODO: Add worktree orchestration guide to README
 
 ## [flow-next 0.16.0] - 2026-01-21
 
