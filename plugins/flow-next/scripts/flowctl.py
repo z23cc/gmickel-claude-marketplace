@@ -116,14 +116,6 @@ def get_state_dir() -> Path:
     return get_flow_dir() / "state"
 
 
-def ensure_state_dir() -> Path:
-    """Ensure state directory exists and return path."""
-    state_dir = get_state_dir()
-    (state_dir / "tasks").mkdir(parents=True, exist_ok=True)
-    (state_dir / "locks").mkdir(parents=True, exist_ok=True)
-    return state_dir
-
-
 # --- StateStore (runtime task state) ---
 
 
@@ -1461,7 +1453,8 @@ def find_dependents(task_id: str, same_epic: bool = False) -> list[str]:
                 # Skip if same_epic filter and different epic
                 if same_epic and epic_id_from_task(tid) != epic_id:
                     continue
-                deps = task_data.get("depends_on", [])
+                # Support both legacy "deps" and current "depends_on"
+                deps = task_data.get("depends_on", task_data.get("deps", []))
                 if checking in deps:
                     dependents.add(tid)
                     to_check.append(tid)
@@ -3531,8 +3524,9 @@ def cmd_start(args: argparse.Namespace) -> None:
         )
 
     # Load task definition for dependency info (outside lock)
-    task_def = load_task_definition(args.id, use_json=args.json)
-    depends_on = task_def.get("depends_on", [])
+    # Normalize to handle legacy "deps" field
+    task_def = normalize_task(load_task_definition(args.id, use_json=args.json))
+    depends_on = task_def.get("depends_on", []) or []
 
     # Validate all dependencies are done (outside lock - this is read-only check)
     if not args.force:
