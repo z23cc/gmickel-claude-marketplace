@@ -37,11 +37,6 @@ State directory resolution order:
 
 Runtime fields moved to state: `status`, `updated_at`, `assignee`, `claimed_at`, `claim_note`, `evidence`, `blocked_reason`
 
-### Documentation
-
-- TODO: Update `usage.md` with new `state-path` and `migrate-state` commands
-- TODO: Add worktree orchestration guide to README
-
 ## [flow-next 0.16.0] - 2026-01-21
 
 ### Added

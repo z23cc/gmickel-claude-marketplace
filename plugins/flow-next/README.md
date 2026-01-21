@@ -501,6 +501,39 @@ flowctl start fn-1.1   # Fails: "claimed by actor-a@example.com"
 flowctl start fn-1.1 --force  # Override if needed
 ```
 
+### Parallel Worktrees
+
+Multiple agents can work simultaneously in different git worktrees, sharing task state:
+
+```bash
+# Main repo
+git worktree add ../feature-a fn-1-branch
+git worktree add ../feature-b fn-2-branch
+
+# Both worktrees share task state via .git/flow-state/
+cd ../feature-a && flowctl start fn-1.1   # Agent A claims task
+cd ../feature-b && flowctl start fn-2.1   # Agent B claims different task
+```
+
+**How it works:**
+- Runtime state (status, assignee, evidence) lives in `.git/flow-state/` — shared across worktrees
+- Definition files (title, description, deps) stay in `.flow/` — tracked in git
+- Per-task `fcntl` locking prevents race conditions
+
+**State directory resolution:**
+1. `FLOW_STATE_DIR` env (explicit override)
+2. `git --git-common-dir` + `/flow-state` (worktree-aware)
+3. `.flow/state` fallback (non-git or old git)
+
+**Commands:**
+```bash
+flowctl state-path                # Show resolved state directory
+flowctl migrate-state             # Migrate existing repo (optional)
+flowctl migrate-state --clean     # Migrate + remove runtime from tracked files
+```
+
+**Backward compatible** — existing repos work without migration. The merged read path automatically falls back to definition files when no state file exists.
+
 ### Zero Dependencies
 
 Everything is bundled:

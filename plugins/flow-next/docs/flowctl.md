@@ -7,7 +7,7 @@ CLI for `.flow/` task tracking. Agents must use flowctl for all writes.
 ## Available Commands
 
 ```
-init, detect, epic, task, dep, show, epics, tasks, list, cat, ready, next, start, done, block, validate, config, memory, prep-chat, rp, codex, checkpoint, status
+init, detect, epic, task, dep, show, epics, tasks, list, cat, ready, next, start, done, block, validate, config, memory, prep-chat, rp, codex, checkpoint, status, state-path, migrate-state
 ```
 
 ## Multi-User Safety
@@ -579,6 +579,46 @@ Output:
 ```
 
 Human-readable output shows epic/task counts and any active Ralph runs.
+
+### state-path
+
+Show the resolved state directory path (useful for debugging parallel worktree setups).
+
+```bash
+flowctl state-path [--json]
+```
+
+Output:
+```json
+{"success": true, "state_dir": "/repo/.git/flow-state", "source": "git-common-dir"}
+```
+
+Source values:
+- `env` — `FLOW_STATE_DIR` environment variable
+- `git-common-dir` — `git --git-common-dir` (shared across worktrees)
+- `fallback` — `.flow/state` (non-git or old git)
+
+### migrate-state
+
+Migrate existing repos to the shared runtime state model.
+
+```bash
+flowctl migrate-state [--clean] [--json]
+```
+
+Options:
+- `--clean` — Remove runtime fields from tracked JSON files after migration (recommended for cleaner git diffs)
+
+What it does:
+1. Scans all task JSON files for runtime fields (`status`, `assignee`, `claimed_at`, etc.)
+2. Writes those fields to the state directory (`.git/flow-state/tasks/`)
+3. With `--clean`: removes runtime fields from the original JSON files
+
+**When to use:**
+- After upgrading to 0.17.0+ if you want parallel worktree support
+- To clean up git diffs (runtime changes no longer tracked)
+
+**Not required** for normal operation — the merged read path handles backward compatibility automatically.
 
 ## Ralph Receipts
 
