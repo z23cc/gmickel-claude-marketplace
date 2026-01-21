@@ -1,6 +1,6 @@
 ---
 name: flow-next-plan
-description: Create structured build plans from feature requests or Flow IDs. Use when planning features or designing implementation. Triggers on /flow-next:plan with text descriptions or Flow IDs (fn-1, fn-1.2).
+description: Create structured build plans from feature requests or Flow IDs. Use when planning features or designing implementation. Triggers on /flow-next:plan with text descriptions or Flow IDs (fn-1-abc, fn-1-abc.2, or legacy fn-1, fn-1.2).
 ---
 
 # Flow plan
@@ -57,14 +57,15 @@ Full request: $ARGUMENTS
 
 Accepts:
 - Feature/bug description in natural language
-- Flow epic ID `fn-N` to refine existing epic
-- Flow task ID `fn-N.M` to refine specific task
+- Flow epic ID `fn-N-xxx` (e.g., `fn-1-abc`) or legacy `fn-N` to refine existing epic
+- Flow task ID `fn-N-xxx.M` (e.g., `fn-1-abc.2`) or legacy `fn-N.M` to refine specific task
 - Chained instructions like "then review with /flow-next:plan-review"
 
 Examples:
 - `/flow-next:plan Add OAuth login for users`
-- `/flow-next:plan fn-1`
-- `/flow-next:plan fn-1 then review via /flow-next:plan-review`
+- `/flow-next:plan fn-1-abc`
+- `/flow-next:plan fn-1` (legacy format still supported)
+- `/flow-next:plan fn-1-abc then review via /flow-next:plan-review`
 
 If empty, ask: "What should I plan? Give me the feature or bug in 1-5 sentences."
 
@@ -149,8 +150,8 @@ If user chose review:
 ## Output
 
 All plans go into `.flow/`:
-- Epic: `.flow/epics/fn-N.json` + `.flow/specs/fn-N.md`
-- Tasks: `.flow/tasks/fn-N.M.json` + `.flow/tasks/fn-N.M.md`
+- Epic: `.flow/epics/fn-N-xxx.json` + `.flow/specs/fn-N-xxx.md`
+- Tasks: `.flow/tasks/fn-N-xxx.M.json` + `.flow/tasks/fn-N-xxx.M.md`
 
 **Never write plan files outside `.flow/`. Never use TodoWrite for task tracking.**
 
