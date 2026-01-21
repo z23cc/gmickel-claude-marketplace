@@ -100,5 +100,8 @@ Scaffold or update repo-local Ralph harness. Opt-in only.
    - Edit scripts/ralph/config.env to customize settings
    - ./scripts/ralph/ralph_once.sh (one iteration, observe)
    - ./scripts/ralph/ralph.sh (full loop, AFK)
+
+   Maintenance:
+   - Re-run /flow-next:ralph-init after plugin updates to refresh scripts
    - Uninstall: rm -rf scripts/ralph/
    ```
