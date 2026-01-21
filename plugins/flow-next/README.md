@@ -5,7 +5,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](../../LICENSE)
 [![Claude Code](https://img.shields.io/badge/Claude_Code-Plugin-blueviolet)](https://claude.ai/code)
 
-[![Version](https://img.shields.io/badge/Version-0.14.0-green)](../../CHANGELOG.md)
+[![Version](https://img.shields.io/badge/Version-0.14.1-green)](../../CHANGELOG.md)
 
 [![Status](https://img.shields.io/badge/Status-Active_Development-brightgreen)](../../CHANGELOG.md)
 [![Discord](https://img.shields.io/badge/Discord-Join-5865F2?logo=discord&logoColor=white)](https://discord.gg/ST5Y39hQ)
@@ -243,7 +243,11 @@ Best for: bug fixes, small features, well-scoped changes that don't need task sp
 | Well-understood, needs task splitting | Plan → Work |
 | Small single-task, spec complete | Work directly (creates 1 epic + 1 task) |
 
-You can always run interview again after planning to catch anything missed. Interview writes back to the spec, so iterations refine rather than replace.
+**Interview vs Plan boundary:**
+- **Interview** creates an epic with refined requirements (problem, decisions, edge cases). It does NOT create tasks or research the codebase.
+- **Plan** researches best practices, analyzes existing patterns, and creates sized tasks with dependencies.
+
+You can always run interview again after planning to catch anything missed. Interview writes back to the epic spec only — it won't modify existing tasks.
 
 ### Autonomous Mode (Optional)
 

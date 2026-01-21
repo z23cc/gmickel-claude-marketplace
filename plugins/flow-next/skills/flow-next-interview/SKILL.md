@@ -78,32 +78,40 @@ Options: a) PostgreSQL b) SQLite c) MongoDB
 
 Read [questions.md](questions.md) for all question categories and interview guidelines.
 
+## NOT in scope (defer to /flow-next:plan)
+
+- Research scouts (codebase analysis)
+- File/line references
+- Task creation (interview refines requirements, plan creates tasks)
+- Task sizing (S/M/L)
+- Dependency ordering
+- Phased implementation details
+
 ## Write Refined Spec
 
-After interview complete, write everything back.
+After interview complete, write everything back — **scope depends on input type**.
 
-### For Flow Epic ID
+### For NEW IDEA (text input, no Flow ID)
 
-Update epic spec using stdin heredoc (preferred) or temp file:
+Create epic with interview output. **DO NOT create tasks** — that's `/flow-next:plan`'s job.
+
 ```bash
-# Preferred: stdin heredoc (no temp file)
+$FLOWCTL epic create --title "..." --json
 $FLOWCTL epic set-plan <id> --file - --json <<'EOF'
 # Epic Title
 
 ## Problem
 Clear problem statement
 
-## Approach
-Technical approach with specifics, key decisions from interview
+## Key Decisions
+Decisions made during interview (e.g., "Use OAuth not SAML", "Support mobile + web")
 
 ## Edge Cases
 - Edge case 1
 - Edge case 2
 
-## Quick commands
-```bash
-# smoke test command
-```
+## Open Questions
+Unresolved items that need research during planning
 
 ## Acceptance
 - [ ] Criterion 1
@@ -111,33 +119,66 @@ Technical approach with specifics, key decisions from interview
 EOF
 ```
 
-Create/update tasks if interview revealed breakdown:
+Then suggest: "Run `/flow-next:plan fn-N` to research best practices and create tasks."
+
+### For EXISTING EPIC (fn-N that already has tasks)
+
+**First check if tasks exist:**
 ```bash
-$FLOWCTL task create --epic <id> --title "..." --json
-# Use set-spec for combined description + acceptance (fewer writes)
-$FLOWCTL task set-spec <task-id> --description /tmp/desc.md --acceptance /tmp/acc.md --json
+$FLOWCTL tasks --epic <id> --json
 ```
 
-### For Flow Task ID
+**If tasks exist:** Only update the epic spec (add edge cases, clarify requirements). **Do NOT touch task specs** — plan already created them.
 
-Update task using combined set-spec (preferred) or separate calls:
+**If no tasks:** Update epic spec, then suggest `/flow-next:plan`.
+
 ```bash
-# Preferred: combined set-spec (2 writes instead of 4)
-$FLOWCTL task set-spec <id> --description /tmp/desc.md --acceptance /tmp/acc.md --json
+$FLOWCTL epic set-plan <id> --file - --json <<'EOF'
+# Epic Title
 
-# Or use stdin for description only:
-$FLOWCTL task set-description <id> --file - --json <<'EOF'
-Clear task description with technical details and edge cases from interview
+## Problem
+Clear problem statement
+
+## Key Decisions
+Decisions made during interview
+
+## Edge Cases
+- Edge case 1
+- Edge case 2
+
+## Open Questions
+Unresolved items
+
+## Acceptance
+- [ ] Criterion 1
+- [ ] Criterion 2
 EOF
 ```
+
+### For Flow Task ID (fn-N.M)
+
+Update task with interview findings. Focus on **requirements**, not implementation details.
+
+```bash
+$FLOWCTL task set-spec <id> --description /tmp/desc.md --acceptance /tmp/acc.md --json
+```
+
+Description should capture:
+- What needs to be accomplished (not how)
+- Edge cases discovered in interview
+- Constraints and requirements
+
+Do NOT add: file/line refs, sizing, implementation approach — that's already in the task from planning.
 
 ### For File Path
 
 Rewrite the file with refined spec:
 - Preserve any existing structure/format
 - Add sections for areas covered in interview
-- Include technical details, edge cases, acceptance criteria
-- Keep it actionable and specific
+- Include edge cases, acceptance criteria
+- Keep it requirements-focused (what, not how)
+
+This is typically a pre-epic doc. After interview, suggest `/flow-next:plan <file>` to create epic + tasks.
 
 ## Completion
 
@@ -145,7 +186,12 @@ Show summary:
 - Number of questions asked
 - Key decisions captured
 - What was written (Flow ID updated / file rewritten)
-- Suggest next step: `/flow-next:plan` or `/flow-next:work`
+
+Suggest next step based on input type:
+- New idea / epic without tasks → `/flow-next:plan fn-N`
+- Epic with tasks → `/flow-next:work fn-N` (or more interview on specific tasks)
+- Task → `/flow-next:work fn-N.M`
+- File → `/flow-next:plan <file>`
 
 ## Notes
 

@@ -2,6 +2,28 @@
 
 All notable changes to the gmickel-claude-marketplace.
 
+## [flow-next 0.14.1] - 2026-01-21
+
+### Fixed
+
+- **Interview skill boundary ambiguity** — Interview was creating full implementation plans with tasks, conflicting with `/flow-next:plan`. Now:
+  - Interview creates epic with refined requirements only (problem, decisions, edge cases)
+  - Interview does NOT create tasks — that's plan's job
+  - When interviewing an epic that already has tasks, only the epic spec is updated
+  - Clear "NOT in scope" section lists what belongs in plan vs interview
+
+### Changed
+
+- **Epic spec template** — Renamed "Approach" → "Key Decisions" + added "Open Questions" section to clarify interview captures requirements, not implementation approach
+- **Input-type routing** — Interview now handles different inputs differently:
+  - New idea → create epic stub, suggest `/flow-next:plan`
+  - Existing epic with tasks → update epic spec only, don't touch tasks
+  - Task ID → update task requirements only
+  - File path → rewrite file, suggest `/flow-next:plan <file>`
+- **README clarification** — Added explicit "Interview vs Plan boundary" note in "When to Use What" section
+
+Thanks to @tiagoefreitas for the detailed issue report ([#62](https://github.com/gmickel/gmickel-claude-marketplace/issues/62)).
+
 ## [flow-next 0.14.0] - 2026-01-21
 
 ### ⚠️ Breaking Change: RepoPrompt 1.6.0+ Required
