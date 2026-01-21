@@ -1664,10 +1664,12 @@ def cmd_status(args: argparse.Namespace) -> None:
         if tasks_dir.exists():
             for task_file in tasks_dir.glob("fn-*.json"):
                 # Skip non-task files (must have . before .json)
-                if "." not in task_file.stem:
+                task_id = task_file.stem
+                if "." not in task_id:
                     continue
                 try:
-                    task_data = load_json(task_file)
+                    # Use merged state for accurate status counts
+                    task_data = load_task_with_state(task_id, use_json=True)
                     status = task_data.get("status", "todo")
                     if status in task_counts:
                         task_counts[status] += 1
@@ -3051,7 +3053,8 @@ def cmd_task_reset(args: argparse.Namespace) -> None:
     if not task_json_path.exists():
         error_exit(f"Task {task_id} not found", use_json=args.json)
 
-    task_data = load_json_or_exit(task_json_path, f"Task {task_id}", use_json=args.json)
+    # Load task with merged runtime state
+    task_data = load_task_with_state(task_id, use_json=args.json)
 
     # Load epic to check if closed
     epic_id = epic_id_from_task(task_id)
@@ -3063,7 +3066,7 @@ def cmd_task_reset(args: argparse.Namespace) -> None:
                 f"Cannot reset task in closed epic {epic_id}", use_json=args.json
             )
 
-    # Check status validations
+    # Check status validations (use merged state)
     current_status = task_data.get("status", "todo")
     if current_status == "in_progress":
         error_exit(
@@ -3080,23 +3083,20 @@ def cmd_task_reset(args: argparse.Namespace) -> None:
             print(f"{task_id} already todo")
         return
 
-    # Reset task
-    task_data["status"] = "todo"
-    task_data["updated_at"] = now_iso()
+    # Reset runtime state to baseline (deletes all runtime fields except status)
+    save_task_runtime(task_id, {"status": "todo"})
 
-    # Clear optional fields
-    task_data.pop("blocked_reason", None)
-    task_data.pop("completed_at", None)
-
-    # Clear claim fields (MU-2)
-    task_data.pop("assignee", None)
-    task_data.pop("claimed_at", None)
-    task_data.pop("claim_note", None)
-
-    # Clear evidence from JSON
-    task_data.pop("evidence", None)
-
-    atomic_write_json(task_json_path, task_data)
+    # Also clear legacy runtime fields from definition file (for backward compat cleanup)
+    def_data = load_json_or_exit(task_json_path, f"Task {task_id}", use_json=args.json)
+    def_data.pop("blocked_reason", None)
+    def_data.pop("completed_at", None)
+    def_data.pop("assignee", None)
+    def_data.pop("claimed_at", None)
+    def_data.pop("claim_note", None)
+    def_data.pop("evidence", None)
+    def_data["status"] = "todo"  # Keep in sync for backward compat
+    def_data["updated_at"] = now_iso()
+    atomic_write_json(task_json_path, def_data)
 
     # Clear evidence section from spec markdown
     clear_task_evidence(task_id)
@@ -3110,23 +3110,30 @@ def cmd_task_reset(args: argparse.Namespace) -> None:
             dep_path = flow_dir / TASKS_DIR / f"{dep_id}.json"
             if not dep_path.exists():
                 continue
-            dep_data = load_json(dep_path)
+
+            # Load merged state for dependent
+            dep_data = load_task_with_state(dep_id, use_json=args.json)
             dep_status = dep_data.get("status", "todo")
 
             # Skip in_progress and already todo
             if dep_status == "in_progress" or dep_status == "todo":
                 continue
 
-            dep_data["status"] = "todo"
-            dep_data["updated_at"] = now_iso()
-            dep_data.pop("blocked_reason", None)
-            dep_data.pop("completed_at", None)
-            dep_data.pop("assignee", None)
-            dep_data.pop("claimed_at", None)
-            dep_data.pop("claim_note", None)
-            dep_data.pop("evidence", None)
+            # Reset runtime state for dependent
+            save_task_runtime(dep_id, {"status": "todo"})
 
-            atomic_write_json(dep_path, dep_data)
+            # Also clear legacy fields from definition
+            dep_def = load_json(dep_path)
+            dep_def.pop("blocked_reason", None)
+            dep_def.pop("completed_at", None)
+            dep_def.pop("assignee", None)
+            dep_def.pop("claimed_at", None)
+            dep_def.pop("claim_note", None)
+            dep_def.pop("evidence", None)
+            dep_def["status"] = "todo"
+            dep_def["updated_at"] = now_iso()
+            atomic_write_json(dep_path, dep_def)
+
             clear_task_evidence(dep_id)
             reset_ids.append(dep_id)
 
@@ -3506,49 +3513,13 @@ def cmd_start(args: argparse.Namespace) -> None:
             f"Invalid task ID: {args.id}. Expected format: fn-N.M or fn-N-xxx.M", use_json=args.json
         )
 
-    # Load task with merged runtime state
-    task_data = load_task_with_state(args.id, use_json=args.json)
+    # Load task definition for dependency info (outside lock)
+    task_def = load_task_definition(args.id, use_json=args.json)
+    depends_on = task_def.get("depends_on", [])
 
-    # MU-2: Soft-claim semantics
-    current_actor = get_actor()
-    existing_assignee = task_data.get("assignee")
-
-    # Cannot start done task
-    if task_data["status"] == "done":
-        error_exit(
-            f"Cannot start task {args.id}: status is 'done'.", use_json=args.json
-        )
-
-    # Blocked requires --force
-    if task_data["status"] == "blocked" and not args.force:
-        error_exit(
-            f"Cannot start task {args.id}: status is 'blocked'. Use --force to override.",
-            use_json=args.json,
-        )
-
-    # Check if claimed by someone else (unless --force)
-    if not args.force and existing_assignee and existing_assignee != current_actor:
-        error_exit(
-            f"Cannot start task {args.id}: claimed by '{existing_assignee}'. "
-            f"Use --force to override.",
-            use_json=args.json,
-        )
-
-    # Validate task is in todo status (unless --force or resuming own task)
-    if not args.force and task_data["status"] != "todo":
-        # Allow resuming your own in_progress task
-        if not (
-            task_data["status"] == "in_progress" and existing_assignee == current_actor
-        ):
-            error_exit(
-                f"Cannot start task {args.id}: status is '{task_data['status']}', expected 'todo'. "
-                f"Use --force to override.",
-                use_json=args.json,
-            )
-
-    # Validate all dependencies are done (unless --force)
+    # Validate all dependencies are done (outside lock - this is read-only check)
     if not args.force:
-        for dep in task_data.get("depends_on", []):
+        for dep in depends_on:
             dep_data = load_task_with_state(dep, use_json=args.json)
             if dep_data["status"] != "done":
                 error_exit(
@@ -3557,22 +3528,69 @@ def cmd_start(args: argparse.Namespace) -> None:
                     use_json=args.json,
                 )
 
-    # Build runtime state updates
-    runtime_updates = {"status": "in_progress"}
-    if not existing_assignee:
-        runtime_updates["assignee"] = current_actor
-        runtime_updates["claimed_at"] = now_iso()
-    if args.note:
-        runtime_updates["claim_note"] = args.note
-    elif args.force and existing_assignee and existing_assignee != current_actor:
-        # Force override: note the takeover
-        runtime_updates["assignee"] = current_actor
-        runtime_updates["claimed_at"] = now_iso()
-        if not args.note:
-            runtime_updates["claim_note"] = f"Taken over from {existing_assignee}"
+    current_actor = get_actor()
+    store = get_state_store()
 
-    # Write to state-dir (not definition file)
-    save_task_runtime(args.id, runtime_updates)
+    # Atomic claim: validation + write inside lock to prevent race conditions
+    with store.lock_task(args.id):
+        # Re-load runtime state inside lock for accurate check
+        runtime = store.load_runtime(args.id)
+        if runtime is None:
+            # Backward compat: extract from definition
+            runtime = {k: task_def[k] for k in RUNTIME_FIELDS if k in task_def}
+            if not runtime:
+                runtime = {"status": "todo"}
+
+        status = runtime.get("status", "todo")
+        existing_assignee = runtime.get("assignee")
+
+        # Cannot start done task
+        if status == "done":
+            error_exit(
+                f"Cannot start task {args.id}: status is 'done'.", use_json=args.json
+            )
+
+        # Blocked requires --force
+        if status == "blocked" and not args.force:
+            error_exit(
+                f"Cannot start task {args.id}: status is 'blocked'. Use --force to override.",
+                use_json=args.json,
+            )
+
+        # Check if claimed by someone else (unless --force)
+        if not args.force and existing_assignee and existing_assignee != current_actor:
+            error_exit(
+                f"Cannot start task {args.id}: claimed by '{existing_assignee}'. "
+                f"Use --force to override.",
+                use_json=args.json,
+            )
+
+        # Validate task is in todo status (unless --force or resuming own task)
+        if not args.force and status != "todo":
+            # Allow resuming your own in_progress task
+            if not (status == "in_progress" and existing_assignee == current_actor):
+                error_exit(
+                    f"Cannot start task {args.id}: status is '{status}', expected 'todo'. "
+                    f"Use --force to override.",
+                    use_json=args.json,
+                )
+
+        # Build runtime state updates
+        runtime_updates = {**runtime, "status": "in_progress", "updated_at": now_iso()}
+        if not existing_assignee:
+            runtime_updates["assignee"] = current_actor
+            runtime_updates["claimed_at"] = now_iso()
+        if args.note:
+            runtime_updates["claim_note"] = args.note
+        elif args.force and existing_assignee and existing_assignee != current_actor:
+            # Force override: note the takeover
+            runtime_updates["assignee"] = current_actor
+            runtime_updates["claimed_at"] = now_iso()
+            if not args.note:
+                runtime_updates["claim_note"] = f"Taken over from {existing_assignee}"
+
+        # Write inside lock
+        store.save_runtime(args.id, runtime_updates)
 
     # NOTE: We no longer update epic timestamp on task start/done.
     # Epic timestamp only changes on epic-level operations (set-plan, close).
@@ -3982,25 +4000,26 @@ def validate_epic(
             if not dep_path.exists():
                 errors.append(f"Epic {epic_id}: depends_on_epics missing epic {dep}")
 
-    # Get all tasks
+    # Get all tasks (with merged runtime state for accurate status)
     tasks_dir = flow_dir / TASKS_DIR
     tasks = {}
     if tasks_dir.exists():
         for task_file in tasks_dir.glob(f"{epic_id}.*.json"):
-            task_data = normalize_task(
-                load_json_or_exit(
-                    task_file, f"Task {task_file.stem}", use_json=use_json
-                )
-            )
+            task_id = task_file.stem
+            if "." not in task_id:
+                continue  # Skip non-task files
+            # Use merged state to get accurate status
+            task_data = load_task_with_state(task_id, use_json=use_json)
             if "id" not in task_data:
                 continue  # Skip artifact files (GH-21)
             tasks[task_data["id"]] = task_data
 
     # Validate each task
     for task_id, task in tasks.items():
-        # Validate status
-        if task.get("status") not in TASK_STATUS:
-            errors.append(f"Task {task_id}: invalid status '{task.get('status')}'")
+        # Validate status (use merged state which defaults to "todo" if missing)
+        status = task.get("status", "todo")
+        if status not in TASK_STATUS:
+            errors.append(f"Task {task_id}: invalid status '{status}'")
 
         # Check task spec exists
         task_spec_path = flow_dir / TASKS_DIR / f"{task_id}.md"
@@ -4781,25 +4800,32 @@ def cmd_checkpoint_save(args: argparse.Namespace) -> None:
     if spec_path.exists():
         epic_spec = spec_path.read_text(encoding="utf-8")
 
-    # Load all tasks for this epic
+    # Load all tasks for this epic (including runtime state)
     tasks_dir = flow_dir / TASKS_DIR
+    store = get_state_store()
     tasks = []
     if tasks_dir.exists():
         for task_file in sorted(tasks_dir.glob(f"{epic_id}.*.json")):
+            task_id = task_file.stem
+            if "." not in task_id:
+                continue  # Skip non-task files
             task_data = load_json(task_file)
-            task_spec_path = tasks_dir / f"{task_file.stem}.md"
+            task_spec_path = tasks_dir / f"{task_id}.md"
             task_spec = ""
             if task_spec_path.exists():
                 task_spec = task_spec_path.read_text(encoding="utf-8")
+            # Include runtime state in checkpoint
+            runtime_state = store.load_runtime(task_id)
             tasks.append({
-                "id": task_file.stem,
+                "id": task_id,
                 "data": task_data,
                 "spec": task_spec,
+                "runtime": runtime_state,  # May be None if no state file
             })
 
     # Build checkpoint
     checkpoint = {
-        "schema_version": 1,
+        "schema_version": 2,  # Bumped for runtime state support
         "created_at": now_iso(),
         "epic_id": epic_id,
         "epic": {
@@ -4868,8 +4894,9 @@ def cmd_checkpoint_restore(args: argparse.Namespace) -> None:
     if checkpoint["epic"]["spec"]:
         atomic_write(spec_path, checkpoint["epic"]["spec"])
 
-    # Restore tasks
+    # Restore tasks (including runtime state)
     tasks_dir = flow_dir / TASKS_DIR
+    store = get_state_store()
     restored_tasks = []
     for task in checkpoint["tasks"]:
         task_id = task["id"]
@@ -4882,6 +4909,13 @@ def cmd_checkpoint_restore(args: argparse.Namespace) -> None:
 
         if task["spec"]:
             atomic_write(task_spec_path, task["spec"])
+
+        # Restore runtime state if present in checkpoint (schema_version >= 2)
+        runtime = task.get("runtime")
+        if runtime is not None:
+            with store.lock_task(task_id):
+                store.save_runtime(task_id, runtime)
+
         restored_tasks.append(task_id)
 
     if args.json:
