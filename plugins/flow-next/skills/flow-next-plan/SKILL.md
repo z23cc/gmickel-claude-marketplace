@@ -23,8 +23,8 @@ If `.flow/meta.json` exists and has `setup_version`, compare to plugin version:
 ```bash
 SETUP_VER=$(jq -r '.setup_version // empty' .flow/meta.json 2>/dev/null)
 PLUGIN_VER=$(jq -r '.version' "${CLAUDE_PLUGIN_ROOT}/.claude-plugin/plugin.json")
-if [[ -n "$SETUP_VER" && "$SETUP_VER" != "$PLUGIN_VER" ]]; then
-  echo "Plugin updated to v${PLUGIN_VER}. Run /flow-next:setup to refresh local scripts (current: v${SETUP_VER})."
+if [[ -n "$SETUP_VER" ]]; then
+  [[ "$SETUP_VER" = "$PLUGIN_VER" ]] || echo "Plugin updated to v${PLUGIN_VER}. Run /flow-next:setup to refresh local scripts (current: v${SETUP_VER})."
 fi
 ```
 Continue regardless (non-blocking).

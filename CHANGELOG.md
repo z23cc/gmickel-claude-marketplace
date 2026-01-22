@@ -2,6 +2,12 @@
 
 All notable changes to the gmickel-claude-marketplace.
 
+## [flow-next 0.17.4] - 2026-01-22
+
+### Fixed
+
+- **Bash `!=` operator in skill markdown** — Version check in `/flow-next:plan` and `/flow-next:interview` was failing with syntax error when Claude Code parsed the bash code blocks. The `!` character was being escaped to `\!` during processing. Rewrote conditionals to avoid `!=` operator. Thanks @clairedotcom for reporting (#68).
+
 ## [flow-next 0.17.2] - 2026-01-21
 
 ### Fixed
