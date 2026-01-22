@@ -249,9 +249,20 @@ Best for: bug fixes, small features, well-scoped changes that don't need task sp
 
 You can always run interview again after planning to catch anything missed. Interview writes back to the epic spec only — it won't modify existing tasks.
 
-### Autonomous Mode (Optional)
+### Interactive vs Autonomous (The Handoff)
 
-Want to run overnight? See [Ralph Mode](#ralph-autonomous-mode).
+After planning completes, you choose how to execute:
+
+| Mode | Command | When to Use |
+|------|---------|-------------|
+| **Interactive** | `/flow-next:work fn-1` | Complex tasks, learning a codebase, taste matters, want to intervene |
+| **Autonomous (Ralph)** | `scripts/ralph/ralph.sh` | Clear specs, bulk implementation, overnight runs |
+
+**The heuristic:** If you can write checkboxes, you can Ralph it. If you can't, you're not ready to loop—you're ready to think.
+
+For full autonomous mode, prepare 5-10 plans before starting Ralph. See [Ralph Mode](#ralph-autonomous-mode) for setup.
+
+> 📖 Deep dive: [Ralph Mode: Why AI Agents Should Forget](https://medium.com/byte-sized-brainwaves/ralph-mode-why-ai-agents-should-forget-9f98bec6fc91)
 
 ---
 
