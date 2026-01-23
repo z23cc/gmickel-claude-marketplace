@@ -8,40 +8,40 @@ import {
   matchesKey,
   ProcessTerminal,
   type Component,
-} from '@mariozechner/pi-tui';
-import { stat } from 'node:fs/promises';
-import { join } from 'node:path';
+} from "@mariozechner/pi-tui";
+import { stat } from "node:fs/promises";
+import { join } from "node:path";
 
-import type { Epic, EpicTask, LogEntry, Run, Task } from './lib/types.ts';
+import type { Epic, EpicTask, LogEntry, Run, Task } from "./lib/types.ts";
 
-import { Header } from './components/header.ts';
-import { HelpOverlay } from './components/help-overlay.ts';
-import { OutputPanel } from './components/output.ts';
-import { SplitPanel } from './components/split-panel.ts';
-import { StatusBar } from './components/status-bar.ts';
-import { TaskDetail } from './components/task-detail.ts';
-import { TaskList } from './components/task-list.ts';
+import { Header } from "./components/header.ts";
+import { HelpOverlay } from "./components/help-overlay.ts";
+import { OutputPanel } from "./components/output.ts";
+import { SplitPanel } from "./components/split-panel.ts";
+import { StatusBar } from "./components/status-bar.ts";
+import { TaskDetail } from "./components/task-detail.ts";
+import { TaskList } from "./components/task-list.ts";
 import {
   getEpic,
   getEpics,
   getTask,
   getTaskSpec,
   FlowctlNotFoundError,
-} from './lib/flowctl.ts';
-import { LogWatcher } from './lib/log-watcher.ts';
+} from "./lib/flowctl.ts";
+import { LogWatcher } from "./lib/log-watcher.ts";
 import {
   discoverRuns,
   findRepoRoot,
   getLatestRun,
   getReceiptStatus,
   getBlockReason,
-} from './lib/runs.ts';
+} from "./lib/runs.ts";
 import {
   spawnRalph,
   findRalphScript,
   RalphNotFoundError,
-} from './lib/spawn.ts';
-import { getTheme, type Theme } from './themes/index.ts';
+} from "./lib/spawn.ts";
+import { getTheme, type Theme } from "./themes/index.ts";
 
 /**
  * App state interface
@@ -99,7 +99,7 @@ async function fetchAllTasks(
   // If no epics specified, get all open epics (same as Ralph behavior)
   if (targetEpics.length === 0) {
     const allEpics = await getEpics();
-    targetEpics = allEpics.filter((e) => e.status === 'open').map((e) => e.id);
+    targetEpics = allEpics.filter((e) => e.status === "open").map((e) => e.id);
   }
 
   // Fetch all epics in parallel
@@ -156,12 +156,12 @@ class App implements Component {
 
     // Create components
     this.header = new Header({
-      state: state.currentRun?.active ? 'running' : 'complete',
+      state: state.currentRun?.active ? "running" : "complete",
       task: currentTask,
       epic,
       iteration: state.iteration,
       taskProgress: {
-        done: state.tasks.filter((t) => t.status === 'done').length,
+        done: state.tasks.filter((t) => t.status === "done").length,
         total: state.tasks.length,
       },
       elapsed: state.elapsed,
@@ -185,7 +185,7 @@ class App implements Component {
 
     this.taskDetail = new TaskDetail({
       task: currentTask ?? createPlaceholderTask(),
-      spec: taskSpec || 'No task selected',
+      spec: taskSpec || "No task selected",
       theme,
       useAscii,
     });
@@ -219,7 +219,7 @@ class App implements Component {
       left: this.taskList,
       right: this.taskDetail,
       ratio: 0.4,
-      active: 'left',
+      active: "left",
     });
   }
 
@@ -231,26 +231,26 @@ class App implements Component {
     if (!this.state.currentRun) return;
 
     this.logWatcher = new LogWatcher(this.state.currentRun.path);
-    this.logWatcher.on('line', (entry) => {
+    this.logWatcher.on("line", (entry) => {
       this.outputPanel.appendLine(entry);
       // Count errors
-      if (entry.type === 'error' || entry.success === false) {
+      if (entry.type === "error" || entry.success === false) {
         const currentErrorCount = this.state.outputBuffer.filter(
-          (e) => e.type === 'error' || e.success === false
+          (e) => e.type === "error" || e.success === false
         ).length;
         this.statusBar.update({ errorCount: currentErrorCount });
       }
       this.tui?.requestRender();
     });
-    this.logWatcher.on('new-iteration', (iteration) => {
+    this.logWatcher.on("new-iteration", (iteration) => {
       this.state.iteration = iteration;
       this.outputPanel.setIteration(iteration);
       this.outputPanel.clearBuffer();
       this.header.update({ iteration });
       this.tui?.requestRender();
     });
-    this.logWatcher.on('error', (err) => {
-      console.error('Log watcher error:', err);
+    this.logWatcher.on("error", (err) => {
+      console.error("Log watcher error:", err);
     });
   }
 
@@ -272,7 +272,7 @@ class App implements Component {
           this.taskList.setTasks(tasks);
           this.header.update({
             taskProgress: {
-              done: tasks.filter((t) => t.status === 'done').length,
+              done: tasks.filter((t) => t.status === "done").length,
               total: tasks.length,
             },
           });
@@ -341,7 +341,7 @@ class App implements Component {
       if (this.state.currentRun) {
         const [receipts, reason] = await Promise.all([
           getReceiptStatus(this.state.currentRun.path, taskId),
-          task.status === 'blocked'
+          task.status === "blocked"
             ? getBlockReason(taskId, this.state.currentRun.path)
             : Promise.resolve(null),
         ]);
@@ -349,7 +349,7 @@ class App implements Component {
 
         this.taskDetail.setReceipts(receipts);
         this.taskDetail.setBlockReason(
-          task.status === 'blocked' ? reason : null
+          task.status === "blocked" ? reason : null
         );
       }
 
@@ -388,7 +388,7 @@ class App implements Component {
     const headerLines = this.header.render(width);
     if (isCompact) {
       // Compact: single row header
-      lines.push(headerLines[0] ?? '');
+      lines.push(headerLines[0] ?? "");
     } else {
       lines.push(...headerLines);
     }
@@ -409,7 +409,7 @@ class App implements Component {
 
       // Pad if task panel is shorter
       while (lines.length < headerHeight + taskPanelHeight) {
-        lines.push(' '.repeat(width));
+        lines.push(" ".repeat(width));
       }
 
       // Output panel
@@ -431,7 +431,7 @@ class App implements Component {
     // Help overlay takes priority (handled by TUI overlay system)
 
     // ? - toggle help
-    if (data === '?') {
+    if (data === "?") {
       this.state.showHelp = !this.state.showHelp;
       if (this.state.showHelp) {
         this.helpOverlay.show();
@@ -444,7 +444,7 @@ class App implements Component {
     }
 
     // q or Ctrl+C - quit
-    if (matchesKey(data, 'q') || data === '\x03') {
+    if (matchesKey(data, "q") || data === "\x03") {
       this.cleanup();
       this.tui?.stop();
       process.exit(0);
@@ -452,10 +452,10 @@ class App implements Component {
 
     // j/k navigation - forward to task list
     if (
-      matchesKey(data, 'j') ||
-      matchesKey(data, 'k') ||
-      matchesKey(data, 'up') ||
-      matchesKey(data, 'down')
+      matchesKey(data, "j") ||
+      matchesKey(data, "k") ||
+      matchesKey(data, "up") ||
+      matchesKey(data, "down")
     ) {
       this.taskList.handleInput(data);
       return;
@@ -499,7 +499,7 @@ export async function createApp(options: AppOptions = {}): Promise<void> {
   const repoRoot = await findRepoRoot();
 
   // Check .flow/ exists
-  const flowDir = join(repoRoot, '.flow');
+  const flowDir = join(repoRoot, ".flow");
   if (!(await dirExists(flowDir))) {
     renderError(
       "No .flow/ directory. Run flowctl init or ensure you're in a flow-next project.",
@@ -509,10 +509,10 @@ export async function createApp(options: AppOptions = {}): Promise<void> {
   }
 
   // Check scripts/ralph/ exists
-  const ralphDir = join(repoRoot, 'scripts', 'ralph');
+  const ralphDir = join(repoRoot, "scripts", "ralph");
   if (!(await dirExists(ralphDir))) {
     renderError(
-      'No scripts/ralph/. Run /flow-next:ralph-init to scaffold Ralph.',
+      "No scripts/ralph/. Run /flow-next:ralph-init to scaffold Ralph.",
       theme
     );
     process.exit(1);
@@ -533,7 +533,7 @@ export async function createApp(options: AppOptions = {}): Promise<void> {
     const run = state.runs.find((r) => r.id === options.run);
     if (!run) {
       renderError(
-        `Run '${options.run}' not found. Available: ${state.runs.map((r) => r.id).join(', ') || 'none'}`,
+        `Run '${options.run}' not found. Available: ${state.runs.map((r) => r.id).join(", ") || "none"}`,
         theme
       );
       process.exit(1);
@@ -549,11 +549,11 @@ export async function createApp(options: AppOptions = {}): Promise<void> {
       try {
         // Need an epic to start Ralph - check for open epics
         const epics = await getEpics();
-        const openEpics = epics.filter((e) => e.status === 'open');
+        const openEpics = epics.filter((e) => e.status === "open");
 
         if (openEpics.length === 0) {
           renderError(
-            'No open epics. Create an epic first with flowctl epic create.',
+            "No open epics. Create an epic first with flowctl epic create.",
             theme
           );
           process.exit(1);
@@ -562,7 +562,7 @@ export async function createApp(options: AppOptions = {}): Promise<void> {
         // Use first open epic
         const epicId = openEpics[0]?.id;
         if (!epicId) {
-          renderError('No epic ID found.', theme);
+          renderError("No epic ID found.", theme);
           process.exit(1);
         }
 
@@ -593,7 +593,7 @@ export async function createApp(options: AppOptions = {}): Promise<void> {
       }
     } else {
       renderError(
-        'No runs found. Start Ralph with: cd scripts/ralph && ./ralph.sh',
+        "No runs found. Start Ralph with: cd scripts/ralph && ./ralph.sh",
         theme
       );
       process.exit(1);
@@ -603,7 +603,7 @@ export async function createApp(options: AppOptions = {}): Promise<void> {
   // Load initial epics/tasks
   let epic: Epic | undefined; // First epic (for header display)
   let currentTask: Task | undefined;
-  let taskSpec = '';
+  let taskSpec = "";
 
   try {
     const epicIds = state.currentRun?.epics ?? [];
@@ -615,7 +615,7 @@ export async function createApp(options: AppOptions = {}): Promise<void> {
       epicIds.length > 0
         ? epicIds
         : tasks
-            .map((t) => t.id.split('.')[0])
+            .map((t) => t.id.split(".")[0])
             .filter((v, i, a) => a.indexOf(v) === i);
     const firstEpicId = actualEpicIds[0];
     if (firstEpicId) {
@@ -629,8 +629,8 @@ export async function createApp(options: AppOptions = {}): Promise<void> {
     }
 
     // Find current task (first in_progress or first todo)
-    const inProgress = state.tasks.find((t) => t.status === 'in_progress');
-    const firstTodo = state.tasks.find((t) => t.status === 'todo');
+    const inProgress = state.tasks.find((t) => t.status === "in_progress");
+    const firstTodo = state.tasks.find((t) => t.status === "todo");
     const activeTask = inProgress ?? firstTodo;
 
     if (activeTask) {
@@ -667,12 +667,12 @@ export async function createApp(options: AppOptions = {}): Promise<void> {
   app.setupPolling();
 
   // Handle process signals
-  process.on('SIGINT', () => {
+  process.on("SIGINT", () => {
     app.cleanup();
     tui.stop();
     process.exit(0);
   });
-  process.on('SIGTERM', () => {
+  process.on("SIGTERM", () => {
     app.cleanup();
     tui.stop();
     process.exit(0);
@@ -693,15 +693,15 @@ export async function createApp(options: AppOptions = {}): Promise<void> {
  */
 function createPlaceholderTask(): Task {
   return {
-    id: 'fn-0.0',
-    epic: 'fn-0',
-    title: 'No task selected',
-    status: 'todo',
+    id: "fn-0.0",
+    epic: "fn-0",
+    title: "No task selected",
+    status: "todo",
     depends_on: [],
-    spec_path: '',
+    spec_path: "",
     priority: null,
     assignee: null,
-    claim_note: '',
+    claim_note: "",
     claimed_at: null,
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
@@ -725,8 +725,8 @@ async function promptStartRalph(theme: Theme): Promise<boolean> {
     return false; // Can't start Ralph anyway
   }
 
-  console.log(theme.warning('No runs found.'));
-  console.log(theme.dim('Start Ralph now? [y/n]'));
+  console.log(theme.warning("No runs found."));
+  console.log(theme.dim("Start Ralph now? [y/n]"));
 
   // Read single character from stdin
   return new Promise((resolve) => {
@@ -740,20 +740,20 @@ async function promptStartRalph(theme: Theme): Promise<boolean> {
 
     stdin.setRawMode(true);
     stdin.resume();
-    stdin.setEncoding('utf8');
+    stdin.setEncoding("utf8");
 
     const onData = (key: string): void => {
       stdin.setRawMode(false);
       stdin.pause();
-      stdin.removeListener('data', onData);
+      stdin.removeListener("data", onData);
 
-      if (key === 'y' || key === 'Y') {
+      if (key === "y" || key === "Y") {
         resolve(true);
       } else {
         resolve(false);
       }
     };
 
-    stdin.on('data', onData);
+    stdin.on("data", onData);
   });
 }

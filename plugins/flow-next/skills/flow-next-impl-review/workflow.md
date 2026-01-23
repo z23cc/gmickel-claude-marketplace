@@ -122,6 +122,11 @@ Focus on:
 - Security - Injection, auth gaps
 
 Only flag issues in the changed code - not pre-existing patterns.
+
+**REQUIRED**: End your review with exactly one verdict tag:
+- \`<verdict>SHIP</verdict>\` - Code is production-ready
+- \`<verdict>NEEDS_WORK</verdict>\` - Issues must be fixed before shipping
+- \`<verdict>MAJOR_RETHINK</verdict>\` - Fundamental approach problems
 </task>
 
 <context>
