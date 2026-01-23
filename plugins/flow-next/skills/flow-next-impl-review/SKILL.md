@@ -146,8 +146,16 @@ eval "$($FLOWCTL rp setup-review --repo-root "$REPO_ROOT" --summary "<review ins
 # Step 3: Augment selection (add changed files)
 $FLOWCTL rp select-add --window "$W" --tab "$T" path/to/changed/files...
 
-# Step 4: Build and send review prompt (see workflow.md)
-$FLOWCTL rp chat-send --window "$W" --tab "$T" --message-file /tmp/review-prompt.md --new-chat --chat-name "Impl Review: [BRANCH]"
+# Step 4: Builder returns findings but NOT a verdict - request verdict via follow-up
+cat > /tmp/verdict-request.md << 'EOF'
+Based on your review findings above, provide your final verdict.
+
+**REQUIRED**: End with exactly one verdict tag:
+`<verdict>SHIP</verdict>` or `<verdict>NEEDS_WORK</verdict>` or `<verdict>MAJOR_RETHINK</verdict>`
+EOF
+
+$FLOWCTL rp chat-send --window "$W" --tab "$T" --message-file /tmp/verdict-request.md --chat-id "$CHAT_ID" --mode review
+# WAIT for response. Extract verdict from response. If no verdict tag → <promise>RETRY</promise>
 
 # Step 5: Write receipt if REVIEW_RECEIPT_PATH set
 ```

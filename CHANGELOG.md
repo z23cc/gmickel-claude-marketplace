@@ -2,6 +2,12 @@
 
 All notable changes to the gmickel-claude-marketplace.
 
+## [flow-next 0.18.9] - 2026-01-23
+
+### Fixed
+
+- **Missing verdict follow-up step in SKILL.md** — Builder returns review findings but NOT a verdict tag. Added explicit follow-up chat step to request verdict in both impl-review and plan-review SKILL.md files. Without this, Ralph breaks waiting for a verdict that never comes.
+
 ## [flow-next 0.18.8] - 2026-01-23
 
 ### Fixed
