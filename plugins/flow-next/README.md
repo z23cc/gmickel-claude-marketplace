@@ -5,7 +5,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](../../LICENSE)
 [![Claude Code](https://img.shields.io/badge/Claude_Code-Plugin-blueviolet)](https://claude.ai/code)
 
-[![Version](https://img.shields.io/badge/Version-0.17.4-green)](../../CHANGELOG.md)
+[![Version](https://img.shields.io/badge/Version-0.18.2-green)](../../CHANGELOG.md)
 
 [![Status](https://img.shields.io/badge/Status-Active_Development-brightgreen)](../../CHANGELOG.md)
 [![Discord](https://img.shields.io/badge/Discord-Join-5865F2?logo=discord&logoColor=white)](https://discord.gg/ST5Y39hQ)
@@ -40,10 +40,12 @@
 - [Why It Works](#why-it-works)
 - [Quick Start](#quick-start) — Install, setup, use
 - [When to Use What](#when-to-use-what) — Interview vs Plan vs Work
+- [Agent Readiness Assessment](#agent-readiness-assessment) — `/flow-next:prime`
 - [Troubleshooting](#troubleshooting)
 - [Ralph (Autonomous Mode)](#ralph-autonomous-mode) — Run overnight
 - [Features](#features) — Re-anchoring, multi-user, reviews, dependencies
 - [Commands](#commands) — All slash commands + flags
+  - [Command Reference](#command-reference) — Detailed input docs for each command
 - [The Workflow](#the-workflow) — Planning and work phases
 - [.flow/ Directory](#flow-directory) — File structure
 - [flowctl CLI](#flowctl-cli) — Direct CLI usage
@@ -248,6 +250,182 @@ Best for: bug fixes, small features, well-scoped changes that don't need task sp
 - **Plan** researches best practices, analyzes existing patterns, and creates sized tasks with dependencies.
 
 You can always run interview again after planning to catch anything missed. Interview writes back to the epic spec only — it won't modify existing tasks.
+
+---
+
+## Agent Readiness Assessment
+
+> Inspired by [Factory.ai's Agent Readiness framework](https://factory.ai/news/agent-readiness)
+
+`/flow-next:prime` assesses your codebase for agent-readiness and proposes improvements. Works for greenfield and brownfield projects.
+
+### The Problem
+
+Agents waste cycles when codebases lack:
+- **Pre-commit hooks** → waits 10min for CI instead of 5sec local feedback
+- **Documented env vars** → guesses, fails, guesses again
+- **CLAUDE.md** → doesn't know project conventions
+- **Test commands** → can't verify changes work
+
+These are **environment problems**, not agent problems. Prime helps fix them.
+
+### Quick Start
+
+```bash
+/flow-next:prime                 # Full assessment + interactive fixes
+/flow-next:prime --report-only   # Just show the report
+/flow-next:prime --fix-all       # Apply all fixes without asking
+```
+
+### The Eight Pillars
+
+Prime evaluates your codebase across eight pillars (48 criteria total):
+
+#### Agent Readiness (Pillars 1-5) — Scored, Fixes Offered
+
+| Pillar | What It Checks |
+|--------|----------------|
+| **1. Style & Validation** | Linters, formatters, type checking, pre-commit hooks |
+| **2. Build System** | Build tool, commands, lock files, monorepo tooling |
+| **3. Testing** | Test framework, commands, verification, coverage, E2E |
+| **4. Documentation** | README, CLAUDE.md, setup docs, architecture |
+| **5. Dev Environment** | .env.example, Docker, devcontainer, runtime version |
+
+#### Production Readiness (Pillars 6-8) — Reported Only
+
+| Pillar | What It Checks |
+|--------|----------------|
+| **6. Observability** | Structured logging, tracing, metrics, error tracking, health endpoints |
+| **7. Security** | Branch protection, secret scanning, CODEOWNERS, Dependabot |
+| **8. Workflow & Process** | CI/CD, PR templates, issue templates, release automation |
+
+**Two-tier approach**: Pillars 1-5 determine your agent maturity level and are eligible for fixes. Pillars 6-8 are reported for visibility but no fixes are offered — these are team/production decisions.
+
+### Maturity Levels
+
+| Level | Name | Description | Overall Score |
+|-------|------|-------------|---------------|
+| 1 | Minimal | Basic project structure only | <30% |
+| 2 | Functional | Can build and run, limited docs | 30-49% |
+| 3 | **Standardized** | Agent-ready for routine work | 50-69% |
+| 4 | Optimized | Fast feedback loops, comprehensive docs | 70-84% |
+| 5 | Autonomous | Full autonomous operation capable | 85%+ |
+
+**Level 3 is the target** for most teams. It means agents can handle routine work: bug fixes, tests, docs, dependency updates.
+
+### How It Works
+
+1. **Parallel Assessment** — 9 haiku scouts run in parallel (~15-20 seconds):
+
+   Agent Readiness scouts:
+   - `tooling-scout` — linters, formatters, pre-commit, type checking
+   - `claude-md-scout` — CLAUDE.md/AGENTS.md analysis
+   - `env-scout` — environment setup
+   - `testing-scout` — test infrastructure
+   - `build-scout` — build system
+   - `docs-gap-scout` — README, ADRs, architecture docs
+
+   Production Readiness scouts:
+   - `observability-scout` — logging, tracing, metrics, health endpoints
+   - `security-scout` — GitHub API checks, CODEOWNERS, Dependabot
+   - `workflow-scout` — CI/CD, templates, automation
+
+2. **Verification** — Verifies test commands actually work (e.g., `pytest --collect-only`)
+
+3. **Synthesize Report** — Calculates Agent Readiness score, Production Readiness score, and maturity level
+
+4. **Interactive Remediation** — Uses `AskUserQuestion` for agent readiness fixes only:
+   ```
+   Which tooling improvements should I add?
+   ☐ Add pre-commit hooks (Recommended)
+   ☐ Add linter config
+   ☐ Add runtime version file
+   ```
+
+5. **Apply Fixes** — Creates/modifies files based on your selections
+
+6. **Re-assess** — Optionally re-run to show improvement
+
+### Example Report
+
+```markdown
+# Agent Readiness Report
+
+**Repository**: my-project
+**Assessed**: 2026-01-23
+
+## Scores Summary
+
+| Category | Score | Level |
+|----------|-------|-------|
+| **Agent Readiness** (Pillars 1-5) | 73% | Level 4 - Optimized |
+| Production Readiness (Pillars 6-8) | 17% | — |
+| **Overall** | 52% | — |
+
+## Agent Readiness (Pillars 1-5)
+
+| Pillar | Score | Status |
+|--------|-------|--------|
+| Style & Validation | 67% (4/6) | ⚠️ |
+| Build System | 100% (6/6) | ✅ |
+| Testing | 67% (4/6) | ⚠️ |
+| Documentation | 83% (5/6) | ✅ |
+| Dev Environment | 83% (5/6) | ✅ |
+
+## Production Readiness (Pillars 6-8) — Report Only
+
+| Pillar | Score | Status |
+|--------|-------|--------|
+| Observability | 33% (2/6) | ❌ |
+| Security | 17% (1/6) | ❌ |
+| Workflow & Process | 0% (0/6) | ❌ |
+
+## Top Recommendations (Agent Readiness)
+
+1. **Tooling**: Add pre-commit hooks — 5 sec feedback vs 10 min CI wait
+2. **Tooling**: Add Python type checking — catch errors locally
+3. **Docs**: Update README — replace generic template
+```
+
+### Remediation Templates
+
+Prime offers fixes for agent readiness gaps (**not** team governance):
+
+| Fix | What Gets Created |
+|-----|-------------------|
+| CLAUDE.md | Project overview, commands, structure, conventions |
+| .env.example | Template with detected env vars |
+| Pre-commit (JS) | Husky + lint-staged config |
+| Pre-commit (Python) | `.pre-commit-config.yaml` |
+| Linter config | ESLint, Biome, or Ruff config (if none exists) |
+| Formatter config | Prettier or Biome config (if none exists) |
+| .nvmrc/.python-version | Runtime version pinning |
+| .gitignore entries | .env, build outputs, node_modules |
+
+Templates adapt to your project's detected conventions and existing tools. Won't suggest ESLint if you have Biome, etc.
+
+### User Consent Required
+
+**By default, prime asks before every change** using interactive checkboxes. You choose what gets created.
+
+- **Asks first** — uses `AskUserQuestion` tool for interactive selection per category
+- **Never overwrites** existing files without explicit consent
+- **Never commits** changes (leaves for you to review)
+- **Never deletes** files
+- **Merges** with existing configs when possible
+- **Respects** your existing tools (won't add ESLint if you have Biome)
+
+Use `--fix-all` to skip questions and apply everything. Use `--report-only` to just see the assessment.
+
+### Flags
+
+| Flag | Description |
+|------|-------------|
+| `--report-only` | Skip remediation, just show report |
+| `--fix-all` | Apply all recommendations without asking |
+| `<path>` | Assess a different directory |
+
+---
 
 ### Interactive vs Autonomous (The Handoff)
 
@@ -759,7 +937,7 @@ Config lives in `.flow/config.json`, separate from Ralph's `scripts/ralph/config
 
 ## Commands
 
-Eight commands, complete workflow:
+Ten commands, complete workflow:
 
 | Command | What It Does |
 |---------|--------------|
@@ -768,6 +946,7 @@ Eight commands, complete workflow:
 | `/flow-next:interview <id>` | Deep interview to flesh out a spec before planning |
 | `/flow-next:plan-review <id>` | Carmack-level plan review via RepoPrompt |
 | `/flow-next:impl-review` | Carmack-level impl review of current branch |
+| `/flow-next:prime` | Assess codebase agent-readiness, propose fixes ([details](#agent-readiness-assessment)) |
 | `/flow-next:sync <id>` | Manual plan-sync: update downstream tasks after implementation drift |
 | `/flow-next:ralph-init` | Scaffold repo-local Ralph harness (`scripts/ralph/`) |
 | `/flow-next:setup` | Optional: install flowctl locally + add docs (for power users) |
@@ -806,7 +985,146 @@ Natural language also works:
 | `/flow-next:work` | `--branch=current\|new\|worktree`, `--review=rp\|codex\|export\|none`, `--no-review` |
 | `/flow-next:plan-review` | `--review=rp\|codex\|export` |
 | `/flow-next:impl-review` | `--review=rp\|codex\|export` |
+| `/flow-next:prime` | `--report-only`, `--fix-all` |
 | `/flow-next:sync` | `--dry-run` |
+
+### Command Reference
+
+Detailed input documentation for each command.
+
+#### `/flow-next:plan`
+
+```
+/flow-next:plan <idea or fn-N> [--research=rp|grep] [--review=rp|codex|export|none]
+```
+
+| Input | Description |
+|-------|-------------|
+| `<idea>` | Free-form feature description ("Add user authentication with OAuth") |
+| `fn-N` | Existing epic ID to update the plan |
+| `--research=rp` | Use RepoPrompt context-scout for deeper codebase discovery |
+| `--research=grep` | Use grep-based repo-scout (default, faster) |
+| `--review=rp\|codex\|export\|none` | Review backend after planning |
+| `--no-review` | Shorthand for `--review=none` |
+
+#### `/flow-next:work`
+
+```
+/flow-next:work <id|file> [--branch=current|new|worktree] [--review=rp|codex|export|none]
+```
+
+| Input | Description |
+|-------|-------------|
+| `fn-N` | Execute entire epic (all tasks in dependency order) |
+| `fn-N.M` | Execute single task |
+| `path/to/spec.md` | Create epic from spec file, execute immediately |
+| `--branch=current` | Work on current branch |
+| `--branch=new` | Create new branch `fn-N-slug` (default) |
+| `--branch=worktree` | Create git worktree for isolated work |
+| `--review=rp\|codex\|export\|none` | Review backend after work |
+| `--no-review` | Shorthand for `--review=none` |
+
+#### `/flow-next:interview`
+
+```
+/flow-next:interview <id|file>
+```
+
+| Input | Description |
+|-------|-------------|
+| `fn-N` | Interview about epic to refine requirements |
+| `fn-N.M` | Interview about specific task |
+| `path/to/spec.md` | Interview about spec file |
+| `"rough idea"` | Interview about a new idea (creates epic) |
+
+Deep questioning (40+ questions) to surface requirements, edge cases, and decisions.
+
+#### `/flow-next:plan-review`
+
+```
+/flow-next:plan-review <fn-N> [--review=rp|codex|export] [focus areas]
+```
+
+| Input | Description |
+|-------|-------------|
+| `fn-N` | Epic ID to review |
+| `--review=rp` | Use RepoPrompt (macOS, visual builder) |
+| `--review=codex` | Use OpenAI Codex CLI (cross-platform) |
+| `--review=export` | Export context for manual review |
+| `[focus areas]` | Optional: "focus on security" or "check API design" |
+
+Carmack-level criteria: Completeness, Feasibility, Clarity, Architecture, Risks, Scope, Testability.
+
+#### `/flow-next:impl-review`
+
+```
+/flow-next:impl-review [--review=rp|codex|export] [focus areas]
+```
+
+| Input | Description |
+|-------|-------------|
+| `--review=rp` | Use RepoPrompt (macOS, visual builder) |
+| `--review=codex` | Use OpenAI Codex CLI (cross-platform) |
+| `--review=export` | Export context for manual review |
+| `[focus areas]` | Optional: "focus on performance" or "check error handling" |
+
+Reviews current branch changes. Carmack-level criteria: Correctness, Simplicity, DRY, Architecture, Edge Cases, Tests, Security.
+
+#### `/flow-next:prime`
+
+```
+/flow-next:prime [--report-only] [--fix-all] [path]
+```
+
+| Input | Description |
+|-------|-------------|
+| (no args) | Assess current directory, interactive fixes |
+| `--report-only` | Show assessment report, skip remediation |
+| `--fix-all` | Apply all recommendations without asking |
+| `[path]` | Assess a different directory |
+
+See [Agent Readiness Assessment](#agent-readiness-assessment) for details.
+
+#### `/flow-next:sync`
+
+```
+/flow-next:sync <id> [--dry-run]
+```
+
+| Input | Description |
+|-------|-------------|
+| `fn-N` | Sync entire epic's downstream tasks |
+| `fn-N.M` | Sync from specific task |
+| `--dry-run` | Preview changes without writing |
+
+Updates downstream task specs when implementation drifts from plan.
+
+#### `/flow-next:ralph-init`
+
+```
+/flow-next:ralph-init
+```
+
+No arguments. Scaffolds `scripts/ralph/` for autonomous operation.
+
+#### `/flow-next:setup`
+
+```
+/flow-next:setup
+```
+
+No arguments. Optional setup that:
+- Configures review backend (rp, codex, or none)
+- Copies flowctl to `.flow/bin/`
+- Adds flow-next instructions to CLAUDE.md/AGENTS.md
+
+#### `/flow-next:uninstall`
+
+```
+/flow-next:uninstall
+```
+
+No arguments. Interactive removal with option to keep tasks.
 
 ---
 
