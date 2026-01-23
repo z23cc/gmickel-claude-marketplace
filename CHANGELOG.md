@@ -2,11 +2,17 @@
 
 All notable changes to the gmickel-claude-marketplace.
 
+## [flow-next 0.18.6] - 2026-01-23
+
+### Fixed
+
+- **rp-cli builder --type flag** — Use `--type review` (shorthand flag) instead of `response_type=review` (key=value). Key=value format only works with full tool name `context_builder`, not the `builder` shorthand.
+
 ## [flow-next 0.18.5] - 2026-01-23
 
 ### Fixed
 
-- **rp-cli builder response_type format** — Changed from invalid `--response-type review` to correct `response_type=review` (key=value format) when calling rp-cli's context_builder. This fixes impl-review not properly triggering RP's review mode.
+- **rp-cli builder response_type format** — Changed from invalid `--response-type review` to `response_type=review`. Still didn't work - see 0.18.6.
 
 - **Added verdict requirement to review instructions** — The builder review instructions now explicitly request a verdict tag (`<verdict>SHIP|NEEDS_WORK|MAJOR_RETHINK</verdict>`), ensuring consistent verdict output from RP reviews.
 
