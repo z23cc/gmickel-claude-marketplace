@@ -2,6 +2,12 @@
 
 All notable changes to the gmickel-claude-marketplace.
 
+## [flow-next 0.18.10] - 2026-01-23
+
+### Changed
+
+- **Stronger workflow.md references** — Changed "Read workflow.md" to "⚠️ MANDATORY: Read workflow.md BEFORE executing RP backend steps" and "⚠️ STOP: Read workflow.md NOW" to ensure agents follow the link. SKILL.md is a summary; workflow.md has the complete flow.
+
 ## [flow-next 0.18.9] - 2026-01-23
 
 ### Fixed

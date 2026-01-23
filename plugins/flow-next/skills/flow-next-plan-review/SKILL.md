@@ -5,7 +5,7 @@ description: Carmack-level plan review via RepoPrompt or Codex. Use when reviewi
 
 # Plan Review Mode
 
-**Read [workflow.md](workflow.md) for detailed phases and anti-patterns.**
+**⚠️ MANDATORY: Read [workflow.md](workflow.md) BEFORE executing RP backend steps. Contains critical details (review instructions format, verdict extraction, re-review flow) not fully replicated here.**
 
 Conduct a John Carmack-level review of epic plans.
 
@@ -80,7 +80,7 @@ Format: `<flow-epic-id> [focus areas]`
 
 ## Workflow
 
-**See [workflow.md](workflow.md) for full details on each backend.**
+**⚠️ STOP: Read [workflow.md](workflow.md) NOW if using RP backend. The steps below are a summary — workflow.md has the complete flow.**
 
 ```bash
 FLOWCTL="${CLAUDE_PLUGIN_ROOT}/scripts/flowctl"
