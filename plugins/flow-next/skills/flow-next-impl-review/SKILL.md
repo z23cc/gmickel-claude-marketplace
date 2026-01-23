@@ -139,9 +139,9 @@ fi
 git log ${DIFF_BASE}..HEAD --oneline
 git diff ${DIFF_BASE}..HEAD --name-only
 
-# Step 2: Atomic setup
-eval "$($FLOWCTL rp setup-review --repo-root "$REPO_ROOT" --summary "Review implementation: <summary>")"
-# Outputs W=<window> T=<tab>. If fails → <promise>RETRY</promise>
+# Step 2: Atomic setup (--response-type review triggers RP's review mode)
+eval "$($FLOWCTL rp setup-review --repo-root "$REPO_ROOT" --summary "<review instructions>" --response-type review)"
+# Outputs W=<window> T=<tab> CHAT_ID=<id>. If fails → <promise>RETRY</promise>
 
 # Step 3: Augment selection (add changed files)
 $FLOWCTL rp select-add --window "$W" --tab "$T" path/to/changed/files...

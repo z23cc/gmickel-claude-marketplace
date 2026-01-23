@@ -2,11 +2,17 @@
 
 All notable changes to the gmickel-claude-marketplace.
 
+## [flow-next 0.18.7] - 2026-01-23
+
+### Fixed
+
+- **SKILL.md missing --response-type review** — The actual bug was in SKILL.md which agents read. The example setup-review call was missing `--response-type review`, causing RP to use default "clarify" mode instead of "review" mode.
+
 ## [flow-next 0.18.6] - 2026-01-23
 
 ### Fixed
 
-- **rp-cli builder --type flag** — Use `--type review` (shorthand flag) instead of `response_type=review` (key=value). Key=value format only works with full tool name `context_builder`, not the `builder` shorthand.
+- **rp-cli builder --type flag** — Use `--type review` (shorthand flag) instead of `response_type=review` (key=value). Turns out both work, but the real issue was SKILL.md - see 0.18.7.
 
 ## [flow-next 0.18.5] - 2026-01-23
 
