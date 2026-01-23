@@ -2,6 +2,12 @@
 
 All notable changes to the gmickel-claude-marketplace.
 
+## [flow-next 0.18.12] - 2026-01-23
+
+### Fixed
+
+- **Agent skipping verdict follow-up** — Added ⚠️ WARNING block after Step 2 explicitly stating RP's verdict is INVALID and Step 4 is MANDATORY. Agent was seeing builder's `request-changes` verdict and jumping to fix loop without sending the follow-up to get our verdict format.
+
 ## [flow-next 0.18.11] - 2026-01-23
 
 ### Fixed
