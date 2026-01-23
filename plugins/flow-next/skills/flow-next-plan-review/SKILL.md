@@ -118,9 +118,9 @@ $FLOWCTL cat <id>
 # Save checkpoint before review (recovery point if context compacts)
 $FLOWCTL checkpoint save --epic <id> --json
 
-# Step 2: Atomic setup
-eval "$($FLOWCTL rp setup-review --repo-root "$REPO_ROOT" --summary "Review plan for <EPIC_ID>: <summary>")"
-# Outputs W=<window> T=<tab>. If fails → <promise>RETRY</promise>
+# Step 2: Atomic setup (--response-type review triggers RP's review mode)
+eval "$($FLOWCTL rp setup-review --repo-root "$REPO_ROOT" --summary "Review plan for <EPIC_ID>: <summary>" --response-type review)"
+# Outputs W=<window> T=<tab> CHAT_ID=<id>. If fails → <promise>RETRY</promise>
 
 # Step 3: Augment selection - add epic AND task specs
 $FLOWCTL rp select-add --window "$W" --tab "$T" .flow/specs/<epic-id>.md

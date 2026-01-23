@@ -2,11 +2,17 @@
 
 All notable changes to the gmickel-claude-marketplace.
 
+## [flow-next 0.18.8] - 2026-01-23
+
+### Fixed
+
+- **plan-review also missing --response-type review** — Same fix as 0.18.7 but for plan-review skill. Updated SKILL.md, workflow.md, and flowctl-reference.md.
+
 ## [flow-next 0.18.7] - 2026-01-23
 
 ### Fixed
 
-- **SKILL.md missing --response-type review** — The actual bug was in SKILL.md which agents read. The example setup-review call was missing `--response-type review`, causing RP to use default "clarify" mode instead of "review" mode.
+- **impl-review SKILL.md missing --response-type review** — The actual bug was in SKILL.md which agents read. The example setup-review call was missing `--response-type review`, causing RP to use default "clarify" mode instead of "review" mode.
 
 ## [flow-next 0.18.6] - 2026-01-23
 
