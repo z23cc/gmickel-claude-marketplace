@@ -2,6 +2,12 @@
 
 All notable changes to the gmickel-claude-marketplace.
 
+## [flow-next 0.18.11] - 2026-01-23
+
+### Fixed
+
+- **RP uses its own verdict format** — Builder's `response_type=review` returns RP's verdict format (`request-changes`, `approve`, etc.) not ours. Updated instructions to explicitly IGNORE builder verdict and extract verdict ONLY from the follow-up chat response. Added clearer verdict tag requirements with "Do NOT use any other verdict format."
+
 ## [flow-next 0.18.10] - 2026-01-23
 
 ### Changed

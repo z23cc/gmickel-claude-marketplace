@@ -177,14 +177,17 @@ echo "Review findings:"
 echo "$REVIEW_FINDINGS"
 ```
 
-The builder returns review findings but **not a verdict tag**. Request verdict via follow-up:
+The builder returns review findings but may use **RP's own verdict format** (like `request-changes`). **IGNORE any verdict in the builder response.** Request verdict in OUR format via follow-up:
 
 ```bash
 cat > /tmp/verdict-request.md << 'EOF'
-Based on your review findings above, provide your final verdict.
+Based on your review findings above, provide your final verdict using EXACTLY one of these tags:
 
-**REQUIRED**: End with exactly one verdict tag:
-`<verdict>SHIP</verdict>` or `<verdict>NEEDS_WORK</verdict>` or `<verdict>MAJOR_RETHINK</verdict>`
+`<verdict>SHIP</verdict>` - Code is production-ready
+`<verdict>NEEDS_WORK</verdict>` - Issues must be fixed before shipping
+`<verdict>MAJOR_RETHINK</verdict>` - Fundamental approach problems
+
+Do NOT use any other verdict format. Use exactly one of the three tags above.
 EOF
 
 $FLOWCTL rp chat-send --window "$W" --tab "$T" \
@@ -193,7 +196,7 @@ $FLOWCTL rp chat-send --window "$W" --tab "$T" \
   --mode review
 ```
 
-**WAIT** for response. Extract verdict from response.
+**WAIT** for response. Extract verdict **ONLY from this follow-up response**, not from builder output.
 
 ### Phase 4: Receipt + Status (RP)
 

@@ -129,16 +129,20 @@ for task_spec in .flow/tasks/${EPIC_ID}.*.md; do
   [[ -f "$task_spec" ]] && $FLOWCTL rp select-add --window "$W" --tab "$T" "$task_spec"
 done
 
-# Step 4: Builder returns findings but NOT a verdict - request verdict via follow-up
+# Step 4: Builder returns review findings. IGNORE any verdict in builder response (RP uses its own format).
+# MUST send follow-up to get verdict in OUR format:
 cat > /tmp/verdict-request.md << 'EOF'
-Based on your review findings above, provide your final verdict.
+Based on your review findings above, provide your final verdict using EXACTLY one of these tags:
 
-**REQUIRED**: End with exactly one verdict tag:
-`<verdict>SHIP</verdict>` or `<verdict>NEEDS_WORK</verdict>` or `<verdict>MAJOR_RETHINK</verdict>`
+`<verdict>SHIP</verdict>` - Plan is ready to implement
+`<verdict>NEEDS_WORK</verdict>` - Issues must be fixed before implementation
+`<verdict>MAJOR_RETHINK</verdict>` - Fundamental approach problems
+
+Do NOT use any other verdict format. Use exactly one of the three tags above.
 EOF
 
 $FLOWCTL rp chat-send --window "$W" --tab "$T" --message-file /tmp/verdict-request.md --chat-id "$CHAT_ID" --mode review
-# WAIT for response. Extract verdict from response. If no verdict tag → <promise>RETRY</promise>
+# WAIT for response. Extract verdict ONLY from this response. If no valid verdict tag → <promise>RETRY</promise>
 
 # Step 5: Write receipt if REVIEW_RECEIPT_PATH set
 # Step 6: Update status
