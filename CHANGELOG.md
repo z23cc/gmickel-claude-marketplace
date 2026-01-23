@@ -2,6 +2,12 @@
 
 All notable changes to the gmickel-claude-marketplace.
 
+## [flow-next 0.18.13] - 2026-01-23
+
+### Fixed
+
+- **Ralph exits early on NEEDS_WORK despite force_retry** — Worker returns `<promise>COMPLETE</promise>` after marking task done. Ralph checked for COMPLETE *after* setting `force_retry=1` for NEEDS_WORK, causing premature exit. Now skips COMPLETE exit when `force_retry=1`.
+
 ## [flow-next 0.18.12] - 2026-01-23
 
 ### Fixed
