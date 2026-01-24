@@ -2,6 +2,18 @@
 
 All notable changes to the gmickel-claude-marketplace.
 
+## [flow-next 0.18.14] - 2026-01-24
+
+### Fixed
+
+- **Ralph ignores premature COMPLETE from workers** — Claude (Opus) sometimes outputs `<promise>COMPLETE</promise>` after completing a single task, even though the prompts explicitly forbid it. Ralph now ignores COMPLETE from worker output entirely. Completion detection happens exclusively via the selector returning `status=none`. This is safer because completion can no longer be triggered by model hallucination. Thanks to Tiago Freitas for the detailed report!
+
+- **Smoke test reads definition files instead of state** — After the state/definition split, smoke tests were reading `.flow/tasks/*.json` definition files which don't contain runtime status. Fixed to use `flowctl show --json` which correctly merges runtime state.
+
+### Changed
+
+- **Clearer FORBIDDEN OUTPUT section** — Replaced "Do NOT output COMPLETE" with prominent `## ⛔ FORBIDDEN OUTPUT` section in both prompt_work.md and prompt_plan.md to reduce model compliance issues.
+
 ## [flow-next 0.18.13] - 2026-01-23
 
 ### Fixed
