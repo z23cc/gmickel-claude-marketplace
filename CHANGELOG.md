@@ -2,6 +2,16 @@
 
 All notable changes to the gmickel-claude-marketplace.
 
+## [flow-next 0.18.16] - 2026-01-24
+
+### Added
+
+- **Parallelization guidance for task splitting** — Plan skill now includes guidance to minimize file overlap when splitting tasks. Tasks touching disjoint files can be worked in parallel without merge conflicts.
+
+- **Plan-review parallelizability criterion** — Added "Parallelizability" as review criterion #3: flags independent tasks that touch overlapping files.
+
+- **Interview probe for parallel work** — Architecture questions now include "Can this be split so tasks touch disjoint files?"
+
 ## [flow-next 0.18.15] - 2026-01-24
 
 ### Fixed
