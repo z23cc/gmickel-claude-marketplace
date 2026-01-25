@@ -99,6 +99,8 @@ Real-time TUI for task progress, streaming logs, and run state.
 
 ### Uninstall
 
+Run manually in terminal:
+
 ```bash
 rm -rf scripts/ralph/
 ```

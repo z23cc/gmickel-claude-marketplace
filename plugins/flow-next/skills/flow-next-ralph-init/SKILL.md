@@ -103,5 +103,5 @@ Scaffold or update repo-local Ralph harness. Opt-in only.
 
    Maintenance:
    - Re-run /flow-next:ralph-init after plugin updates to refresh scripts
-   - Uninstall: rm -rf scripts/ralph/
+   - Uninstall (run manually): rm -rf scripts/ralph/
    ```

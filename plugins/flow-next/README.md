@@ -451,6 +451,8 @@ flowctl task reset fn-1.2 --cascade
 
 ### Clean up `.flow/` safely
 
+Run manually in terminal (not via AI agent):
+
 ```bash
 # Remove all flow state (keeps git history)
 rm -rf .flow/
@@ -500,10 +502,14 @@ Flow-Next's plan-review and impl-review skills include specific instructions for
 
 ## Uninstall
 
+Run manually in terminal (DCG blocks these from AI agents):
+
 ```bash
 rm -rf .flow/               # Core flow state
 rm -rf scripts/ralph/       # Ralph (if enabled)
 ```
+
+Or use `/flow-next:uninstall` which cleans up docs and prints commands to run.
 
 ---
 
@@ -1153,7 +1159,7 @@ Override via flags or `scripts/ralph/config.env`.
 
 ## Ralph Mode (Autonomous, Opt-In)
 
-Ralph is repo-local and opt-in. Files are created only by `/flow-next:ralph-init`. Remove with `rm -rf scripts/ralph/`.
+Ralph is repo-local and opt-in. Files are created only by `/flow-next:ralph-init`. Remove manually with `rm -rf scripts/ralph/`.
 `/flow-next:ralph-init` also writes `scripts/ralph/.gitignore` so run logs stay out of git.
 
 What it automates (one unit per iteration, fresh context each time):
