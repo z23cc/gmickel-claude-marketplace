@@ -470,17 +470,7 @@ curl -fsSL "https://raw.githubusercontent.com/Dicklesworthstone/destructive_comm
 
 **Compatibility:** DCG uses fail-open design — timeouts allow commands. Flow-next uses safe git patterns and quoted heredocs that DCG handles correctly.
 
-**Project allowlist** (`.dcg/allowlist.toml`):
-
-```toml
-[[allow]]
-command_prefix = "rm -rf .flow"
-reason = "Flow-next cleanup/uninstall"
-
-[[allow]]
-command_prefix = "rm -rf scripts/ralph"
-reason = "Ralph cleanup/uninstall"
-```
+> **Note:** DCG will block `rm -rf .flow/` and `rm -rf scripts/ralph/` — this is correct behavior. Uninstall commands should be run manually, not via AI agents. Your epics and tasks are protected.
 
 **Verify:**
 
