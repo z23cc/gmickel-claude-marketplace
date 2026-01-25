@@ -15,6 +15,7 @@ Ralph is Flow-Next's repo-local autonomous harness. It loops over tasks, applies
 - [Troubleshooting](#troubleshooting)
 - [Testing Ralph](#testing-ralph) — Single iteration, sandbox, watch mode
 - [Guard Hooks](#guard-hooks) — Workflow enforcement
+- [Additional Safety: DCG](#additional-safety-dcg-optional) — Optional destructive command guard
 - [Morning Review Workflow](#morning-review-workflow) — What to check after overnight runs
 
 ---
@@ -494,6 +495,89 @@ plugins/flow-next/
 Temporarily: unset `FLOW_RALPH` or remove `hooks/hooks.json`.
 
 Permanently: delete `hooks/` directory and remove `"hooks"` from `plugin.json`.
+
+---
+
+## Additional Safety: DCG (Optional)
+
+[DCG (Destructive Command Guard)](https://github.com/Dicklesworthstone/destructive_command_guard) is a Claude Code hook that blocks destructive commands before execution. It's a valuable safety net for autonomous Ralph runs.
+
+### What DCG Protects Against
+
+| Command | Without DCG | With DCG |
+|---------|-------------|----------|
+| `git reset --hard` | Executes, loses uncommitted work | Blocked |
+| `rm -rf ./src` (typo) | Deletes source code | Blocked |
+| `git push --force` | Overwrites remote history | Blocked |
+| `git clean -f` | Deletes untracked files | Blocked |
+
+DCG uses a fail-open design—if analysis times out, commands are allowed. This prevents DCG from blocking legitimate Ralph operations.
+
+### Installation
+
+```bash
+curl -fsSL "https://raw.githubusercontent.com/Dicklesworthstone/destructive_command_guard/master/install.sh?$(date +%s)" | bash -s -- --easy-mode
+```
+
+This installs dcg globally and configures Claude Code hooks in `~/.claude/settings.json`.
+
+### Compatibility with Flow-Next
+
+Flow-next is fully compatible with dcg:
+
+- **Git commands**: Flow-next only uses safe patterns (`git checkout -b`, `git commit`, `git push`)
+- **Heredocs**: Python heredocs (`<<'PY'`) are correctly classified as data, not executed code
+- **Test cleanup**: `rm -rf /tmp/...` paths are allowed by dcg
+
+### Project Allowlist (Optional)
+
+For flow-next uninstall commands, add `.dcg/allowlist.toml` to your repo:
+
+```toml
+# command_prefix matches the command start, covering subdirectories too
+[[allow]]
+command_prefix = "rm -rf .flow"
+reason = "Flow-next cleanup/uninstall"
+
+[[allow]]
+command_prefix = "rm -rf scripts/ralph"
+reason = "Ralph cleanup/uninstall"
+```
+
+Note: Test scripts use `/tmp/` paths which dcg allows by default.
+
+### Verify Installation
+
+```bash
+# Should block
+dcg test 'git reset --hard HEAD'
+
+# Should allow (safe git)
+dcg test 'git checkout -b feature'
+
+# Should allow (temp dir)
+dcg test 'rm -rf /tmp/test-dir'
+```
+
+### Uninstall DCG
+
+```bash
+# Remove binary
+rm ~/.local/bin/dcg
+
+# Remove Claude Code hook (edit file, remove dcg from hooks.PreToolUse)
+code ~/.claude/settings.json
+
+# Optional: remove config
+rm -rf ~/.config/dcg/
+```
+
+Or restore from backup files created during install (path shown in install output).
+
+### More Info
+
+- [DCG GitHub](https://github.com/Dicklesworthstone/destructive_command_guard)
+- [DCG Pack Reference](https://github.com/Dicklesworthstone/destructive_command_guard/blob/master/docs/packs/README.md)
 
 ---
 
