@@ -522,6 +522,7 @@ rm -rf scripts/ralph/       # Ralph (if enabled)
 > **⚠️ Safety first**: Ralph defaults to `YOLO=1` (skips permission prompts).
 > - Start with `ralph_once.sh` to observe one iteration
 > - Consider [Docker sandbox](https://docs.docker.com/ai/sandboxes/claude-code/) for isolation
+> - Consider [DCG (Destructive Command Guard)](https://github.com/Dicklesworthstone/destructive_command_guard) to block destructive commands — see [DCG setup](docs/ralph.md#additional-safety-dcg-optional)
 >
 > **Community sandbox setups** (alternative approaches):
 > - [devcontainer-for-claude-yolo-and-flow-next](https://github.com/Ranudar/devcontainer-for-claude-yolo-and-flow-next) — VS Code devcontainer with Playwright, firewall whitelisting, and RepoPrompt MCP bridge

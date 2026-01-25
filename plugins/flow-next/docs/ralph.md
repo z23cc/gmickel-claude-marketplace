@@ -439,6 +439,10 @@ docker sandbox run -w ~/my-project claude "scripts/ralph/ralph.sh"
 
 See [Docker sandbox docs](https://docs.docker.com/ai/sandboxes/claude-code/) for details.
 
+**Community sandbox setups** (alternative approaches):
+- [devcontainer-for-claude-yolo-and-flow-next](https://github.com/Ranudar/devcontainer-for-claude-yolo-and-flow-next) — VS Code devcontainer with Playwright, firewall whitelisting, and RepoPrompt MCP bridge
+- [agent-sandbox](https://github.com/novotnyllc/agent-sandbox) — Docker Sandbox (Desktop 4.50+) with seccomp/user namespace isolation, .NET + Node.js
+
 ### Watch mode
 
 ```bash
