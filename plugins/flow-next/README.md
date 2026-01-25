@@ -24,16 +24,6 @@
 
 ---
 
-> ### ⚠️ RepoPrompt 1.6.0+ Required (v0.14.0)
->
-> If you use the **RepoPrompt (rp) backend** for `/flow-next:impl-review`, you must upgrade to **RepoPrompt 1.6.0 or later**.
->
-> Check your version: `rp-cli --version`
->
-> The new builder review mode provides better context discovery and more focused reviews. If you can't upgrade yet, use `--review=codex` or `--review=none` as alternatives.
-
----
-
 ## Table of Contents
 
 - [What Is This?](#what-is-this)
