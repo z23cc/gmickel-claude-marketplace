@@ -2,6 +2,16 @@
 
 All notable changes to the gmickel-claude-marketplace.
 
+## [flow-next 0.18.18] - 2026-01-25
+
+### Fixed
+
+- **Preserve GH-73 COMPLETE handling fix** — PR #74 inadvertently reverted the fix for premature completion in Ralph. Workers should NEVER output `<promise>COMPLETE</promise>` (prompts forbid it); completion is detected via selector returning `status=none`. Restored the ignore-and-log behavior.
+
+### Documentation
+
+- **Improved `--files` guidance in plan-review skills** — Added explanation of how to identify which files to pass (read epic spec, find affected paths) instead of just a hardcoded example.
+
 ## [flow-next 0.18.17] - 2026-01-25
 
 ### Fixed
@@ -47,13 +57,29 @@ All notable changes to the gmickel-claude-marketplace.
 
 ### Fixed
 
-- **Ralph ignores premature COMPLETE from workers** — Claude (Opus) sometimes outputs `<promise>COMPLETE</promise>` after completing a single task, even though the prompts explicitly forbid it. Ralph now ignores COMPLETE from worker output entirely. Completion detection happens exclusively via the selector returning `status=none`. This is safer because completion can no longer be triggered by model hallucination. Thanks to Tiago Freitas for the detailed report!
+- **Codex sandbox on Windows blocking all reads** — Codex CLI's `read-only` sandbox uses Windows AppContainer which blocks ALL shell commands, including file reads. Added `--sandbox` flag to `flowctl codex impl-review` and `flowctl codex plan-review` with `auto` mode that resolves to `danger-full-access` on Windows and `read-only` on Unix. Added `CODEX_SANDBOX` config option for Ralph. Full file contents are now embedded in review prompts to work around sandbox limitations.
 
-- **Smoke test reads definition files instead of state** — After the state/definition split, smoke tests were reading `.flow/tasks/*.json` definition files which don't contain runtime status. Fixed to use `flowctl show --json` which correctly merges runtime state.
+### ⚠️ Breaking Change: `--files` required for `flowctl codex plan-review`
 
-### Changed
+`flowctl codex plan-review` now requires `--files` (comma-separated **code** file paths) so the reviewer has concrete repository context (and so Windows can embed file contents when the Codex sandbox blocks reads).
 
-- **Clearer FORBIDDEN OUTPUT section** — Replaced "Do NOT output COMPLETE" with prominent `## ⛔ FORBIDDEN OUTPUT` section in both prompt_work.md and prompt_plan.md to reduce model compliance issues.
+Migration: update any scripts to pass `--files`, e.g. `--files "src/auth.ts,src/config.ts"`.
+
+### Added
+
+- **`--sandbox` flag for codex commands** — Supports `read-only`, `workspace-write`, `danger-full-access`, and `auto` modes
+- **`CODEX_SANDBOX` config option for Ralph** — Configure sandbox mode in `scripts/ralph/config.env` (default: `auto`)
+- **Exit code 3 for sandbox errors** — flowctl returns exit code 3 for sandbox configuration issues
+
+### Documentation
+
+- flowctl.md: Added `--sandbox` flag documentation for both impl-review and plan-review
+- flowctl.md: Documented `--files` requirement for plan-review
+- ralph.md: Added `CODEX_SANDBOX` config option with valid values
+- ralph.md: Added troubleshooting section for "blocked by policy" errors
+- CLAUDE.md: Added Windows sandbox note in Codex section
+
+**Note:** Re-run `/flow-next:setup` or `/flow-next:ralph-init` after plugin update to get sandbox fixes.
 
 ## [flow-next 0.18.13] - 2026-01-23
 
