@@ -2,6 +2,12 @@
 
 All notable changes to the gmickel-claude-marketplace.
 
+## [flow-next 0.18.19] - 2026-01-26
+
+### Changed
+
+- **Memory and Plan-Sync enabled by default** — New projects now have `memory.enabled: true` and `planSync.enabled: true` out of the box. Cross-epic sync remains disabled by default to avoid long Ralph loops. Disable with `flowctl config set memory.enabled false` or `flowctl config set planSync.enabled false`.
+
 ## [flow-next 0.18.18] - 2026-01-25
 
 ### Fixed

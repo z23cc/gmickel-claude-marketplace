@@ -128,8 +128,8 @@ Available questions (include only if corresponding config is unset):
   "header": "Memory",
   "question": "Enable memory system? (Auto-captures learnings from NEEDS_WORK reviews)",
   "options": [
-    {"label": "No", "description": "Off by default. Enable later with: flowctl config set memory.enabled true"},
-    {"label": "Yes", "description": "Auto-capture pitfalls and conventions from review feedback"}
+    {"label": "Yes (Recommended)", "description": "Auto-capture pitfalls and conventions from review feedback"},
+    {"label": "No", "description": "Disable with: flowctl config set memory.enabled false"}
   ],
   "multiSelect": false
 }
@@ -141,8 +141,8 @@ Available questions (include only if corresponding config is unset):
   "header": "Plan-Sync",
   "question": "Enable plan-sync? (Updates downstream task specs after implementation drift)",
   "options": [
-    {"label": "No", "description": "Off by default. Enable later with: flowctl config set planSync.enabled true"},
-    {"label": "Yes", "description": "Sync task specs when implementation differs from original plan"}
+    {"label": "Yes (Recommended)", "description": "Sync task specs when implementation differs from original plan"},
+    {"label": "No", "description": "Disable with: flowctl config set planSync.enabled false"}
   ],
   "multiSelect": false
 }
