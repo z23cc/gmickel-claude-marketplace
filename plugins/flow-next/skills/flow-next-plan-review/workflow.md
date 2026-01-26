@@ -204,8 +204,9 @@ Conduct a John Carmack-level review:
 5. **Architecture** - Right abstractions? Clean boundaries?
 6. **Risks** - Blockers identified? Security gaps? Mitigation?
 7. **Scope** - Right-sized? Over/under-engineering?
-8. **Testability** - How will we verify this works?
-9. **Consistency** - Do task specs align with epic spec?
+8. **Task sizing** - M tasks preferred. Flag over-splitting: 7+ tasks? Sequential S tasks that should be combined?
+9. **Testability** - How will we verify this works?
+10. **Consistency** - Do task specs align with epic spec?
 
 ## Output Format
 

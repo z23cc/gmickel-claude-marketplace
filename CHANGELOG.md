@@ -2,6 +2,18 @@
 
 All notable changes to the gmickel-claude-marketplace.
 
+## [flow-next 0.18.20] - 2026-01-26
+
+### Changed
+
+- **Task sizing: M is the sweet spot** — Updated plan skill to prefer M-sized tasks over many S tasks. Sequential S tasks should be combined into M tasks. Added "7+ tasks = look for tasks to combine" heuristic.
+
+- **OAuth example: 4 tasks → 2 tasks** — Task breakdown example now shows combining sequential backend work into one M task + separate frontend S task. Added "over-split" anti-pattern example.
+
+- **Plan review checks for over-splitting** — Added "Task sizing" as review criterion #8: flags 7+ tasks or sequential S tasks that should be combined.
+
+- **Interview balances split vs combine** — Architecture questions now probe both: "can tasks touch disjoint files?" AND "can sequential steps be combined into M-sized tasks?"
+
 ## [flow-next 0.18.19] - 2026-01-26
 
 ### Changed

@@ -26,22 +26,28 @@ Use **T-shirt sizes** based on observable metrics — not token estimates (model
 
 | Size | Files | Acceptance Criteria | Pattern | Action |
 |------|-------|---------------------|---------|--------|
-| **S** | 1-2 | 1-3 | Follows existing | ✅ Good task size |
-| **M** | 3-5 | 3-5 | Adapts existing | ✅ Good task size |
-| **L** | 5+ | 5+ | New/novel | ⚠️ **Split this** |
+| **S** | 1-2 | 1-3 | Follows existing | Combine with related work |
+| **M** | 3-5 | 3-5 | Adapts existing | ✅ **Sweet spot** |
+| **L** | 5+ | 5+ | New/novel | ⚠️ Split into M tasks |
+
+**M is the target size** — fits one context window (~80-100k tokens), makes meaningful progress.
 
 **Anchor examples** (calibrate against these):
-- **S**: Fix a bug, add config, simple UI tweak
-- **M**: New API endpoint with tests, new component with state
-- **L**: New subsystem, architectural change → SPLIT INTO S/M TASKS
+- **S**: Fix a bug, add config, simple UI tweak → combine if sequential
+- **M**: New API endpoint with tests, new component with state → ideal
+- **L**: New subsystem, architectural change → split into M tasks
+
+**Combine rule**: Sequential S tasks touching related code → combine into one M task.
 
 **If too large, split it:**
 - ❌ Bad: "Implement Google OAuth" (L — new subsystem)
 - ✅ Good:
-  - "Add Google OAuth env config" (S)
-  - "Configure passport-google-oauth20" (S)
-  - "Create OAuth callback routes" (M)
+  - "Google OAuth backend (config + passport + routes)" (M)
   - "Add Google sign-in button" (S)
+
+**If too granular (7+ tasks), combine:**
+- ❌ Over-split: 4 sequential S tasks for backend setup
+- ✅ Better: 1 M task covering the sequential work
 
 **Minimize file overlap for parallel work:**
 

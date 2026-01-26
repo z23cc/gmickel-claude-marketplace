@@ -193,47 +193,58 @@ Add Google OAuth authentication to the application.
 **Problems:**
 - Way too large (~200k+ tokens to implement)
 - No clear boundaries
-- Can't parallelize
+- No file references
 
-### ✅ GOOD: Broken into sized tasks
+### ❌ BAD: Over-split into tiny tasks
 
 ```markdown
-# fn-1.1: Add Google OAuth environment config
-**Size:** S | **Files:** `.env.example`, `src/config/env.ts`
+# fn-1.1: Add Google OAuth environment config (S)
+# fn-1.2: Install and configure passport-google-oauth20 (S)
+# fn-1.3: Create OAuth callback routes (M)
+# fn-1.4: Add Google sign-in button to login UI (S)
+```
 
-Add GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET to .env.example
-and environment validation.
+**Problems:**
+- 4 tasks when 2 would suffice
+- fn-1.1 → fn-1.2 → fn-1.3 are sequential, should be combined
+- Task overhead without real parallelization benefit
+
+### ✅ GOOD: Right-sized M tasks
+
+```markdown
+# fn-1.1: Google OAuth backend
+**Size:** M | **Files:** `.env.example`, `src/config/env.ts`, `src/auth/strategies/google.ts`, `src/routes/auth.ts`
+
+Implement Google OAuth:
+- Add GOOGLE_CLIENT_ID/SECRET to env config
+- Create passport strategy following pattern at `src/auth/strategies/local.ts`
+- Add /auth/google and /auth/google/callback routes per `src/routes/auth.ts:50-80`
+
+## Acceptance
+- [ ] Env vars validated on startup
+- [ ] OAuth flow redirects to Google and back
+- [ ] User created/updated on successful auth
+- [ ] `bun test` passes
 
 ---
 
-# fn-1.2: Install and configure passport-google-oauth20
-**Size:** S | **Files:** `package.json`, `src/auth/strategies/google.ts`
-
-Add package, create passport strategy config following
-pattern at `src/auth/strategies/local.ts`.
-
----
-
-# fn-1.3: Create OAuth callback routes
-**Size:** M | **Files:** `src/routes/auth.ts`, `src/routes/auth.test.ts`
-
-Add /auth/google and /auth/google/callback routes
-following pattern at `src/routes/auth.ts:50-80`.
-
----
-
-# fn-1.4: Add Google sign-in button to login UI
+# fn-1.2: Google sign-in button
 **Size:** S | **Files:** `src/components/LoginForm.tsx`
 
-Add button component following existing auth buttons
+Add Google sign-in button following existing auth buttons
 at `src/components/LoginForm.tsx:25-40`.
+
+## Acceptance
+- [ ] Button renders with Google branding
+- [ ] Click initiates OAuth flow
 ```
 
 **Why this is better:**
-- All tasks are S or M (completable in one context)
-- Clear file references
-- Can work on fn-1.1 and fn-1.4 in parallel
-- Sizes based on observable metrics (files, pattern)
+- 2 tasks instead of 4 (sequential backend work combined)
+- M task for substantial backend work fits one context
+- S task for isolated frontend work
+- Clear file references and patterns
+- Testable acceptance criteria
 
 ---
 
