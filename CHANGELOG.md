@@ -2,6 +2,12 @@
 
 All notable changes to the gmickel-claude-marketplace.
 
+## [flow-next 0.18.23] - 2026-01-26
+
+### Added
+
+- **Plan Review Gate documentation** — Comprehensive docs for Ralph's plan review gate: how it works, configuration matrix, review cycle, checkpoint recovery, status inspection, and comparison with impl review. Added troubleshooting for common issues: plan review never starts, blocked forever, dependent epics not starting.
+
 ## [flow-next 0.18.22] - 2026-01-26
 
 ### Fixed

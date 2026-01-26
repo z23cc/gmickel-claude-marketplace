@@ -14,6 +14,7 @@ Ralph is Flow-Next's repo-local autonomous harness. It loops over tasks, applies
   - [Why Ralph vs ralph-wiggum](#why-ralph-vs-ralph-wiggum)
 - [Quality Gates](#quality-gates)
   - [Multi-Model Reviews](#1-multi-model-reviews)
+  - [Plan Review Gate](#plan-review-gate)
   - [Receipt-Based Gating](#2-receipt-based-gating)
   - [Review Loops Until SHIP](#3-review-loops-until-ship)
   - [Memory Capture](#4-memory-capture-opt-in)
@@ -181,8 +182,114 @@ A second model verifies code. Two models catch what one misses.
 | `codex` | Cross-platform | Heuristic context from changed files | Fallback |
 | `none` | Any | — | Not for production |
 
-- **Plan reviews** — Verify architecture before coding
-- **Impl reviews** — Verify implementation meets spec
+Two review types:
+
+- **Plan reviews** — Verify architecture before coding starts
+- **Impl reviews** — Verify implementation meets spec after coding
+
+### Plan Review Gate
+
+The plan review gate ensures epics are architecturally sound before any implementation begins. This catches design issues early when they're cheap to fix.
+
+#### How It Works
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  flowctl next --require-plan-review                         │
+│  ┌────────────────────────────────────────────────────────┐ │
+│  │  1. Find epics with plan_review_status = unknown       │ │
+│  │  2. Return status=plan, epic=fn-1                      │ │
+│  │  3. Ralph invokes /flow-next:plan-review fn-1          │ │
+│  │  4. Skill loops until <verdict>SHIP</verdict>          │ │
+│  │  5. flowctl epic set-plan-review-status fn-1 --status ship │
+│  │  6. Next iteration: epic unlocked for work             │ │
+│  └────────────────────────────────────────────────────────┘ │
+└─────────────────────────────────────────────────────────────┘
+```
+
+#### Configuration
+
+Both settings are required for plan reviews:
+
+```bash
+# config.env
+REQUIRE_PLAN_REVIEW=1   # Gate: don't start work until plans reviewed
+PLAN_REVIEW=codex       # Backend: rp, codex, or export
+```
+
+| `REQUIRE_PLAN_REVIEW` | `PLAN_REVIEW` | Behavior |
+|-----------------------|---------------|----------|
+| `0` | any | Plans auto-ship, work starts immediately |
+| `1` | `rp` | Plans reviewed via RepoPrompt |
+| `1` | `codex` | Plans reviewed via Codex CLI |
+| `1` | `export` | Context exported for manual review |
+| `1` | `none` | **Blocked forever** — no backend to review |
+
+> **Common mistake:** Setting `REQUIRE_PLAN_REVIEW=1` without a `PLAN_REVIEW` backend. Ralph will block on every epic with no way to proceed.
+
+#### The Review Cycle
+
+When `flowctl next` returns `status=plan`:
+
+1. **Checkpoint** — Save epic state before review
+   ```bash
+   flowctl checkpoint save --epic fn-1 --json
+   ```
+
+2. **Review** — Invoke the plan review skill
+   ```bash
+   /flow-next:plan-review fn-1 --review=codex
+   ```
+
+3. **Fix loop** — If `NEEDS_WORK`:
+   - Parse reviewer feedback
+   - Update epic spec via `flowctl epic set-plan`
+   - Sync affected task specs via `flowctl task set-spec`
+   - Re-review (same chat for RP, receipt continuity for Codex)
+   - Repeat until `SHIP`
+
+4. **Receipt** — Write proof-of-work
+   ```json
+   {"type":"plan_review","id":"fn-1","mode":"codex","timestamp":"..."}
+   ```
+
+5. **Unlock** — Set status to ship
+   ```bash
+   flowctl epic set-plan-review-status fn-1 --status ship
+   ```
+
+#### Recovery
+
+If context compacts during review cycles:
+
+```bash
+flowctl checkpoint restore --epic fn-1 --json
+```
+
+This restores the epic/task state from before the review started.
+
+#### Inspecting Plan Review Status
+
+```bash
+# Check all epics
+flowctl epics --json | jq '.epics[] | {id, plan_review_status}'
+
+# Check specific epic
+flowctl show fn-1 --json | jq '.plan_review_status'
+
+# Find epics needing review
+flowctl next --require-plan-review --json
+```
+
+#### Plan Review vs Impl Review
+
+| Aspect | Plan Review | Impl Review |
+|--------|-------------|-------------|
+| **When** | Before coding | After coding |
+| **Reviews** | Epic + task specs | Code changes |
+| **Blocks** | All tasks in epic | Single task |
+| **Focus** | Architecture, feasibility, scope | Correctness, security, tests |
+| **Config** | `PLAN_REVIEW` + `REQUIRE_PLAN_REVIEW` | `WORK_REVIEW` |
 
 ### 2. Receipt-Based Gating
 
@@ -519,6 +626,90 @@ plugins/flow-next/
 ---
 
 ## Troubleshooting
+
+### Plan Review Never Starts
+
+**Symptoms:** Ralph exits with `NO_WORK` but epics have `plan_review_status: unknown`.
+
+**Check config:**
+
+```bash
+grep -E "REQUIRE_PLAN_REVIEW|PLAN_REVIEW" scripts/ralph/config.env
+```
+
+**Common causes:**
+
+| Config | Problem | Fix |
+|--------|---------|-----|
+| `REQUIRE_PLAN_REVIEW=0` | Plan gate disabled | Set to `1` |
+| `PLAN_REVIEW=none` + `REQUIRE_PLAN_REVIEW=1` | No backend to review | Set `PLAN_REVIEW=codex` or `rp` |
+| `PLAN_REVIEW` unset | Defaults to template placeholder | Set explicitly |
+
+**Verify selector sees plan work:**
+
+```bash
+flowctl next --require-plan-review --json
+```
+
+Should return `status: "plan"` if epics need review.
+
+### Plan Review Blocked Forever
+
+**Symptoms:** Ralph loops on plan review, never progresses to work.
+
+**Check:**
+
+```bash
+# What's the epic status?
+flowctl show fn-1 --json | jq '.plan_review_status'
+
+# Is there a receipt?
+ls scripts/ralph/runs/*/receipts/plan-fn-1.json
+
+# What verdict did we get?
+grep -i verdict scripts/ralph/runs/*/iter-*.log | grep plan
+```
+
+**Common causes:**
+- `PLAN_REVIEW=none` with `REQUIRE_PLAN_REVIEW=1` → blocked forever
+- Review returns `NEEDS_WORK` repeatedly → plan has fundamental issues
+- No verdict tag in response → backend misconfigured
+
+**Fix:** Either set a review backend or disable the gate:
+
+```bash
+# Option A: Enable codex reviews
+PLAN_REVIEW=codex
+
+# Option B: Disable gate (plans auto-ship)
+REQUIRE_PLAN_REVIEW=0
+```
+
+### Dependent Epics Not Starting
+
+**Symptoms:** Epic A completes, but Epic B (depends on A) never starts.
+
+**Check:**
+
+```bash
+# Is A actually closed?
+flowctl show fn-1 --json | jq '.status'
+
+# Does B depend on A?
+flowctl show fn-2 --json | jq '.depends_on_epics'
+```
+
+**Common cause:** Race condition — selector runs before `maybe_close_epics()`. Fixed in v0.18.23+.
+
+**Workaround for older versions:**
+
+```bash
+# Manually close the epic
+flowctl epic close fn-1 --json
+
+# Re-run Ralph
+scripts/ralph/ralph.sh
+```
 
 ### Review Gate Loops
 
