@@ -2,6 +2,12 @@
 
 All notable changes to the gmickel-claude-marketplace.
 
+## [flow-next 0.18.22] - 2026-01-26
+
+### Fixed
+
+- **Ralph plan prompt aligned with skill** — Added checkpoint save before plan review, task spec sync mention, and checkpoint restore on context compaction. Ensures Ralph plan gate has same recovery capabilities as interactive `/flow-next:plan-review`.
+
 ## [flow-next 0.18.21] - 2026-01-26
 
 ### Added
