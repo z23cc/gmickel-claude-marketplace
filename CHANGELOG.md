@@ -2,6 +2,12 @@
 
 All notable changes to the gmickel-claude-marketplace.
 
+## [flow-next 0.18.24] - 2026-01-26
+
+### Fixed
+
+- **Epic dependency race condition** — Move `maybe_close_epics()` before selector in Ralph loop. Previously, dependent epics remained blocked when parent epic completed because closing happened after selector returned `NO_WORK`. Now epics close at iteration start, unblocking dependents immediately. Thanks [@tiagoefreitas](https://github.com/tiagoefreitas)! (#79)
+
 ## [flow-next 0.18.23] - 2026-01-26
 
 ### Added
