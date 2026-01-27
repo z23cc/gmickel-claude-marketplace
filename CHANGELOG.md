@@ -2,6 +2,12 @@
 
 All notable changes to the gmickel-claude-marketplace.
 
+## [flow-next 0.18.25] - 2026-01-27
+
+### Fixed
+
+- **Block Explore auto-delegation in Ralph mode** — Worker subagent has `disallowedTools: Task` but enforcement is inconsistent (known Claude Code bugs #21295, #21296). When Explore was auto-spawned, it failed with READ-ONLY constraint and couldn't write receipts, causing infinite retry loops. Now explicitly block `Task(Explore)` at CLI level in ralph.sh (precedence 2 beats agent frontmatter precedence 6). Interactive mode unaffected - fix only applies to Ralph autonomous sessions.
+
 ## [flow-next 0.18.24] - 2026-01-26
 
 ### Fixed
