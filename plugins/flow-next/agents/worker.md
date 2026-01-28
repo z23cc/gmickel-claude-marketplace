@@ -82,13 +82,13 @@ Task: <TASK_ID>"
 
 Use conventional commits. Scope from task context.
 
-## Phase 4: Review (if REVIEW_MODE is rp or codex)
+## Phase 4: Review (MANDATORY if REVIEW_MODE != none)
 
-Skip if REVIEW_MODE is `none`.
+**If REVIEW_MODE is `none`, skip to Phase 5.**
 
-**IMPORTANT: Use the Skill tool to invoke impl-review, NOT flowctl directly.**
+**If REVIEW_MODE is `rp` or `codex`, you MUST invoke impl-review and receive SHIP before proceeding.**
 
-Pass the BASE_COMMIT captured in Phase 2 so the review only covers THIS task's changes (not the entire branch):
+Use the Skill tool to invoke impl-review (NOT flowctl directly):
 
 ```
 /flow-next:impl-review <TASK_ID> --base $BASE_COMMIT
@@ -104,7 +104,7 @@ The skill handles everything:
 If NEEDS_WORK:
 1. Fix the issues identified
 2. Commit fixes
-3. Re-invoke the skill (NOT flowctl): `/flow-next:impl-review <TASK_ID> --base $BASE_COMMIT`
+3. Re-invoke the skill: `/flow-next:impl-review <TASK_ID> --base $BASE_COMMIT`
 
 Continue until SHIP verdict.
 
@@ -146,7 +146,7 @@ Return a concise summary to the main conversation:
 - What was implemented (1-2 sentences)
 - Key files changed
 - Tests run (if any)
-- Review verdict (if review enabled)
+- Review verdict (if REVIEW_MODE != none)
 
 ## Rules
 
@@ -154,5 +154,6 @@ Return a concise summary to the main conversation:
 - **No TodoWrite** - flowctl tracks tasks
 - **git add -A** - never list files explicitly
 - **One task only** - implement only the task you were given
+- **Review before done** - if REVIEW_MODE != none, get SHIP verdict before `flowctl done`
 - **Verify done** - flowctl show must report status: done
 - **Return summary** - main conversation needs outcome
