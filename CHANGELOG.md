@@ -2,6 +2,24 @@
 
 All notable changes to the gmickel-claude-marketplace.
 
+## [flow-next 0.19.0] - 2026-01-28
+
+### Changed
+
+- **Worker review enforcement** — Phase 4 header now reads "MANDATORY if REVIEW_MODE != none" with clearer instruction that worker must invoke `/flow-next:impl-review` and receive SHIP verdict before proceeding to Phase 5. Addresses issue where worker would skip review phase entirely.
+
+- **Stop hook guidance improved** — When worker tries to stop without completing review, the ralph-guard hook now tells the worker to invoke the review skill (`/flow-next:impl-review` or `/flow-next:plan-review`) instead of providing a command to manually write the receipt. This prevents bypassing the actual review and allows the worker to correct in-context without a full retry.
+
+### Fixed
+
+- **Worker skipping impl-review** — Fixed issue where worker subagent would complete implementation, run `flowctl done`, and return without invoking `/flow-next:impl-review` when `REVIEW_MODE` was `rp` or `codex`. This caused Ralph to block on missing receipt, force retries, and eventually auto-block tasks after 5 attempts. Thanks [@tiagoefreitas](https://github.com/tiagoefreitas)! (PR #81)
+
+### Migration
+
+This release modifies ralph-guard hook behavior. If you encounter issues:
+1. Report at https://github.com/gmickel/gmickel-claude-marketplace/issues
+2. Downgrade: `claude plugins uninstall flow-next && claude plugins add https://github.com/gmickel/gmickel-claude-marketplace && claude plugins install flow-next@0.18.27`
+
 ## [flow-next 0.18.27] - 2026-01-28
 
 ### Added
