@@ -85,6 +85,7 @@ Ralph spawns Claude sessions via `claude -p`, loops until done, and applies revi
 ```bash
 scripts/ralph/ralph.sh --watch           # Tool calls only
 scripts/ralph/ralph.sh --watch verbose   # Include model responses
+scripts/ralph/ralph.sh --config alt.env  # Use alternate config file
 ```
 
 ### 5. Monitor (Optional)
@@ -521,6 +522,18 @@ scripts/ralph/ralph.sh --watch verbose   # Include responses
 ```
 
 Real-time visibility without blocking autonomy.
+
+### Custom Config
+
+```bash
+scripts/ralph/ralph.sh --config my-codex-config.env
+scripts/ralph/ralph.sh --watch --config rp-reviews.env
+```
+
+Use alternate config files for different platforms or review backends without editing `config.env`. Useful for:
+- Separate configs for RepoPrompt vs Codex reviews
+- Platform-specific settings (macOS vs Linux vs Windows)
+- Testing different `MAX_ITERATIONS` or `WORKER_TIMEOUT` values
 
 ### Verbose Logging
 
