@@ -2,6 +2,12 @@
 
 All notable changes to the gmickel-claude-marketplace.
 
+## [flow-next 0.18.26] - 2026-01-28
+
+### Added
+
+- **Version check warning in Ralph** — Ralph now checks if local setup version differs from plugin version at startup. Shows warning: "Plugin updated to vX.Y.Z. Run /flow-next:setup to refresh local scripts (current: vA.B.C)." Non-blocking, warn only.
+
 ## [flow-next 0.18.25] - 2026-01-27
 
 ### Fixed
