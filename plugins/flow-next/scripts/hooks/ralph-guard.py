@@ -486,22 +486,22 @@ def handle_stop(data: dict) -> None:
         if not Path(receipt_path).exists():
             # Derive type and id from receipt path
             receipt_type, item_id = parse_receipt_path(receipt_path)
-            # Build command with ts variable to avoid shell substitution in JSON
-            cmd = (
-                f"mkdir -p \"$(dirname '{receipt_path}')\"\n"
-                'ts="$(date -u +%Y-%m-%dT%H:%M:%SZ)"\n'
-                f"cat > '{receipt_path}' <<EOF\n"
-                f'{{"type":"{receipt_type}","id":"{item_id}","mode":"rp","timestamp":"$ts"}}\n'
-                "EOF"
-            )
-            # Block stop - receipt not written
+            # Tell worker to invoke the review skill, not write receipt manually
+            if receipt_type == "impl_review":
+                skill = "/flow-next:impl-review"
+                skill_desc = "implementation review"
+            else:
+                skill = "/flow-next:plan-review"
+                skill_desc = "plan review"
+            # Block stop - review not completed
             output_json(
                 {
                     "decision": "block",
                     "reason": (
-                        f"Cannot stop: Review receipt not written. "
-                        f"You must write the receipt to: {receipt_path}\n"
-                        f"Run:\n{cmd}"
+                        f"Cannot stop: {skill_desc} not completed.\n"
+                        f"You MUST invoke `{skill} {item_id}` to complete the review.\n"
+                        f"The skill writes the receipt on SHIP verdict.\n"
+                        f"Do NOT write the receipt manually - that skips the actual review."
                     ),
                 }
             )
