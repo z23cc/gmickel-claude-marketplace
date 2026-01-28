@@ -2,6 +2,12 @@
 
 All notable changes to the gmickel-claude-marketplace.
 
+## [flow-next 0.18.27] - 2026-01-28
+
+### Added
+
+- **`--config` flag for Ralph** — Specify alternate config file: `ralph.sh --config my-codex-config.env`. Enables different configs for different platforms/review backends without editing config.env. Closes #82.
+
 ## [flow-next 0.18.26] - 2026-01-28
 
 ### Added
