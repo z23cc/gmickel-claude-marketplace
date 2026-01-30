@@ -236,13 +236,23 @@ Output (json):
 
 ### dep add
 
-Add dependency to task.
+Add single dependency to task.
 
 ```bash
 flowctl dep add fn-1.3 fn-1.2 [--json]
 ```
 
 Dependencies must be within same epic.
+
+### task set-deps
+
+Set multiple dependencies for a task (convenience command).
+
+```bash
+flowctl task set-deps fn-1.3 --deps fn-1.1,fn-1.2 [--json]
+```
+
+Equivalent to multiple `dep add` calls. Dependencies must be within same epic.
 
 ### show
 

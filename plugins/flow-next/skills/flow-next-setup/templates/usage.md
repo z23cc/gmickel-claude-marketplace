@@ -51,6 +51,11 @@ Task tracking for AI agents. All state lives in `.flow/`.
 # Create
 .flow/bin/flowctl epic create --title "..."
 .flow/bin/flowctl task create --epic fn-1 --title "..."
+.flow/bin/flowctl task create --epic fn-1 --title "..." --deps fn-1.1,fn-1.2
+
+# Dependencies
+.flow/bin/flowctl task set-deps fn-1.3 --deps fn-1.1,fn-1.2  # Set after creation
+.flow/bin/flowctl dep add fn-1.3 fn-1.1                      # Add single dep
 
 # Work
 .flow/bin/flowctl start fn-1.2       # Claim task

@@ -2,6 +2,12 @@
 
 All notable changes to the gmickel-claude-marketplace.
 
+## [flow-next 0.20.2] - 2026-01-31
+
+### Added
+
+- **`task set-deps` command** — Set multiple task dependencies in one call: `flowctl task set-deps fn-1.3 --deps fn-1.1,fn-1.2`. Convenience wrapper for `dep add` that matches the `--deps` syntax from `task create`.
+
 ## [flow-next 0.20.1] - 2026-01-30
 
 ### Added
