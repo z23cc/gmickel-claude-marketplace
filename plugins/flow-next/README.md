@@ -620,7 +620,7 @@ flowchart TD
   E --> F[Parallel subagents: repo patterns + online docs + best practices]
   F --> G[flow-gap-analyst: edge cases + missing reqs]
   G --> H[Writes .flow/ epic + tasks + deps]
-  H --> I{Plan review? RepoPrompt only}
+  H --> I{Plan review?}
   I -- yes --> J[/flow-next:plan-review fn-N/]
   J --> K{Plan passes review?}
   K -- no --> L[Re-anchor + fix plan]
@@ -631,14 +631,20 @@ flowchart TD
   N --> O[Implement]
   O --> P[Test + verify acceptance]
   P --> Q[flowctl done: write done summary + evidence]
-  Q --> R{Impl review? RepoPrompt only}
+  Q --> R{Impl review?}
   R -- yes --> S[/flow-next:impl-review/]
   S --> T{Next ready task?}
   R -- no --> T
   T -- yes --> N
-  T -- no --> U[Close epic]
+  T -- no --> V{Epic review?}
+  V -- yes --> W[/flow-next:epic-review fn-N/]
+  W --> X{Epic passes review?}
+  X -- no --> Y[Fix gaps inline]
+  Y --> W
+  X -- yes --> U[Close epic]
+  V -- no --> U
   classDef optional stroke-dasharray: 6 4,stroke:#999;
-  class C,J,S optional;
+  class C,J,S,W optional;
 ```
 
 Notes:
@@ -1245,6 +1251,12 @@ flowchart TD
   F -->|WORK_REVIEW=none| G
 
   G --> A
+
+  B -->|status=completion_review| CR[/flow-next:epic-review fn-N/]
+  CR -->|verdict=SHIP| CRD[flowctl epic set-completion-review-status=ship]
+  CR -->|verdict!=SHIP| A
+  CRD --> A
+
   B -->|status=none| H[close done epics]
   H --> I[<promise>COMPLETE</promise>]
 ```
