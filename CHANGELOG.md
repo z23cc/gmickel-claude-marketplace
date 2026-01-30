@@ -2,6 +2,14 @@
 
 All notable changes to the gmickel-claude-marketplace.
 
+## [flow-next 0.19.1] - 2026-01-30
+
+### Fixed
+
+- **Plan skill scout enforcement** — Added CRITICAL block requiring ALL scouts to run in parallel during planning. Previously, agents would skip scouts "because they seem most relevant", causing incomplete plans missing external docs, epic dependencies, and practice pitfalls.
+
+- **Task dependency guidance** — Updated steps.md to document existing `--deps` flag on `task create`. Removes incorrect guidance that said flag didn't exist. Shows preferred inline dependency declaration vs separate `dep add` calls.
+
 ## [flow-next 0.19.0] - 2026-01-28
 
 ### Changed

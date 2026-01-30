@@ -142,7 +142,10 @@ Wait for response. Parse naturally — user may reply terse ("1a 2b") or ramble 
 
 ## Workflow
 
-Read [steps.md](steps.md) and follow each step in order. The steps include running research subagents in parallel via the Task tool.
+Read [steps.md](steps.md) and follow each step in order.
+
+**CRITICAL — Step 1 (Research)**: You MUST launch ALL scouts listed in steps.md in ONE parallel Task call. Do NOT skip scouts or run them sequentially. Each scout provides unique signal.
+
 If user chose review:
 - Option 2a: run `/flow-next:plan-review` after Step 4, fix issues until it passes
 - Option 2b: run `/flow-next:plan-review` with export mode after Step 4
