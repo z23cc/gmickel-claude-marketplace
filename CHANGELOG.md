@@ -2,6 +2,12 @@
 
 All notable changes to the gmickel-claude-marketplace.
 
+## [flow-next 0.20.4] - 2026-02-01
+
+### Added
+
+- **`epic set-title` command** — Rename epics by updating title and slug: `flowctl epic set-title fn-1-old --title "New Title"`. Renames all related files, updates task references and `depends_on_epics` in other epics.
+
 ## [flow-next 0.20.3] - 2026-01-31
 
 ### Changed
