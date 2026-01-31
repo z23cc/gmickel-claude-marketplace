@@ -3469,6 +3469,179 @@ def cmd_epic_set_branch(args: argparse.Namespace) -> None:
         print(f"Epic {args.id} branch_name set to {args.branch}")
 
 
+def cmd_epic_set_title(args: argparse.Namespace) -> None:
+    """Rename epic by setting a new title (updates slug in ID, renames all files)."""
+    if not ensure_flow_exists():
+        error_exit(
+            ".flow/ does not exist. Run 'flowctl init' first.", use_json=args.json
+        )
+
+    old_id = args.id
+    if not is_epic_id(old_id):
+        error_exit(
+            f"Invalid epic ID: {old_id}. Expected format: fn-N or fn-N-slug (e.g., fn-1, fn-1-add-auth)",
+            use_json=args.json,
+        )
+
+    flow_dir = get_flow_dir()
+    old_epic_path = flow_dir / EPICS_DIR / f"{old_id}.json"
+
+    if not old_epic_path.exists():
+        error_exit(f"Epic {old_id} not found", use_json=args.json)
+
+    epic_data = normalize_epic(
+        load_json_or_exit(old_epic_path, f"Epic {old_id}", use_json=args.json)
+    )
+
+    # Extract epic number from old ID
+    epic_num, _ = parse_id(old_id)
+    if epic_num is None:
+        error_exit(f"Could not parse epic number from {old_id}", use_json=args.json)
+
+    # Generate new ID with slugified title
+    new_slug = slugify(args.title)
+    new_suffix = new_slug if new_slug else generate_epic_suffix()
+    new_id = f"fn-{epic_num}-{new_suffix}"
+
+    # Check if new ID already exists (and isn't same as old)
+    if new_id != old_id:
+        new_epic_path = flow_dir / EPICS_DIR / f"{new_id}.json"
+        if new_epic_path.exists():
+            error_exit(
+                f"Epic {new_id} already exists. Choose a different title.",
+                use_json=args.json,
+            )
+
+    # Collect files to rename
+    renames: list[tuple[Path, Path]] = []
+    specs_dir = flow_dir / SPECS_DIR
+    tasks_dir = flow_dir / TASKS_DIR
+    epics_dir = flow_dir / EPICS_DIR
+
+    # Epic JSON
+    renames.append((old_epic_path, epics_dir / f"{new_id}.json"))
+
+    # Epic spec
+    old_spec = specs_dir / f"{old_id}.md"
+    if old_spec.exists():
+        renames.append((old_spec, specs_dir / f"{new_id}.md"))
+
+    # Task files (JSON and MD)
+    task_files: list[tuple[str, str]] = []  # (old_task_id, new_task_id)
+    if tasks_dir.exists():
+        for task_file in tasks_dir.glob(f"{old_id}.*.json"):
+            task_id = task_file.stem
+            if not is_task_id(task_id):
+                continue
+            # Extract task number
+            _, task_num = parse_id(task_id)
+            if task_num is not None:
+                new_task_id = f"{new_id}.{task_num}"
+                task_files.append((task_id, new_task_id))
+                # JSON file
+                renames.append((task_file, tasks_dir / f"{new_task_id}.json"))
+                # MD file
+                old_task_md = tasks_dir / f"{task_id}.md"
+                if old_task_md.exists():
+                    renames.append((old_task_md, tasks_dir / f"{new_task_id}.md"))
+
+    # Checkpoint file
+    old_checkpoint = flow_dir / f".checkpoint-{old_id}.json"
+    if old_checkpoint.exists():
+        renames.append((old_checkpoint, flow_dir / f".checkpoint-{new_id}.json"))
+
+    # Perform renames (collect errors but continue)
+    rename_errors: list[str] = []
+    for old_path, new_path in renames:
+        try:
+            old_path.rename(new_path)
+        except OSError as e:
+            rename_errors.append(f"{old_path.name} -> {new_path.name}: {e}")
+
+    if rename_errors:
+        error_exit(
+            f"Failed to rename some files: {'; '.join(rename_errors)}",
+            use_json=args.json,
+        )
+
+    # Update epic JSON content
+    epic_data["id"] = new_id
+    epic_data["title"] = args.title
+    epic_data["spec_path"] = f"{FLOW_DIR}/{SPECS_DIR}/{new_id}.md"
+    epic_data["updated_at"] = now_iso()
+    atomic_write_json(epics_dir / f"{new_id}.json", epic_data)
+
+    # Update task JSON content
+    task_id_map = dict(task_files)  # old_task_id -> new_task_id
+    for old_task_id, new_task_id in task_files:
+        task_path = tasks_dir / f"{new_task_id}.json"
+        if task_path.exists():
+            task_data = normalize_task(load_json(task_path))
+            task_data["id"] = new_task_id
+            task_data["epic"] = new_id
+            task_data["spec_path"] = f"{FLOW_DIR}/{TASKS_DIR}/{new_task_id}.md"
+            # Update depends_on references within same epic
+            if task_data.get("depends_on"):
+                task_data["depends_on"] = [
+                    task_id_map.get(dep, dep) for dep in task_data["depends_on"]
+                ]
+            task_data["updated_at"] = now_iso()
+            atomic_write_json(task_path, task_data)
+
+    # Update depends_on_epics in other epics that reference this one
+    updated_deps_in: list[str] = []
+    if epics_dir.exists():
+        for other_epic_file in epics_dir.glob("fn-*.json"):
+            if other_epic_file.name == f"{new_id}.json":
+                continue  # Skip self
+            try:
+                other_data = load_json(other_epic_file)
+                deps = other_data.get("depends_on_epics", [])
+                if old_id in deps:
+                    other_data["depends_on_epics"] = [
+                        new_id if d == old_id else d for d in deps
+                    ]
+                    other_data["updated_at"] = now_iso()
+                    atomic_write_json(other_epic_file, other_data)
+                    updated_deps_in.append(other_data.get("id", other_epic_file.stem))
+            except (json.JSONDecodeError, OSError):
+                pass  # Skip files that can't be parsed
+
+    # Update state files if they exist
+    state_store = get_state_store()
+    state_tasks_dir = state_store.tasks_dir
+    if state_tasks_dir.exists():
+        for old_task_id, new_task_id in task_files:
+            old_state = state_tasks_dir / f"{old_task_id}.state.json"
+            new_state = state_tasks_dir / f"{new_task_id}.state.json"
+            if old_state.exists():
+                try:
+                    old_state.rename(new_state)
+                except OSError:
+                    pass  # Non-critical
+
+    result = {
+        "old_id": old_id,
+        "new_id": new_id,
+        "title": args.title,
+        "files_renamed": len(renames),
+        "tasks_updated": len(task_files),
+        "message": f"Epic renamed: {old_id} -> {new_id}",
+    }
+    if updated_deps_in:
+        result["updated_deps_in"] = updated_deps_in
+
+    if args.json:
+        json_output(result)
+    else:
+        print(f"Epic renamed: {old_id} -> {new_id}")
+        print(f"  Title: {args.title}")
+        print(f"  Files renamed: {len(renames)}")
+        print(f"  Tasks updated: {len(task_files)}")
+        if updated_deps_in:
+            print(f"  Updated deps in: {', '.join(updated_deps_in)}")
+
+
 def cmd_epic_add_dep(args: argparse.Namespace) -> None:
     """Add epic-level dependency."""
     if not ensure_flow_exists():
@@ -6722,6 +6895,14 @@ def main() -> None:
     p_epic_set_branch.add_argument("--branch", required=True, help="Branch name")
     p_epic_set_branch.add_argument("--json", action="store_true", help="JSON output")
     p_epic_set_branch.set_defaults(func=cmd_epic_set_branch)
+
+    p_epic_set_title = epic_sub.add_parser(
+        "set-title", help="Rename epic by setting a new title (updates slug)"
+    )
+    p_epic_set_title.add_argument("id", help="Epic ID (e.g., fn-1, fn-1-add-auth)")
+    p_epic_set_title.add_argument("--title", required=True, help="New title for the epic")
+    p_epic_set_title.add_argument("--json", action="store_true", help="JSON output")
+    p_epic_set_title.set_defaults(func=cmd_epic_set_title)
 
     p_epic_close = epic_sub.add_parser("close", help="Close epic")
     p_epic_close.add_argument("id", help="Epic ID (e.g., fn-1, fn-1-add-auth)")
