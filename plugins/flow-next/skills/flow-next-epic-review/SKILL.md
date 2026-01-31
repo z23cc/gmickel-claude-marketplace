@@ -1,6 +1,7 @@
 ---
 name: flow-next-epic-review
 description: Epic completion review - verifies all epic tasks implement spec requirements. Triggers on /flow-next:epic-review.
+user-invocable: false
 ---
 
 # Epic Completion Review Mode

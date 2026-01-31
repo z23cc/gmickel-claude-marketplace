@@ -1,6 +1,7 @@
 ---
 name: flow-next-prime
 description: Comprehensive codebase assessment for agent and production readiness. Scans 8 pillars (48 criteria), verifies commands work, checks GitHub settings. Reports everything, fixes agent readiness only. Triggers on /flow-next:prime.
+user-invocable: false
 ---
 
 # Flow Prime

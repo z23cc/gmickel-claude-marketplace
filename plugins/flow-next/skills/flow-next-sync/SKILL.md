@@ -1,6 +1,7 @@
 ---
 name: flow-next-sync
 description: Manually trigger plan-sync to update downstream task specs after implementation drift. Use when code changes outpace specs.
+user-invocable: false
 ---
 
 # Manual Plan-Sync
