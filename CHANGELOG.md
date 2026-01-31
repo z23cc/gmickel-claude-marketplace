@@ -2,6 +2,12 @@
 
 All notable changes to the gmickel-claude-marketplace.
 
+## [flow-next 0.20.5] - 2026-02-01
+
+### Fixed
+
+- **Duplicate skill/command listings** — Skills that have command stubs now set `user-invocable: false` to hide from `/` menu. Commands remain the user-facing entry points; skills still work when Claude invokes them.
+
 ## [flow-next 0.20.4] - 2026-02-01
 
 ### Added
