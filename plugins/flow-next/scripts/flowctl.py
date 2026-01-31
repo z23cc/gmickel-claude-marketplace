@@ -17,6 +17,7 @@ import shlex
 import shutil
 import sys
 import tempfile
+import unicodedata
 from abc import ABC, abstractmethod
 from contextlib import contextmanager
 from datetime import datetime
@@ -582,12 +583,52 @@ def generate_epic_suffix(length: int = 3) -> str:
     return "".join(secrets.choice(alphabet) for _ in range(length))
 
 
+def slugify(text: str, max_length: int = 40) -> Optional[str]:
+    """Convert text to URL-safe slug for epic IDs.
+
+    Uses Django pattern (stdlib only): normalize unicode, strip non-alphanumeric,
+    collapse whitespace/hyphens. Returns None if result is empty (for fallback).
+
+    Output contains only [a-z0-9-] to match parse_id() regex.
+
+    Args:
+        text: Input text to slugify
+        max_length: Maximum length (40 default, leaves room for fn-XXX- prefix)
+
+    Returns:
+        Slugified string or None if empty
+    """
+    text = str(text)
+    # Normalize unicode and convert to ASCII
+    text = unicodedata.normalize("NFKD", text).encode("ascii", "ignore").decode("ascii")
+    # Remove non-word chars (except spaces and hyphens), lowercase
+    text = re.sub(r"[^\w\s-]", "", text.lower())
+    # Convert underscores to spaces (will be collapsed to hyphens)
+    text = text.replace("_", " ")
+    # Collapse whitespace and hyphens to single hyphen, strip leading/trailing
+    text = re.sub(r"[-\s]+", "-", text).strip("-")
+    # Truncate at word boundary if too long
+    if max_length and len(text) > max_length:
+        truncated = text[:max_length]
+        if "-" in truncated:
+            truncated = truncated.rsplit("-", 1)[0]
+        text = truncated.strip("-")
+    return text if text else None
+
+
 def parse_id(id_str: str) -> tuple[Optional[int], Optional[int]]:
     """Parse ID into (epic_num, task_num). Returns (epic, None) for epic IDs.
 
-    Supports both legacy (fn-N) and new (fn-N-xxx) formats with optional suffix.
+    Supports formats:
+    - Legacy: fn-N, fn-N.M
+    - Short suffix: fn-N-xxx, fn-N-xxx.M (3-char random)
+    - Slug suffix: fn-N-longer-slug, fn-N-longer-slug.M (slugified title)
     """
-    match = re.match(r"^fn-(\d+)(?:-[a-z0-9]{3})?(?:\.(\d+))?$", id_str)
+    # Pattern supports: fn-N, fn-N-x (1-3 char), fn-N-xx-yy (multi-segment slug)
+    match = re.match(
+        r"^fn-(\d+)(?:-[a-z0-9][a-z0-9-]*[a-z0-9]|-[a-z0-9]{1,3})?(?:\.(\d+))?$",
+        id_str,
+    )
     if not match:
         return None, None
     epic = int(match.group(1))
@@ -1727,7 +1768,7 @@ def get_actor() -> str:
 def scan_max_epic_id(flow_dir: Path) -> int:
     """Scan .flow/epics/ to find max epic number. Returns 0 if none exist.
 
-    Handles both legacy (fn-N.json) and new (fn-N-xxx.json) formats.
+    Handles legacy (fn-N.json), short suffix (fn-N-xxx.json), and slug (fn-N-slug.json) formats.
     """
     epics_dir = flow_dir / EPICS_DIR
     if not epics_dir.exists():
@@ -1735,7 +1776,11 @@ def scan_max_epic_id(flow_dir: Path) -> int:
 
     max_n = 0
     for epic_file in epics_dir.glob("fn-*.json"):
-        match = re.match(r"^fn-(\d+)(?:-[a-z0-9]{3})?\.json$", epic_file.name)
+        # Match: fn-N.json, fn-N-x.json (1-3 char), fn-N-xx-yy.json (slug)
+        match = re.match(
+            r"^fn-(\d+)(?:-[a-z0-9][a-z0-9-]*[a-z0-9]|-[a-z0-9]{1,3})?\.json$",
+            epic_file.name,
+        )
         if match:
             n = int(match.group(1))
             max_n = max(max_n, n)
@@ -2661,7 +2706,9 @@ def cmd_epic_create(args: argparse.Namespace) -> None:
     # Scan existing epics to determine next ID (don't rely on counter)
     max_epic = scan_max_epic_id(flow_dir)
     epic_num = max_epic + 1
-    suffix = generate_epic_suffix()
+    # Use slugified title as suffix, fallback to random if empty/invalid
+    slug = slugify(args.title)
+    suffix = slug if slug else generate_epic_suffix()
     epic_id = f"fn-{epic_num}-{suffix}"
 
     # Double-check no collision (shouldn't happen with scan-based allocation)
@@ -2719,7 +2766,7 @@ def cmd_task_create(args: argparse.Namespace) -> None:
 
     if not is_epic_id(args.epic):
         error_exit(
-            f"Invalid epic ID: {args.epic}. Expected format: fn-N or fn-N-xxx", use_json=args.json
+            f"Invalid epic ID: {args.epic}. Expected format: fn-N or fn-N-slug (e.g., fn-1, fn-1-add-auth)", use_json=args.json
         )
 
     flow_dir = get_flow_dir()
@@ -2751,7 +2798,7 @@ def cmd_task_create(args: argparse.Namespace) -> None:
         for dep in deps:
             if not is_task_id(dep):
                 error_exit(
-                    f"Invalid dependency ID: {dep}. Expected format: fn-N.M or fn-N-xxx.M",
+                    f"Invalid dependency ID: {dep}. Expected format: fn-N.M or fn-N-slug.M (e.g., fn-1.2, fn-1-add-auth.2)",
                     use_json=args.json,
                 )
             if epic_id_from_task(dep) != args.epic:
@@ -2815,12 +2862,12 @@ def cmd_dep_add(args: argparse.Namespace) -> None:
 
     if not is_task_id(args.task):
         error_exit(
-            f"Invalid task ID: {args.task}. Expected format: fn-N.M or fn-N-xxx.M", use_json=args.json
+            f"Invalid task ID: {args.task}. Expected format: fn-N.M or fn-N-slug.M (e.g., fn-1.2, fn-1-add-auth.2)", use_json=args.json
         )
 
     if not is_task_id(args.depends_on):
         error_exit(
-            f"Invalid dependency ID: {args.depends_on}. Expected format: fn-N.M or fn-N-xxx.M",
+            f"Invalid dependency ID: {args.depends_on}. Expected format: fn-N.M or fn-N-slug.M (e.g., fn-1.2, fn-1-add-auth.2)",
             use_json=args.json,
         )
 
@@ -2868,7 +2915,7 @@ def cmd_task_set_deps(args: argparse.Namespace) -> None:
 
     if not is_task_id(args.task_id):
         error_exit(
-            f"Invalid task ID: {args.task_id}. Expected format: fn-N.M or fn-N-xxx.M",
+            f"Invalid task ID: {args.task_id}. Expected format: fn-N.M or fn-N-slug.M (e.g., fn-1.2, fn-1-add-auth.2)",
             use_json=args.json,
         )
 
@@ -2896,7 +2943,7 @@ def cmd_task_set_deps(args: argparse.Namespace) -> None:
     for dep_id in dep_ids:
         if not is_task_id(dep_id):
             error_exit(
-                f"Invalid dependency ID: {dep_id}. Expected format: fn-N.M or fn-N-xxx.M",
+                f"Invalid dependency ID: {dep_id}. Expected format: fn-N.M or fn-N-slug.M (e.g., fn-1.2, fn-1-add-auth.2)",
                 use_json=args.json,
             )
         dep_epic = epic_id_from_task(dep_id)
@@ -3005,7 +3052,7 @@ def cmd_show(args: argparse.Namespace) -> None:
 
     else:
         error_exit(
-            f"Invalid ID: {args.id}. Expected format: fn-N[-xxx] (epic) or fn-N[-xxx].M (task)",
+            f"Invalid ID: {args.id}. Expected format: fn-N or fn-N-slug (epic), fn-N.M or fn-N-slug.M (task)",
             use_json=args.json,
         )
 
@@ -3255,7 +3302,7 @@ def cmd_cat(args: argparse.Namespace) -> None:
         spec_path = flow_dir / TASKS_DIR / f"{args.id}.md"
     else:
         error_exit(
-            f"Invalid ID: {args.id}. Expected format: fn-N[-xxx] (epic) or fn-N[-xxx].M (task)",
+            f"Invalid ID: {args.id}. Expected format: fn-N or fn-N-slug (epic), fn-N.M or fn-N-slug.M (task)",
             use_json=False,
         )
         return
@@ -3273,7 +3320,7 @@ def cmd_epic_set_plan(args: argparse.Namespace) -> None:
 
     if not is_epic_id(args.id):
         error_exit(
-            f"Invalid epic ID: {args.id}. Expected format: fn-N or fn-N-xxx", use_json=args.json
+            f"Invalid epic ID: {args.id}. Expected format: fn-N or fn-N-slug (e.g., fn-1, fn-1-add-auth)", use_json=args.json
         )
 
     flow_dir = get_flow_dir()
@@ -3316,7 +3363,7 @@ def cmd_epic_set_plan_review_status(args: argparse.Namespace) -> None:
 
     if not is_epic_id(args.id):
         error_exit(
-            f"Invalid epic ID: {args.id}. Expected format: fn-N or fn-N-xxx", use_json=args.json
+            f"Invalid epic ID: {args.id}. Expected format: fn-N or fn-N-slug (e.g., fn-1, fn-1-add-auth)", use_json=args.json
         )
 
     flow_dir = get_flow_dir()
@@ -3355,7 +3402,7 @@ def cmd_epic_set_completion_review_status(args: argparse.Namespace) -> None:
 
     if not is_epic_id(args.id):
         error_exit(
-            f"Invalid epic ID: {args.id}. Expected format: fn-N or fn-N-xxx", use_json=args.json
+            f"Invalid epic ID: {args.id}. Expected format: fn-N or fn-N-slug (e.g., fn-1, fn-1-add-auth)", use_json=args.json
         )
 
     flow_dir = get_flow_dir()
@@ -3394,7 +3441,7 @@ def cmd_epic_set_branch(args: argparse.Namespace) -> None:
 
     if not is_epic_id(args.id):
         error_exit(
-            f"Invalid epic ID: {args.id}. Expected format: fn-N or fn-N-xxx", use_json=args.json
+            f"Invalid epic ID: {args.id}. Expected format: fn-N or fn-N-slug (e.g., fn-1, fn-1-add-auth)", use_json=args.json
         )
 
     flow_dir = get_flow_dir()
@@ -3434,12 +3481,12 @@ def cmd_epic_add_dep(args: argparse.Namespace) -> None:
 
     if not is_epic_id(epic_id):
         error_exit(
-            f"Invalid epic ID: {epic_id}. Expected format: fn-N or fn-N-xxx",
+            f"Invalid epic ID: {epic_id}. Expected format: fn-N or fn-N-slug (e.g., fn-1, fn-1-add-auth)",
             use_json=args.json,
         )
     if not is_epic_id(dep_id):
         error_exit(
-            f"Invalid epic ID: {dep_id}. Expected format: fn-N or fn-N-xxx",
+            f"Invalid epic ID: {dep_id}. Expected format: fn-N or fn-N-slug (e.g., fn-1, fn-1-add-auth)",
             use_json=args.json,
         )
     if epic_id == dep_id:
@@ -3502,7 +3549,7 @@ def cmd_epic_rm_dep(args: argparse.Namespace) -> None:
 
     if not is_epic_id(epic_id):
         error_exit(
-            f"Invalid epic ID: {epic_id}. Expected format: fn-N or fn-N-xxx",
+            f"Invalid epic ID: {epic_id}. Expected format: fn-N or fn-N-slug (e.g., fn-1, fn-1-add-auth)",
             use_json=args.json,
         )
 
@@ -3557,7 +3604,7 @@ def cmd_epic_set_backend(args: argparse.Namespace) -> None:
 
     if not is_epic_id(args.id):
         error_exit(
-            f"Invalid epic ID: {args.id}. Expected format: fn-N or fn-N-xxx",
+            f"Invalid epic ID: {args.id}. Expected format: fn-N or fn-N-slug (e.g., fn-1, fn-1-add-auth)",
             use_json=args.json,
         )
 
@@ -3617,7 +3664,7 @@ def cmd_task_set_backend(args: argparse.Namespace) -> None:
     task_id = args.id
     if not is_task_id(task_id):
         error_exit(
-            f"Invalid task ID: {task_id}. Expected format: fn-N.M or fn-N-xxx.M",
+            f"Invalid task ID: {task_id}. Expected format: fn-N.M or fn-N-slug.M (e.g., fn-1.2, fn-1-add-auth.2)",
             use_json=args.json,
         )
 
@@ -3674,7 +3721,7 @@ def cmd_task_show_backend(args: argparse.Namespace) -> None:
     task_id = args.id
     if not is_task_id(task_id):
         error_exit(
-            f"Invalid task ID: {task_id}. Expected format: fn-N.M or fn-N-xxx.M",
+            f"Invalid task ID: {task_id}. Expected format: fn-N.M or fn-N-slug.M (e.g., fn-1.2, fn-1-add-auth.2)",
             use_json=args.json,
         )
 
@@ -3759,7 +3806,7 @@ def cmd_task_set_spec(args: argparse.Namespace) -> None:
     task_id = args.id
     if not is_task_id(task_id):
         error_exit(
-            f"Invalid task ID: {task_id}. Expected format: fn-N.M or fn-N-xxx.M",
+            f"Invalid task ID: {task_id}. Expected format: fn-N.M or fn-N-slug.M (e.g., fn-1.2, fn-1-add-auth.2)",
             use_json=args.json,
         )
 
@@ -3849,7 +3896,7 @@ def cmd_task_reset(args: argparse.Namespace) -> None:
     task_id = args.task_id
     if not is_task_id(task_id):
         error_exit(
-            f"Invalid task ID: {task_id}. Expected format: fn-N.M or fn-N-xxx.M",
+            f"Invalid task ID: {task_id}. Expected format: fn-N.M or fn-N-slug.M (e.g., fn-1.2, fn-1-add-auth.2)",
             use_json=args.json,
         )
 
@@ -3960,7 +4007,7 @@ def _task_set_section(
 
     if not is_task_id(task_id):
         error_exit(
-            f"Invalid task ID: {task_id}. Expected format: fn-N.M or fn-N-xxx.M", use_json=use_json
+            f"Invalid task ID: {task_id}. Expected format: fn-N.M or fn-N-slug.M (e.g., fn-1.2, fn-1-add-auth.2)", use_json=use_json
         )
 
     flow_dir = get_flow_dir()
@@ -4014,7 +4061,7 @@ def cmd_ready(args: argparse.Namespace) -> None:
 
     if not is_epic_id(args.epic):
         error_exit(
-            f"Invalid epic ID: {args.epic}. Expected format: fn-N or fn-N-xxx", use_json=args.json
+            f"Invalid epic ID: {args.epic}. Expected format: fn-N or fn-N-slug (e.g., fn-1, fn-1-add-auth)", use_json=args.json
         )
 
     flow_dir = get_flow_dir()
@@ -4162,7 +4209,11 @@ def cmd_next(args: argparse.Namespace) -> None:
         epics_dir = flow_dir / EPICS_DIR
         if epics_dir.exists():
             for epic_file in sorted(epics_dir.glob("fn-*.json")):
-                match = re.match(r"^fn-(\d+)(?:-[a-z0-9]{3})?\.json$", epic_file.name)
+                # Match: fn-N.json, fn-N-xxx.json (short), fn-N-slug.json (long)
+                match = re.match(
+                    r"^fn-(\d+)(?:-[a-z0-9][a-z0-9-]*[a-z0-9]|-[a-z0-9]{1,3})?\.json$",
+                    epic_file.name,
+                )
                 if match:
                     epic_ids.append(epic_file.stem)  # Use full ID from filename
         epic_ids.sort(key=lambda e: parse_id(e)[0] or 0)
@@ -4336,7 +4387,7 @@ def cmd_start(args: argparse.Namespace) -> None:
 
     if not is_task_id(args.id):
         error_exit(
-            f"Invalid task ID: {args.id}. Expected format: fn-N.M or fn-N-xxx.M", use_json=args.json
+            f"Invalid task ID: {args.id}. Expected format: fn-N.M or fn-N-slug.M (e.g., fn-1.2, fn-1-add-auth.2)", use_json=args.json
         )
 
     # Load task definition for dependency info (outside lock)
@@ -4444,7 +4495,7 @@ def cmd_done(args: argparse.Namespace) -> None:
 
     if not is_task_id(args.id):
         error_exit(
-            f"Invalid task ID: {args.id}. Expected format: fn-N.M or fn-N-xxx.M", use_json=args.json
+            f"Invalid task ID: {args.id}. Expected format: fn-N.M or fn-N-slug.M (e.g., fn-1.2, fn-1-add-auth.2)", use_json=args.json
         )
 
     flow_dir = get_flow_dir()
@@ -4567,7 +4618,7 @@ def cmd_block(args: argparse.Namespace) -> None:
 
     if not is_task_id(args.id):
         error_exit(
-            f"Invalid task ID: {args.id}. Expected format: fn-N.M or fn-N-xxx.M", use_json=args.json
+            f"Invalid task ID: {args.id}. Expected format: fn-N.M or fn-N-slug.M (e.g., fn-1.2, fn-1-add-auth.2)", use_json=args.json
         )
 
     flow_dir = get_flow_dir()
@@ -4621,7 +4672,7 @@ def cmd_state_path(args: argparse.Namespace) -> None:
     if args.task:
         if not is_task_id(args.task):
             error_exit(
-                f"Invalid task ID: {args.task}. Expected format: fn-N.M or fn-N-xxx.M",
+                f"Invalid task ID: {args.task}. Expected format: fn-N.M or fn-N-slug.M (e.g., fn-1.2, fn-1-add-auth.2)",
                 use_json=args.json,
             )
         state_path = state_dir / "tasks" / f"{args.task}.state.json"
@@ -4714,7 +4765,7 @@ def cmd_epic_close(args: argparse.Namespace) -> None:
 
     if not is_epic_id(args.id):
         error_exit(
-            f"Invalid epic ID: {args.id}. Expected format: fn-N or fn-N-xxx", use_json=args.json
+            f"Invalid epic ID: {args.id}. Expected format: fn-N or fn-N-slug (e.g., fn-1, fn-1-add-auth)", use_json=args.json
         )
 
     flow_dir = get_flow_dir()
@@ -6223,7 +6274,7 @@ def cmd_checkpoint_save(args: argparse.Namespace) -> None:
     epic_id = args.epic
     if not is_epic_id(epic_id):
         error_exit(
-            f"Invalid epic ID: {epic_id}. Expected format: fn-N or fn-N-xxx",
+            f"Invalid epic ID: {epic_id}. Expected format: fn-N or fn-N-slug (e.g., fn-1, fn-1-add-auth)",
             use_json=args.json,
         )
 
@@ -6306,7 +6357,7 @@ def cmd_checkpoint_restore(args: argparse.Namespace) -> None:
     epic_id = args.epic
     if not is_epic_id(epic_id):
         error_exit(
-            f"Invalid epic ID: {epic_id}. Expected format: fn-N or fn-N-xxx",
+            f"Invalid epic ID: {epic_id}. Expected format: fn-N or fn-N-slug (e.g., fn-1, fn-1-add-auth)",
             use_json=args.json,
         )
 
@@ -6386,7 +6437,7 @@ def cmd_checkpoint_delete(args: argparse.Namespace) -> None:
     epic_id = args.epic
     if not is_epic_id(epic_id):
         error_exit(
-            f"Invalid epic ID: {epic_id}. Expected format: fn-N or fn-N-xxx",
+            f"Invalid epic ID: {epic_id}. Expected format: fn-N or fn-N-slug (e.g., fn-1, fn-1-add-auth)",
             use_json=args.json,
         )
 
@@ -6440,7 +6491,11 @@ def cmd_validate(args: argparse.Namespace) -> None:
         epic_ids = []
         if epics_dir.exists():
             for epic_file in sorted(epics_dir.glob("fn-*.json")):
-                match = re.match(r"^fn-(\d+)(?:-[a-z0-9]{3})?\.json$", epic_file.name)
+                # Match: fn-N.json, fn-N-xxx.json (short), fn-N-slug.json (long)
+                match = re.match(
+                    r"^fn-(\d+)(?:-[a-z0-9][a-z0-9-]*[a-z0-9]|-[a-z0-9]{1,3})?\.json$",
+                    epic_file.name,
+                )
                 if match:
                     epic_ids.append(epic_file.stem)  # Use full ID from filename
 
@@ -6504,7 +6559,7 @@ def cmd_validate(args: argparse.Namespace) -> None:
     # Single epic validation
     if not is_epic_id(args.epic):
         error_exit(
-            f"Invalid epic ID: {args.epic}. Expected format: fn-N or fn-N-xxx", use_json=args.json
+            f"Invalid epic ID: {args.epic}. Expected format: fn-N or fn-N-slug (e.g., fn-1, fn-1-add-auth)", use_json=args.json
         )
 
     errors, warnings, task_count = validate_epic(
@@ -6631,7 +6686,7 @@ def main() -> None:
     p_epic_create.set_defaults(func=cmd_epic_create)
 
     p_epic_set_plan = epic_sub.add_parser("set-plan", help="Set epic spec from file")
-    p_epic_set_plan.add_argument("id", help="Epic ID (fn-N)")
+    p_epic_set_plan.add_argument("id", help="Epic ID (e.g., fn-1, fn-1-add-auth)")
     p_epic_set_plan.add_argument("--file", required=True, help="Markdown file (use '-' for stdin)")
     p_epic_set_plan.add_argument("--json", action="store_true", help="JSON output")
     p_epic_set_plan.set_defaults(func=cmd_epic_set_plan)
@@ -6639,7 +6694,7 @@ def main() -> None:
     p_epic_set_review = epic_sub.add_parser(
         "set-plan-review-status", help="Set plan review status"
     )
-    p_epic_set_review.add_argument("id", help="Epic ID (fn-N)")
+    p_epic_set_review.add_argument("id", help="Epic ID (e.g., fn-1, fn-1-add-auth)")
     p_epic_set_review.add_argument(
         "--status",
         required=True,
@@ -6652,7 +6707,7 @@ def main() -> None:
     p_epic_set_completion_review = epic_sub.add_parser(
         "set-completion-review-status", help="Set completion review status"
     )
-    p_epic_set_completion_review.add_argument("id", help="Epic ID (fn-N)")
+    p_epic_set_completion_review.add_argument("id", help="Epic ID (e.g., fn-1, fn-1-add-auth)")
     p_epic_set_completion_review.add_argument(
         "--status",
         required=True,
@@ -6663,13 +6718,13 @@ def main() -> None:
     p_epic_set_completion_review.set_defaults(func=cmd_epic_set_completion_review_status)
 
     p_epic_set_branch = epic_sub.add_parser("set-branch", help="Set epic branch name")
-    p_epic_set_branch.add_argument("id", help="Epic ID (fn-N)")
+    p_epic_set_branch.add_argument("id", help="Epic ID (e.g., fn-1, fn-1-add-auth)")
     p_epic_set_branch.add_argument("--branch", required=True, help="Branch name")
     p_epic_set_branch.add_argument("--json", action="store_true", help="JSON output")
     p_epic_set_branch.set_defaults(func=cmd_epic_set_branch)
 
     p_epic_close = epic_sub.add_parser("close", help="Close epic")
-    p_epic_close.add_argument("id", help="Epic ID (fn-N)")
+    p_epic_close.add_argument("id", help="Epic ID (e.g., fn-1, fn-1-add-auth)")
     p_epic_close.add_argument("--json", action="store_true", help="JSON output")
     p_epic_close.set_defaults(func=cmd_epic_close)
 
@@ -6688,7 +6743,7 @@ def main() -> None:
     p_epic_set_backend = epic_sub.add_parser(
         "set-backend", help="Set default backend specs for impl/review/sync"
     )
-    p_epic_set_backend.add_argument("id", help="Epic ID (fn-N)")
+    p_epic_set_backend.add_argument("id", help="Epic ID (e.g., fn-1, fn-1-add-auth)")
     p_epic_set_backend.add_argument(
         "--impl", help="Default impl backend spec (e.g., 'codex:gpt-5.2-high')"
     )
@@ -6706,7 +6761,7 @@ def main() -> None:
     task_sub = p_task.add_subparsers(dest="task_cmd", required=True)
 
     p_task_create = task_sub.add_parser("create", help="Create new task")
-    p_task_create.add_argument("--epic", required=True, help="Epic ID (fn-N)")
+    p_task_create.add_argument("--epic", required=True, help="Epic ID (e.g., fn-1, fn-1-add-auth)")
     p_task_create.add_argument("--title", required=True, help="Task title")
     p_task_create.add_argument("--deps", help="Comma-separated dependency IDs")
     p_task_create.add_argument(
@@ -6719,13 +6774,13 @@ def main() -> None:
     p_task_create.set_defaults(func=cmd_task_create)
 
     p_task_desc = task_sub.add_parser("set-description", help="Set task description")
-    p_task_desc.add_argument("id", help="Task ID (fn-N.M)")
+    p_task_desc.add_argument("id", help="Task ID (e.g., fn-1.2, fn-1-add-auth.2)")
     p_task_desc.add_argument("--file", required=True, help="Markdown file (use '-' for stdin)")
     p_task_desc.add_argument("--json", action="store_true", help="JSON output")
     p_task_desc.set_defaults(func=cmd_task_set_description)
 
     p_task_acc = task_sub.add_parser("set-acceptance", help="Set task acceptance")
-    p_task_acc.add_argument("id", help="Task ID (fn-N.M)")
+    p_task_acc.add_argument("id", help="Task ID (e.g., fn-1.2, fn-1-add-auth.2)")
     p_task_acc.add_argument("--file", required=True, help="Markdown file (use '-' for stdin)")
     p_task_acc.add_argument("--json", action="store_true", help="JSON output")
     p_task_acc.set_defaults(func=cmd_task_set_acceptance)
@@ -6733,7 +6788,7 @@ def main() -> None:
     p_task_set_spec = task_sub.add_parser(
         "set-spec", help="Set task spec (full file or sections)"
     )
-    p_task_set_spec.add_argument("id", help="Task ID (fn-N.M)")
+    p_task_set_spec.add_argument("id", help="Task ID (e.g., fn-1.2, fn-1-add-auth.2)")
     p_task_set_spec.add_argument(
         "--file", help="Full spec file (use '-' for stdin) - replaces entire spec"
     )
@@ -6747,7 +6802,7 @@ def main() -> None:
     p_task_set_spec.set_defaults(func=cmd_task_set_spec)
 
     p_task_reset = task_sub.add_parser("reset", help="Reset task to todo")
-    p_task_reset.add_argument("task_id", help="Task ID (fn-N.M)")
+    p_task_reset.add_argument("task_id", help="Task ID (e.g., fn-1.2, fn-1-add-auth.2)")
     p_task_reset.add_argument(
         "--cascade", action="store_true", help="Also reset dependent tasks (same epic)"
     )
@@ -6757,7 +6812,7 @@ def main() -> None:
     p_task_set_backend = task_sub.add_parser(
         "set-backend", help="Set backend specs for impl/review/sync"
     )
-    p_task_set_backend.add_argument("id", help="Task ID (fn-N.M)")
+    p_task_set_backend.add_argument("id", help="Task ID (e.g., fn-1.2, fn-1-add-auth.2)")
     p_task_set_backend.add_argument(
         "--impl", help="Impl backend spec (e.g., 'codex:gpt-5.2-high')"
     )
@@ -6773,16 +6828,16 @@ def main() -> None:
     p_task_show_backend = task_sub.add_parser(
         "show-backend", help="Show effective backend specs (task + epic levels)"
     )
-    p_task_show_backend.add_argument("id", help="Task ID (fn-N.M)")
+    p_task_show_backend.add_argument("id", help="Task ID (e.g., fn-1.2, fn-1-add-auth.2)")
     p_task_show_backend.add_argument("--json", action="store_true", help="JSON output")
     p_task_show_backend.set_defaults(func=cmd_task_show_backend)
 
     p_task_set_deps = task_sub.add_parser(
         "set-deps", help="Set task dependencies (comma-separated)"
     )
-    p_task_set_deps.add_argument("task_id", help="Task ID (fn-N.M)")
+    p_task_set_deps.add_argument("task_id", help="Task ID (e.g., fn-1.2, fn-1-add-auth.2)")
     p_task_set_deps.add_argument(
-        "--deps", required=True, help="Comma-separated dependency IDs (e.g., fn-1.1,fn-1.2)"
+        "--deps", required=True, help="Comma-separated dependency IDs (e.g., fn-1-add-auth.1,fn-1-add-auth.2)"
     )
     p_task_set_deps.add_argument("--json", action="store_true", help="JSON output")
     p_task_set_deps.set_defaults(func=cmd_task_set_deps)
@@ -6792,14 +6847,14 @@ def main() -> None:
     dep_sub = p_dep.add_subparsers(dest="dep_cmd", required=True)
 
     p_dep_add = dep_sub.add_parser("add", help="Add dependency")
-    p_dep_add.add_argument("task", help="Task ID (fn-N.M)")
-    p_dep_add.add_argument("depends_on", help="Dependency task ID (fn-N.M)")
+    p_dep_add.add_argument("task", help="Task ID (e.g., fn-1.2, fn-1-add-auth.2)")
+    p_dep_add.add_argument("depends_on", help="Dependency task ID (e.g., fn-1.1, fn-1-add-auth.1)")
     p_dep_add.add_argument("--json", action="store_true", help="JSON output")
     p_dep_add.set_defaults(func=cmd_dep_add)
 
     # show
     p_show = subparsers.add_parser("show", help="Show epic or task")
-    p_show.add_argument("id", help="Epic (fn-N) or task (fn-N.M) ID")
+    p_show.add_argument("id", help="Epic or task ID (e.g., fn-1-add-auth, fn-1-add-auth.2)")
     p_show.add_argument("--json", action="store_true", help="JSON output")
     p_show.set_defaults(func=cmd_show)
 
@@ -6810,7 +6865,7 @@ def main() -> None:
 
     # tasks
     p_tasks = subparsers.add_parser("tasks", help="List tasks")
-    p_tasks.add_argument("--epic", help="Filter by epic ID (fn-N)")
+    p_tasks.add_argument("--epic", help="Filter by epic ID (e.g., fn-1, fn-1-add-auth)")
     p_tasks.add_argument(
         "--status",
         choices=["todo", "in_progress", "blocked", "done"],
@@ -6826,12 +6881,12 @@ def main() -> None:
 
     # cat
     p_cat = subparsers.add_parser("cat", help="Print spec markdown")
-    p_cat.add_argument("id", help="Epic (fn-N) or task (fn-N.M) ID")
+    p_cat.add_argument("id", help="Epic or task ID (e.g., fn-1-add-auth, fn-1-add-auth.2)")
     p_cat.set_defaults(func=cmd_cat)
 
     # ready
     p_ready = subparsers.add_parser("ready", help="List ready tasks")
-    p_ready.add_argument("--epic", required=True, help="Epic ID (fn-N)")
+    p_ready.add_argument("--epic", required=True, help="Epic ID (e.g., fn-1, fn-1-add-auth)")
     p_ready.add_argument("--json", action="store_true", help="JSON output")
     p_ready.set_defaults(func=cmd_ready)
 
@@ -6853,7 +6908,7 @@ def main() -> None:
 
     # start
     p_start = subparsers.add_parser("start", help="Start task")
-    p_start.add_argument("id", help="Task ID (fn-N.M)")
+    p_start.add_argument("id", help="Task ID (e.g., fn-1.2, fn-1-add-auth.2)")
     p_start.add_argument(
         "--force", action="store_true", help="Skip status/dependency/claim checks"
     )
@@ -6863,7 +6918,7 @@ def main() -> None:
 
     # done
     p_done = subparsers.add_parser("done", help="Complete task")
-    p_done.add_argument("id", help="Task ID (fn-N.M)")
+    p_done.add_argument("id", help="Task ID (e.g., fn-1.2, fn-1-add-auth.2)")
     p_done.add_argument("--summary-file", help="Done summary markdown file")
     p_done.add_argument("--summary", help="Done summary (inline text)")
     p_done.add_argument("--evidence-json", help="Evidence JSON file")
@@ -6874,7 +6929,7 @@ def main() -> None:
 
     # block
     p_block = subparsers.add_parser("block", help="Block task with reason")
-    p_block.add_argument("id", help="Task ID (fn-N.M)")
+    p_block.add_argument("id", help="Task ID (e.g., fn-1.2, fn-1-add-auth.2)")
     p_block.add_argument(
         "--reason-file", required=True, help="Markdown file with block reason"
     )
@@ -6903,7 +6958,7 @@ def main() -> None:
 
     # validate
     p_validate = subparsers.add_parser("validate", help="Validate epic or all")
-    p_validate.add_argument("--epic", help="Epic ID (fn-N)")
+    p_validate.add_argument("--epic", help="Epic ID (e.g., fn-1, fn-1-add-auth)")
     p_validate.add_argument(
         "--all", action="store_true", help="Validate all epics and tasks"
     )
@@ -6917,21 +6972,21 @@ def main() -> None:
     p_checkpoint_save = checkpoint_sub.add_parser(
         "save", help="Save epic state to checkpoint"
     )
-    p_checkpoint_save.add_argument("--epic", required=True, help="Epic ID (fn-N)")
+    p_checkpoint_save.add_argument("--epic", required=True, help="Epic ID (e.g., fn-1, fn-1-add-auth)")
     p_checkpoint_save.add_argument("--json", action="store_true", help="JSON output")
     p_checkpoint_save.set_defaults(func=cmd_checkpoint_save)
 
     p_checkpoint_restore = checkpoint_sub.add_parser(
         "restore", help="Restore epic state from checkpoint"
     )
-    p_checkpoint_restore.add_argument("--epic", required=True, help="Epic ID (fn-N)")
+    p_checkpoint_restore.add_argument("--epic", required=True, help="Epic ID (e.g., fn-1, fn-1-add-auth)")
     p_checkpoint_restore.add_argument("--json", action="store_true", help="JSON output")
     p_checkpoint_restore.set_defaults(func=cmd_checkpoint_restore)
 
     p_checkpoint_delete = checkpoint_sub.add_parser(
         "delete", help="Delete checkpoint for epic"
     )
-    p_checkpoint_delete.add_argument("--epic", required=True, help="Epic ID (fn-N)")
+    p_checkpoint_delete.add_argument("--epic", required=True, help="Epic ID (e.g., fn-1, fn-1-add-auth)")
     p_checkpoint_delete.add_argument("--json", action="store_true", help="JSON output")
     p_checkpoint_delete.set_defaults(func=cmd_checkpoint_delete)
 
@@ -7099,7 +7154,7 @@ def main() -> None:
         "task",
         nargs="?",
         default=None,
-        help="Task ID (fn-N.M), optional for standalone",
+        help="Task ID (e.g., fn-1.2, fn-1-add-auth.2), optional for standalone",
     )
     p_codex_impl.add_argument("--base", required=True, help="Base branch for diff")
     p_codex_impl.add_argument(
@@ -7118,7 +7173,7 @@ def main() -> None:
     p_codex_impl.set_defaults(func=cmd_codex_impl_review)
 
     p_codex_plan = codex_sub.add_parser("plan-review", help="Plan review")
-    p_codex_plan.add_argument("epic", help="Epic ID (fn-N)")
+    p_codex_plan.add_argument("epic", help="Epic ID (e.g., fn-1, fn-1-add-auth)")
     p_codex_plan.add_argument(
         "--files",
         required=True,
@@ -7140,7 +7195,7 @@ def main() -> None:
     p_codex_completion = codex_sub.add_parser(
         "completion-review", help="Epic completion review"
     )
-    p_codex_completion.add_argument("epic", help="Epic ID (fn-N)")
+    p_codex_completion.add_argument("epic", help="Epic ID (e.g., fn-1, fn-1-add-auth)")
     p_codex_completion.add_argument(
         "--base", default="main", help="Base branch for diff"
     )
