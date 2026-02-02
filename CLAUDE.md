@@ -199,11 +199,26 @@ Install flow or flow-next to OpenAI Codex:
 **What gets installed:**
 - `~/.codex/bin/flowctl` + `flowctl.py` - CLI tool
 - `~/.codex/skills/` - Skill definitions (patched for Codex paths)
+- `~/.codex/agents/` - Agent definitions (20 subagents)
 - `~/.codex/prompts/` - Command prompts
 - `~/.codex/scripts/` - Helper scripts (worktree.sh)
 - `~/.codex/templates/` - Ralph/setup templates
 
 **Path patching:** All `${CLAUDE_PLUGIN_ROOT}` references are automatically replaced with `~/.codex` paths during install.
+
+**Agent conversion:** Claude Code frontmatter is converted to Codex format:
+- Removed: `tools`, `disallowedTools`, `color`
+- Added: `profile`, `approval_policy`, `sandbox_mode`
+- Transformed: `model` → `gpt-5.2-codex-medium` (configurable via env)
+
+Override defaults:
+```bash
+CODEX_AGENT_MODEL=gpt-5.2-codex-medium \
+CODEX_AGENT_PROFILE=default \
+CODEX_AGENT_APPROVAL=on-request \
+CODEX_AGENT_SANDBOX=workspace-write \
+./scripts/install-codex.sh flow-next
+```
 
 **Limitations:**
 - Subagents won't run (Codex lacks Task tool)

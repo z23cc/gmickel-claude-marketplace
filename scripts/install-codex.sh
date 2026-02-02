@@ -5,6 +5,7 @@
 #
 # What gets installed:
 #   - Skills:    plugins/<plugin>/skills/*     → ~/.codex/skills/
+#   - Agents:    plugins/<plugin>/agents/*     → ~/.codex/agents/
 #   - Prompts:   plugins/<plugin>/commands/*   → ~/.codex/prompts/
 #   - CLI tools: flowctl, flowctl.py           → ~/.codex/bin/
 #   - Scripts:   worktree.sh, etc.             → ~/.codex/scripts/
@@ -13,6 +14,15 @@
 # Path patching:
 #   All ${CLAUDE_PLUGIN_ROOT} references are replaced with ~/.codex
 #   so skills work without Claude Code's plugin system.
+#
+# Agent conversion:
+#   Claude Code frontmatter (name, description, model, tools, color) is
+#   converted to Codex format (profile, approval_policy, sandbox_mode, model).
+#   Override defaults via env vars:
+#     CODEX_AGENT_MODEL=gpt-5.2-codex-medium
+#     CODEX_AGENT_PROFILE=default
+#     CODEX_AGENT_APPROVAL=on-request
+#     CODEX_AGENT_SANDBOX=workspace-write
 #
 # Note: Subagents (parallel research) won't run in Codex since it
 # doesn't support Claude Code's Task tool. The core plan/work flow still
@@ -30,6 +40,12 @@ GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m'
+
+# Codex agent defaults (override via env vars)
+CODEX_AGENT_MODEL="${CODEX_AGENT_MODEL:-gpt-5.2-codex-medium}"
+CODEX_AGENT_PROFILE="${CODEX_AGENT_PROFILE:-default}"
+CODEX_AGENT_APPROVAL="${CODEX_AGENT_APPROVAL:-on-request}"
+CODEX_AGENT_SANDBOX="${CODEX_AGENT_SANDBOX:-workspace-write}"
 
 # Parse argument
 PLUGIN="${1:-}"
@@ -68,6 +84,7 @@ mkdir -p "$CODEX_DIR/prompts"
 mkdir -p "$CODEX_DIR/bin"
 mkdir -p "$CODEX_DIR/scripts"
 mkdir -p "$CODEX_DIR/templates"
+mkdir -p "$CODEX_DIR/agents"
 
 # Function to patch CLAUDE_PLUGIN_ROOT references for Codex
 patch_for_codex() {
@@ -88,6 +105,78 @@ patch_for_codex() {
             "$file"
         rm -f "${file}.bak"
     fi
+}
+
+# Function to convert Claude Code agent frontmatter to Codex format
+# Claude Code: name, description, model, tools, disallowedTools, color
+# Codex: profile, approval_policy, sandbox_mode, model (+ keeps name, description)
+convert_agent_for_codex() {
+    local file="$1"
+    if [ ! -f "$file" ]; then
+        return
+    fi
+
+    # Use awk to transform the YAML frontmatter
+    awk -v model="$CODEX_AGENT_MODEL" \
+        -v profile="$CODEX_AGENT_PROFILE" \
+        -v approval="$CODEX_AGENT_APPROVAL" \
+        -v sandbox="$CODEX_AGENT_SANDBOX" '
+    BEGIN {
+        in_frontmatter = 0
+        frontmatter_end = 0
+        has_profile = 0
+        has_approval = 0
+        has_sandbox = 0
+        has_model = 0
+    }
+
+    # First line: start of frontmatter
+    NR == 1 && /^---/ {
+        in_frontmatter = 1
+        print
+        next
+    }
+
+    # End of frontmatter
+    in_frontmatter && /^---/ {
+        # Add missing Codex fields before closing
+        if (!has_profile) print "profile: " profile
+        if (!has_approval) print "approval_policy: " approval
+        if (!has_sandbox) print "sandbox_mode: " sandbox
+        if (!has_model) print "model: " model
+        in_frontmatter = 0
+        frontmatter_end = 1
+        print
+        next
+    }
+
+    # Inside frontmatter: transform fields
+    in_frontmatter {
+        # Skip Claude-specific fields
+        if (/^color:/ || /^disallowedTools:/ || /^tools:/) {
+            next
+        }
+
+        # Transform model field
+        if (/^model:/) {
+            print "model: " model
+            has_model = 1
+            next
+        }
+
+        # Track existing Codex fields
+        if (/^profile:/) has_profile = 1
+        if (/^approval_policy:/) has_approval = 1
+        if (/^sandbox_mode:/) has_sandbox = 1
+
+        # Keep name, description, and other fields
+        print
+        next
+    }
+
+    # After frontmatter: pass through unchanged
+    { print }
+    ' "$file" > "${file}.tmp" && mv "${file}.tmp" "$file"
 }
 
 # ====================
@@ -168,6 +257,25 @@ for skill_dir in "$PLUGIN_DIR/skills/"*/; do
 done
 
 # ====================
+# Install agents (with patching)
+# ====================
+if [ -d "$PLUGIN_DIR/agents" ] && [ "$(ls -A "$PLUGIN_DIR/agents" 2>/dev/null)" ]; then
+    echo -e "${BLUE}Installing agents...${NC}"
+    AGENT_COUNT=0
+
+    for agent_file in "$PLUGIN_DIR/agents/"*.md; do
+        if [ -f "$agent_file" ]; then
+            name=$(basename "$agent_file")
+            cp "$agent_file" "$CODEX_DIR/agents/$name"
+            patch_for_codex "$CODEX_DIR/agents/$name"
+            convert_agent_for_codex "$CODEX_DIR/agents/$name"
+            echo -e "  ${GREEN}✓${NC} ${name%.md}"
+            AGENT_COUNT=$((AGENT_COUNT + 1))
+        fi
+    done
+fi
+
+# ====================
 # Install prompts (commands)
 # ====================
 echo -e "${BLUE}Installing prompts...${NC}"
@@ -195,6 +303,9 @@ echo "  ├── bin/flowctl.py"
 fi
 echo "  ├── skills/              # Skill definitions"
 echo "  ├── prompts/             # Command prompts"
+if [ -d "$CODEX_DIR/agents" ] && [ "$(ls -A "$CODEX_DIR/agents" 2>/dev/null)" ]; then
+echo "  ├── agents/              # Agent definitions"
+fi
 if [ -d "$CODEX_DIR/scripts" ] && [ "$(ls -A "$CODEX_DIR/scripts" 2>/dev/null)" ]; then
 echo "  ├── scripts/             # Helper scripts"
 fi
