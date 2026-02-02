@@ -5,7 +5,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](../../LICENSE)
 [![Claude Code](https://img.shields.io/badge/Claude_Code-Plugin-blueviolet)](https://claude.ai/code)
 
-[![Version](https://img.shields.io/badge/Version-0.20.5-green)](../../CHANGELOG.md)
+[![Version](https://img.shields.io/badge/Version-0.20.6-green)](../../CHANGELOG.md)
 
 [![Status](https://img.shields.io/badge/Status-Active_Development-brightgreen)](../../CHANGELOG.md)
 [![Discord](https://img.shields.io/badge/Discord-Join-5865F2?logo=discord&logoColor=white)](https://discord.gg/nHEmyJB5tg)
@@ -935,7 +935,7 @@ flowctl memory read --type pitfalls
 
 When enabled:
 - **Planning**: `memory-scout` runs in parallel with other scouts
-- **Work**: `memory-scout` retrieves relevant entries during re-anchor
+- **Work**: worker reads memory files directly during re-anchor
 - **Ralph only**: NEEDS_WORK reviews auto-capture to `pitfalls.md`
 
 Memory retrieval works in both manual and Ralph modes. Auto-capture from reviews only happens in Ralph mode (via hooks). Use `flowctl memory add` for manual entries.

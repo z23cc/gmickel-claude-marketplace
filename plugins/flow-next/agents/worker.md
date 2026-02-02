@@ -51,6 +51,12 @@ Parse the spec carefully. Identify:
 - Test requirements
 - Quick commands from epic spec (run these for verification)
 
+**Baseline check (if project has tests/lints):**
+```bash
+# Run project's test/lint commands to confirm green baseline
+# If baseline fails, investigate before proceeding
+```
+
 ## Phase 2: Implement
 
 **First, capture base commit for scoped review:**
@@ -66,7 +72,7 @@ Rules:
 - Small, focused changes
 - Follow existing code style
 - Add tests if spec requires them
-- Run existing tests/lints if project has them
+- If you break something mid-implementation, fix it before continuing
 
 ## Phase 3: Commit
 
@@ -109,6 +115,13 @@ If NEEDS_WORK:
 Continue until SHIP verdict.
 
 ## Phase 5: Complete
+
+**Verify before completing (if project has tests/lints):**
+```bash
+# Run same tests/lints as baseline
+# Must pass before marking done
+```
+If verification fails, fix and re-commit before proceeding.
 
 Capture the commit hash:
 ```bash
