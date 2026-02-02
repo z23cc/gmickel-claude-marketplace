@@ -2,6 +2,14 @@
 
 All notable changes to the gmickel-claude-marketplace.
 
+## [flow-next 0.20.7] - 2026-02-02
+
+### Fixed
+
+- **Epic ID collision prevention** — `scan_max_epic_id` now scans both `epics/*.json` and `specs/*.md` to catch orphaned specs created outside flowctl. Prevents reusing numeric IDs when specs exist without matching epic JSON.
+- **Collision detection in validate** — `flowctl validate --all` now detects and reports epic ID collisions (multiple epics with same `fn-N` prefix) as errors.
+- **Orphaned spec warnings** — `flowctl validate --all` warns about specs without matching epic JSON files.
+
 ## [flow-next 0.20.5] - 2026-02-01
 
 ### Fixed
