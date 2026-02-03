@@ -2,6 +2,12 @@
 
 All notable changes to the gmickel-claude-marketplace.
 
+## [flow-next 0.20.19] - 2026-02-03
+
+### Fixed
+
+- **Project-local ralph-guard for cross-platform hooks** — Hooks now reference `scripts/ralph/hooks/ralph-guard.py` (project-local) instead of plugin root variables. ralph-init copies the guard script during setup. Existence check ensures silent exit if ralph not initialized. Works on both Claude Code and Factory Droid without any plugin root variables.
+
 ## [flow-next 0.20.18] - 2026-02-03
 
 ### Fixed
