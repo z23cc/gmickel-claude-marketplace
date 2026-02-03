@@ -2,6 +2,12 @@
 
 All notable changes to the gmickel-claude-marketplace.
 
+## [flow-next 0.20.15] - 2026-02-03
+
+### Fixed
+
+- **Restore read-only scout permissions** — v0.20.14 inadvertently gave all agents Edit/Write access. Now scouts use `disallowedTools: Edit, Write, Task` to maintain read-only restrictions while staying cross-platform compatible (no whitelist of tool names that differ between Claude Code and Droid).
+
 ## [flow-next 0.20.14] - 2026-02-03
 
 ### Fixed

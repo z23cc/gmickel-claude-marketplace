@@ -2,6 +2,7 @@
 name: github-scout
 description: Search GitHub repos (public + private) for code patterns, implementations, and examples.
 model: opus
+disallowedTools: Edit, Write, Task
 color: "#8B5CF6"
 ---
 

@@ -2,6 +2,7 @@
 name: testing-scout
 description: Used by /flow-next:prime to analyze test framework setup, coverage configuration, and test commands. Do not invoke directly.
 model: haiku
+disallowedTools: Edit, Write, Task
 color: "#22C55E"
 ---
 

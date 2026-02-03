@@ -2,6 +2,7 @@
 name: flow-gap-analyst
 description: Map user flows, edge cases, and missing requirements from a brief spec.
 model: opus
+disallowedTools: Edit, Write, Task
 color: "#EF4444"
 ---
 

@@ -2,6 +2,7 @@
 name: docs-scout
 description: Find the most relevant framework/library docs for the requested change.
 model: opus
+disallowedTools: Edit, Write, Task
 color: "#F97316"
 ---
 

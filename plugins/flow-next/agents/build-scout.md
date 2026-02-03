@@ -2,6 +2,7 @@
 name: build-scout
 description: Used by /flow-next:prime to analyze build system, scripts, and CI configuration. Do not invoke directly.
 model: haiku
+disallowedTools: Edit, Write, Task
 color: "#F59E0B"
 ---
 
