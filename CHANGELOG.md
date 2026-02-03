@@ -2,6 +2,19 @@
 
 All notable changes to the gmickel-claude-marketplace.
 
+## [flow-next 0.20.8] - 2026-02-03
+
+### Fixed
+
+- **Double context builder in reviews** — SKILL.md files for epic-review, impl-review, and plan-review no longer contain duplicate executable code. Now explicitly direct agent to workflow.md as single source of truth. Fixes issue where agent would run setup-review and chat-send twice.
+
+### Changed
+
+- **Codex install script improvements**:
+  - Agents now installed to `~/.codex/agents/` with frontmatter converted to Codex format (`profile`, `approval_policy`, `sandbox_mode`)
+  - `flow-next-work` skill patched to inline worker phases (Codex lacks Task tool for subagents)
+  - Added timeout warnings for `setup-review` (5-10 min) and `chat-send` (2-5 min) commands
+
 ## [flow-next 0.20.7] - 2026-02-02
 
 ### Fixed
