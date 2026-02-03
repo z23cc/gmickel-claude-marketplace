@@ -7,12 +7,12 @@
         "hooks": [
           {
             "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/scripts/hooks/ralph-guard.py",
+            "command": "[ -n \"${CLAUDE_PLUGIN_ROOT}\" ] && ${CLAUDE_PLUGIN_ROOT}/scripts/hooks/ralph-guard.py",
             "timeout": 5
           },
           {
             "type": "command",
-            "command": "${DROID_PLUGIN_ROOT}/scripts/hooks/ralph-guard.py",
+            "command": "[ -n \"${DROID_PLUGIN_ROOT}\" ] && ${DROID_PLUGIN_ROOT}/scripts/hooks/ralph-guard.py",
             "timeout": 5
           }
         ]
@@ -24,12 +24,12 @@
         "hooks": [
           {
             "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/scripts/hooks/ralph-guard.py",
+            "command": "[ -n \"${CLAUDE_PLUGIN_ROOT}\" ] && ${CLAUDE_PLUGIN_ROOT}/scripts/hooks/ralph-guard.py",
             "timeout": 5
           },
           {
             "type": "command",
-            "command": "${DROID_PLUGIN_ROOT}/scripts/hooks/ralph-guard.py",
+            "command": "[ -n \"${DROID_PLUGIN_ROOT}\" ] && ${DROID_PLUGIN_ROOT}/scripts/hooks/ralph-guard.py",
             "timeout": 5
           }
         ]
@@ -40,12 +40,12 @@
         "hooks": [
           {
             "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/scripts/hooks/ralph-guard.py",
+            "command": "[ -n \"${CLAUDE_PLUGIN_ROOT}\" ] && ${CLAUDE_PLUGIN_ROOT}/scripts/hooks/ralph-guard.py",
             "timeout": 5
           },
           {
             "type": "command",
-            "command": "${DROID_PLUGIN_ROOT}/scripts/hooks/ralph-guard.py",
+            "command": "[ -n \"${DROID_PLUGIN_ROOT}\" ] && ${DROID_PLUGIN_ROOT}/scripts/hooks/ralph-guard.py",
             "timeout": 5
           }
         ]
@@ -56,12 +56,12 @@
         "hooks": [
           {
             "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/scripts/hooks/ralph-guard.py",
+            "command": "[ -n \"${CLAUDE_PLUGIN_ROOT}\" ] && ${CLAUDE_PLUGIN_ROOT}/scripts/hooks/ralph-guard.py",
             "timeout": 5
           },
           {
             "type": "command",
-            "command": "${DROID_PLUGIN_ROOT}/scripts/hooks/ralph-guard.py",
+            "command": "[ -n \"${DROID_PLUGIN_ROOT}\" ] && ${DROID_PLUGIN_ROOT}/scripts/hooks/ralph-guard.py",
             "timeout": 5
           }
         ]

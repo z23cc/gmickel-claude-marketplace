@@ -2,13 +2,19 @@
 
 All notable changes to the gmickel-claude-marketplace.
 
+## [flow-next 0.20.18] - 2026-02-03
+
+### Fixed
+
+- **Hooks: shell check for cross-platform** — Hook commands now use `[ -n "${VAR}" ] && ...` to skip execution when the platform's variable isn't set. Eliminates noisy "file not found" errors from the other platform's unexpanded variable.
+
+> **Note:** v0.20.10–0.20.18 added Factory Droid compatibility. If you experience issues on Claude Code, downgrade to v0.20.9: `claude plugins install flow-next@0.20.9`
+
 ## [flow-next 0.20.17] - 2026-02-03
 
 ### Fixed
 
 - **Hooks: duplicate entries for cross-platform** — Droid doesn't support bash fallback syntax in hook commands. Now uses separate entries for `${CLAUDE_PLUGIN_ROOT}` and `${DROID_PLUGIN_ROOT}`. Each platform expands its own variable; the other fails silently.
-
-> **Note:** v0.20.10–0.20.17 added Factory Droid compatibility. If you experience issues on Claude Code, downgrade to v0.20.9: `claude plugins install flow-next@0.20.9`
 
 ## [flow-next 0.20.16] - 2026-02-03
 
