@@ -65,6 +65,36 @@ Commands:
 - Avoid feature flags or backwards-compatibility scaffolding (plugins are pre-release).
 - Do not add extra commands/agents/skills unless explicitly requested.
 
+## Cross-platform patterns (Claude Code + Factory Droid)
+
+flow-next supports both Claude Code and Factory Droid. Follow these patterns:
+
+**Variable references** — use bash fallback:
+```bash
+FLOWCTL="${DROID_PLUGIN_ROOT:-${CLAUDE_PLUGIN_ROOT}}/scripts/flowctl"
+```
+- Droid sets `DROID_PLUGIN_ROOT`, Claude Code sets `CLAUDE_PLUGIN_ROOT`
+- Bash `${VAR:-default}` tries first, falls back to second
+
+**Hook matchers** — use regex OR:
+```json
+"matcher": "Bash|Execute"
+```
+- Claude Code uses `Bash`, Droid uses `Execute`
+
+**Agent permissions** — use `disallowedTools` blacklist (not `tools` whitelist):
+```yaml
+disallowedTools: Edit, Write, Task
+```
+- Whitelist fails: tool names differ (`WebFetch`/`FetchUrl`, `Bash`/`Execute`)
+- Blacklist works: both platforms understand `Edit`, `Write`, `Task`
+
+**Plugin paths** — check both directories:
+```bash
+PLUGIN_JSON="${CLAUDE_PLUGIN_ROOT}/.claude-plugin/plugin.json"
+[[ -f "$PLUGIN_JSON" ]] || PLUGIN_JSON="${CLAUDE_PLUGIN_ROOT}/.factory-plugin/plugin.json"
+```
+
 ## Agent workflow (Ralph + RP)
 
 Runbooks:
