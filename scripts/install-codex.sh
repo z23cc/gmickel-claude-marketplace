@@ -352,11 +352,22 @@ patch_rp_review_skills_for_codex() {
 
 2. **`chat-send` takes 2-10 MINUTES** - It waits for the LLM to generate a full review. This is NORMAL. Do NOT assume it is stuck.
 
-3. **RepoPrompt shows progress in stdout** - You WILL see progress output. The context builder prints file paths as it indexes. This is normal operation, not an error loop.
+3. **Run in background and watch stdout** - Use background execution and monitor progress:
+   ```bash
+   # Run setup-review in background, redirect output to file
+   $FLOWCTL rp setup-review --repo-root "$REPO_ROOT" --summary "..." > /tmp/rp-progress.log 2>&1 &
+   RP_PID=$!
 
-4. **NEVER retry these commands** - If you run them again, you will create duplicate reviews and waste time. Run ONCE and WAIT.
+   # Watch progress (context builder prints file paths as it indexes)
+   tail -f /tmp/rp-progress.log &
 
-5. **No output for minutes is NORMAL** - These commands are doing heavy work. Silence does not mean failure.
+   # Wait for completion
+   wait $RP_PID
+   ```
+
+4. **RepoPrompt shows progress in stdout** - The context builder prints file paths as it indexes. This is normal operation, not an error loop. Watch the output to see progress.
+
+5. **NEVER retry these commands** - If you run them again, you will create duplicate reviews and waste time. Run ONCE and WAIT.
 
 **If a command has been running for less than 15 minutes, WAIT. Do not retry.**
 
