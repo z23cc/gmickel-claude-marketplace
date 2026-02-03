@@ -121,17 +121,17 @@ On NEEDS_WORK: fix plan via `$FLOWCTL epic set-plan` AND sync affected task spec
 
 ### RepoPrompt Backend
 
-**Execute the workflow in [workflow.md](workflow.md) — "RepoPrompt Backend Workflow" section.**
+**⚠️ STOP: You MUST read and execute [workflow.md](workflow.md) now.**
 
-Summary of phases (see workflow.md for executable code):
+Go to the "RepoPrompt Backend Workflow" section in workflow.md and execute those steps. Do not proceed here until workflow.md phases are complete.
+
+The workflow covers:
 1. Get plan content and save checkpoint
-2. Atomic setup via `setup-review` → sets `$W` and `$T`
-3. Augment selection (add epic spec + all task specs)
-4. Get builder handoff and build review prompt
-5. Send review via `chat-send --new-chat`
-6. Parse verdict, write receipt if `REVIEW_RECEIPT_PATH` set, update status
+2. Atomic setup (setup-review) → sets `$W` and `$T`
+3. Augment selection (epic + task specs)
+4. Send review and parse verdict
 
-**Do NOT execute code from this section — workflow.md is the source of truth.**
+**Return here only after workflow.md execution is complete.**
 
 ## Fix Loop (INTERNAL - do not exit to Ralph)
 
