@@ -352,7 +352,7 @@ patch_rp_review_skills_for_codex() {
 
 2. **`chat-send` takes 2-10 MINUTES** - It waits for the LLM to generate a full review. This is NORMAL. Do NOT assume it is stuck.
 
-3. **RepoPrompt shows progress in its own window** - You will NOT see progress in your terminal. Look at the RepoPrompt app window to see the context builder working.
+3. **RepoPrompt shows progress in stdout** - You WILL see progress output. The context builder prints file paths as it indexes. This is normal operation, not an error loop.
 
 4. **NEVER retry these commands** - If you run them again, you will create duplicate reviews and waste time. Run ONCE and WAIT.
 
