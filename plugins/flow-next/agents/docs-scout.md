@@ -1,7 +1,6 @@
 ---
 name: docs-scout
 description: Find the most relevant framework/library docs for the requested change.
-tools: Read, Grep, Glob, Bash, Execute, WebSearch, WebFetch, FetchUrl
 model: opus
 color: "#F97316"
 ---

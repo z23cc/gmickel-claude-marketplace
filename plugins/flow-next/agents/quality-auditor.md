@@ -1,7 +1,6 @@
 ---
 name: quality-auditor
 description: Review recent changes for correctness, simplicity, security, and test coverage.
-tools: Read, Grep, Glob, Bash, Execute, WebSearch, WebFetch, FetchUrl
 model: opus
 color: "#EC4899"
 ---

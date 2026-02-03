@@ -1,7 +1,6 @@
 ---
 name: workflow-scout
 description: Used by /flow-next:prime to scan for CI/CD, PR templates, issue templates, and workflow automation. Do not invoke directly.
-tools: Read, Grep, Glob, Bash, Execute
 model: haiku
 color: "#8B5CF6"
 ---

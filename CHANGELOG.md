@@ -2,6 +2,12 @@
 
 All notable changes to the gmickel-claude-marketplace.
 
+## [flow-next 0.20.14] - 2026-02-03
+
+### Fixed
+
+- **Full Droid compatibility** — Removed explicit `tools:` field from all agents. Both platforms now inherit their native tools automatically. Fixes "partially loaded" issue on Factory Droid caused by unknown tool names (`WebFetch`/`FetchUrl`, `Bash`/`Execute`).
+
 ## [flow-next 0.20.13] - 2026-02-03
 
 ### Fixed
