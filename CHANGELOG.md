@@ -2,6 +2,12 @@
 
 All notable changes to the gmickel-claude-marketplace.
 
+## [flow-next 0.20.11] - 2026-02-03
+
+### Changed
+
+- **Marketplace reorder** — flow-next now listed first (Droid auto-installs first plugin when adding marketplace)
+
 ## [flow-next 0.20.10] - 2026-02-03
 
 ### Fixed
