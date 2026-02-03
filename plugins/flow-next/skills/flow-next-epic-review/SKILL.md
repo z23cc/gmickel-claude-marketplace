@@ -113,38 +113,17 @@ On NEEDS_WORK: fix code, commit, re-run (receipt enables session continuity).
 
 ### RepoPrompt Backend
 
-```bash
-# Step 1: Gather context
-EPIC_SPEC="$($FLOWCTL cat "$EPIC_ID")"
-TASKS="$($FLOWCTL tasks --epic "$EPIC_ID" --json)"
-CHANGED_FILES="$(git diff main..HEAD --name-only)"
+**Execute the workflow in [workflow.md](workflow.md) — "RepoPrompt Backend Workflow" section.**
 
-# Step 2: Atomic setup (pick-window + builder)
-eval "$($FLOWCTL rp setup-review --repo-root "$REPO_ROOT" --summary "Epic completion review: $EPIC_ID")"
-# Outputs W=<window> T=<tab>. If fails → <promise>RETRY</promise>
+Summary of phases (see workflow.md for executable code):
+1. Gather context (epic spec, tasks, changed files)
+2. Atomic setup via `setup-review` → sets `$W` and `$T`
+3. Augment selection (add epic spec, task specs, changed files)
+4. Get builder handoff and build review prompt
+5. Send review via `chat-send --new-chat`
+6. Parse verdict and write receipt if `REVIEW_RECEIPT_PATH` set
 
-# Step 3: Augment selection
-# Add epic spec, all task specs, and changed files
-$FLOWCTL rp select-add --window "$W" --tab "$T" .flow/specs/$EPIC_ID.md
-for task in $(echo "$TASKS" | jq -r '.[].id'); do
-  $FLOWCTL rp select-add --window "$W" --tab "$T" .flow/tasks/$task.md
-done
-for f in $CHANGED_FILES; do
-  $FLOWCTL rp select-add --window "$W" --tab "$T" "$f"
-done
-
-# Step 4: Get builder handoff and build review prompt
-HANDOFF="$($FLOWCTL rp prompt-get --window "$W" --tab "$T")"
-# Build /tmp/completion-review-prompt.md with handoff + review criteria (see workflow.md)
-
-# Step 5: Send review prompt
-$FLOWCTL rp chat-send --window "$W" --tab "$T" --message-file /tmp/completion-review-prompt.md --new-chat --chat-name "Epic Review: $EPIC_ID"
-# WAIT for response. Extract verdict from response.
-# Valid verdicts: SHIP, NEEDS_WORK
-# If no valid verdict tag → <promise>RETRY</promise>
-
-# Step 6: Write receipt if REVIEW_RECEIPT_PATH set
-```
+**Do NOT execute code from this section — workflow.md is the source of truth.**
 
 ## Fix Loop (INTERNAL - do not exit to Ralph)
 

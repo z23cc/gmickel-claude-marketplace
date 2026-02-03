@@ -126,40 +126,17 @@ On NEEDS_WORK: fix code, commit, re-run (receipt enables session continuity).
 
 ### RepoPrompt Backend
 
-```bash
-# Step 1: Identify changes (use BASE_COMMIT if provided, else main/master)
-git branch --show-current
-if [[ -n "$BASE_COMMIT" ]]; then
-  DIFF_BASE="$BASE_COMMIT"
-else
-  DIFF_BASE="main"
-  git rev-parse main >/dev/null 2>&1 || DIFF_BASE="master"
-fi
-git log ${DIFF_BASE}..HEAD --oneline
-CHANGED_FILES="$(git diff ${DIFF_BASE}..HEAD --name-only)"
+**Execute the workflow in [workflow.md](workflow.md) — "RepoPrompt Backend Workflow" section.**
 
-# Step 2: Atomic setup (pick-window + builder)
-eval "$($FLOWCTL rp setup-review --repo-root "$REPO_ROOT" --summary "Review implementation: <summary>")"
-# Outputs W=<window> T=<tab>. If fails → <promise>RETRY</promise>
+Summary of phases (see workflow.md for executable code):
+1. Identify changes (use `BASE_COMMIT` if provided, else main/master)
+2. Atomic setup via `setup-review` → sets `$W` and `$T`
+3. Augment selection (add changed files + task spec)
+4. Get builder handoff and build review prompt
+5. Send review via `chat-send --new-chat`
+6. Parse verdict and write receipt if `REVIEW_RECEIPT_PATH` set
 
-# Step 3: Augment selection (add changed files + task spec)
-for f in $CHANGED_FILES; do
-  $FLOWCTL rp select-add --window "$W" --tab "$T" "$f"
-done
-$FLOWCTL rp select-add --window "$W" --tab "$T" .flow/specs/<task-id>.md
-
-# Step 4: Get builder handoff and build review prompt
-HANDOFF="$($FLOWCTL rp prompt-get --window "$W" --tab "$T")"
-# Build /tmp/review-prompt.md with handoff + review criteria (see workflow.md)
-
-# Step 5: Send review prompt
-$FLOWCTL rp chat-send --window "$W" --tab "$T" --message-file /tmp/review-prompt.md --new-chat --chat-name "Impl Review: [BRANCH]"
-# WAIT for response. Extract verdict from response.
-# Valid verdicts: SHIP, NEEDS_WORK, MAJOR_RETHINK
-# If no valid verdict tag → <promise>RETRY</promise>
-
-# Step 6: Write receipt if REVIEW_RECEIPT_PATH set
-```
+**Do NOT execute code from this section — workflow.md is the source of truth.**
 
 ## Fix Loop (INTERNAL - do not exit to Ralph)
 
