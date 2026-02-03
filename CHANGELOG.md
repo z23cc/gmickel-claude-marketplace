@@ -2,6 +2,16 @@
 
 All notable changes to the gmickel-claude-marketplace.
 
+## [flow-next 0.20.9] - 2026-02-03
+
+### Fixed
+
+- **Cleaner Ralph branch names** — Branch format changed from `ralph-20260203T143000Z-hostname-email-pid-rand` to `ralph-20260203-143000-rand`. Removes PII (hostname, email) and noise (PID) from git history. Full verbose ID preserved in logs for debugging. Thanks to [@aleparreira](https://github.com/aleparreira) for the report! (#90)
+
+### Added
+
+- **ZSH-safe file truncation helper** — Added `truncate_file()` function using `: > "$file"` pattern for portable file truncation across bash/zsh/sh. Prevents potential hangs on macOS (ZSH default since Catalina).
+
 ## [flow-next 0.20.8] - 2026-02-03
 
 ### Fixed
