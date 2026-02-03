@@ -2,6 +2,12 @@
 
 All notable changes to the gmickel-claude-marketplace.
 
+## [flow-next 0.20.10] - 2026-02-03
+
+### Fixed
+
+- **Factory Droid compatibility** — Plugin version checks now work on both Claude Code (`.claude-plugin/`) and Factory Droid (`.factory-plugin/`). Skills gracefully handle either directory structure.
+
 ## [flow-next 0.20.9] - 2026-02-03
 
 ### Fixed
