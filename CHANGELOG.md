@@ -2,6 +2,12 @@
 
 All notable changes to the gmickel-claude-marketplace.
 
+## [flow-next 0.20.13] - 2026-02-03
+
+### Fixed
+
+- **Droid Bash/Execute compatibility** — Added `Execute` alongside `Bash` in 18 agents. Droid uses `Execute`, Claude Code uses `Bash` — now both work.
+
 ## [flow-next 0.20.12] - 2026-02-03
 
 ### Fixed

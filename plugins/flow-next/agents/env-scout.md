@@ -1,7 +1,7 @@
 ---
 name: env-scout
 description: Used by /flow-next:prime to scan for environment setup, .env templates, Docker, and devcontainer configuration. Do not invoke directly.
-tools: Read, Grep, Glob, Bash
+tools: Read, Grep, Glob, Bash, Execute
 model: haiku
 color: "#06B6D4"
 ---

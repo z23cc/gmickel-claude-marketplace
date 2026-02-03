@@ -1,7 +1,7 @@
 ---
 name: claude-md-scout
 description: Used by /flow-next:prime to analyze CLAUDE.md and AGENTS.md quality and completeness. Do not invoke directly.
-tools: Read, Grep, Glob, Bash
+tools: Read, Grep, Glob, Bash, Execute
 model: haiku
 color: "#EC4899"
 ---

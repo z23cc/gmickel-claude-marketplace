@@ -1,7 +1,7 @@
 ---
 name: repo-scout
 description: Scan repo to find existing patterns, conventions, and related code paths for a requested change.
-tools: Read, Grep, Glob, Bash, WebSearch, WebFetch, FetchUrl
+tools: Read, Grep, Glob, Bash, Execute, WebSearch, WebFetch, FetchUrl
 model: opus
 color: "#22C55E"
 ---

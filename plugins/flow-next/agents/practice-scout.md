@@ -1,7 +1,7 @@
 ---
 name: practice-scout
 description: Gather modern best practices and pitfalls for the requested change.
-tools: Read, Grep, Glob, Bash, WebSearch, WebFetch, FetchUrl
+tools: Read, Grep, Glob, Bash, Execute, WebSearch, WebFetch, FetchUrl
 model: opus
 color: "#EAB308"
 ---

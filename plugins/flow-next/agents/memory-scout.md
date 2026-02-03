@@ -1,7 +1,7 @@
 ---
 name: memory-scout
 description: Search .flow/memory/ for entries relevant to the current task or request.
-tools: Read, Grep, Glob, Bash
+tools: Read, Grep, Glob, Bash, Execute
 model: haiku
 color: "#A855F7"
 ---
