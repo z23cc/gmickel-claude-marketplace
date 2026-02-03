@@ -334,44 +334,61 @@ patch_flow_next_work_for_codex() {
     fi
 }
 
-# Function to patch flow-next-impl-review skill for Codex (add timeout warnings)
-patch_flow_next_impl_review_for_codex() {
-    local skill_dir="$1"
-    local workflow_file="$skill_dir/workflow.md"
-    local skill_md="$skill_dir/SKILL.md"
-    local ref_file="$skill_dir/flowctl-reference.md"
+# Function to patch RP review skills for Codex (add CRITICAL wait instructions)
+# Codex tends to assume commands are stuck and retry - we need to prevent this
+patch_rp_review_skills_for_codex() {
+    local codex_skills_dir="$1"
 
-    # Add timeout warning to workflow.md for setup-review
-    if [ -f "$workflow_file" ]; then
-        sed -i.bak \
-            -e 's|# Atomic: pick-window + builder|# Atomic: pick-window + builder\n# ⚠️ CODEX NOTE: This command runs the context builder and can take 5-10 MINUTES.\n# Do NOT interrupt or assume it is stuck. Wait patiently for completion.|g' \
-            "$workflow_file"
-        rm -f "${workflow_file}.bak"
+    # Create warning file
+    cat > /tmp/codex-rp-warning.md << 'WARNINGEOF'
 
-        # Add timeout warning for chat-send (LLM response can take 2-5 minutes)
-        sed -i.bak \
-            -e 's|\$FLOWCTL rp chat-send --window "\$W" --tab "\$T" --message-file /tmp/review-prompt.md --new-chat|# ⚠️ CODEX NOTE: chat-send waits for LLM response. Can take 2-5 MINUTES. Wait patiently.\n$FLOWCTL rp chat-send --window "$W" --tab "$T" --message-file /tmp/review-prompt.md --new-chat|g' \
-            "$workflow_file"
-        rm -f "${workflow_file}.bak"
-    fi
+---
 
-    # Add timeout warning to SKILL.md
-    if [ -f "$skill_md" ]; then
-        sed -i.bak \
-            -e 's|3\. \*\*MUST use `setup-review`\*\*|3. **MUST use `setup-review`** (⚠️ takes 5-10 minutes - wait patiently)|g' \
-            -e 's|4\. \*\*DO NOT add --json flag to chat-send\*\*|4. **DO NOT add --json flag to chat-send** (⚠️ chat-send waits for LLM, takes 2-5 minutes)|g' \
-            "$skill_md"
-        rm -f "${skill_md}.bak"
-    fi
+## ⚠️ CRITICAL: RepoPrompt Commands Are SLOW - DO NOT RETRY
 
-    # Add timeout warning to flowctl-reference.md
-    if [ -f "$ref_file" ]; then
-        sed -i.bak \
-            -e 's|1\. \*\*Always use setup-review first\*\*|1. **Always use setup-review first** (⚠️ takes 5-10 minutes)|g' \
-            -e 's|flowctl rp chat-send --window "\$W"|# ⚠️ chat-send waits for LLM response (2-5 minutes)\nflowctl rp chat-send --window "$W"|g' \
-            "$ref_file"
-        rm -f "${ref_file}.bak"
-    fi
+**READ THIS BEFORE RUNNING ANY COMMANDS:**
+
+1. **`setup-review` takes 5-15 MINUTES** - It runs the RepoPrompt context builder which indexes files. This is NORMAL. Do NOT assume it is stuck.
+
+2. **`chat-send` takes 2-10 MINUTES** - It waits for the LLM to generate a full review. This is NORMAL. Do NOT assume it is stuck.
+
+3. **RepoPrompt shows progress in its own window** - You will NOT see progress in your terminal. Look at the RepoPrompt app window to see the context builder working.
+
+4. **NEVER retry these commands** - If you run them again, you will create duplicate reviews and waste time. Run ONCE and WAIT.
+
+5. **No output for minutes is NORMAL** - These commands are doing heavy work. Silence does not mean failure.
+
+**If a command has been running for less than 15 minutes, WAIT. Do not retry.**
+
+---
+
+WARNINGEOF
+
+    # Patch workflow files by inserting warning after first markdown heading
+    for skill in flow-next-impl-review flow-next-plan-review flow-next-epic-review; do
+        local wf="$codex_skills_dir/$skill/workflow.md"
+        if [ -f "$wf" ]; then
+            # Insert warning after first line (the # heading)
+            head -1 "$wf" > "${wf}.tmp"
+            cat /tmp/codex-rp-warning.md >> "${wf}.tmp"
+            tail -n +2 "$wf" >> "${wf}.tmp"
+            mv "${wf}.tmp" "$wf"
+        fi
+    done
+
+    # Patch SKILL.md files with timeout notes
+    for skill in flow-next-impl-review flow-next-plan-review flow-next-epic-review; do
+        local skill_md="$codex_skills_dir/$skill/SKILL.md"
+        if [ -f "$skill_md" ]; then
+            sed -i.bak \
+                -e 's|setup-review|setup-review (⚠️ 5-15 min, DO NOT RETRY)|g' \
+                -e 's|chat-send|chat-send (⚠️ 2-10 min, DO NOT RETRY)|g' \
+                "$skill_md"
+            rm -f "${skill_md}.bak"
+        fi
+    done
+
+    rm -f /tmp/codex-rp-warning.md
 }
 
 # ====================
@@ -457,11 +474,9 @@ if [ -d "$CODEX_DIR/skills/flow-next-work" ]; then
     echo -e "  ${GREEN}✓${NC} flow-next-work (patched for Codex - no subagent)"
 fi
 
-# Patch flow-next-impl-review for Codex (add timeout warnings)
-if [ -d "$CODEX_DIR/skills/flow-next-impl-review" ]; then
-    patch_flow_next_impl_review_for_codex "$CODEX_DIR/skills/flow-next-impl-review"
-    echo -e "  ${GREEN}✓${NC} flow-next-impl-review (patched for Codex - timeout warnings)"
-fi
+# Patch all RP review skills for Codex (add CRITICAL wait instructions)
+patch_rp_review_skills_for_codex "$CODEX_DIR/skills"
+echo -e "  ${GREEN}✓${NC} RP review skills (patched for Codex - DO NOT RETRY warnings)"
 
 # ====================
 # Install agents (with patching)
