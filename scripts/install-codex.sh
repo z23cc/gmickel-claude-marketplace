@@ -318,6 +318,38 @@ patch_flow_next_work_for_codex() {
     fi
 }
 
+# Function to patch flow-next-impl-review skill for Codex (add timeout warnings)
+patch_flow_next_impl_review_for_codex() {
+    local skill_dir="$1"
+    local workflow_file="$skill_dir/workflow.md"
+    local skill_md="$skill_dir/SKILL.md"
+    local ref_file="$skill_dir/flowctl-reference.md"
+
+    # Add timeout warning to workflow.md
+    if [ -f "$workflow_file" ]; then
+        sed -i.bak \
+            -e 's|# Atomic: pick-window + builder|# Atomic: pick-window + builder\n# ⚠️ CODEX NOTE: This command runs the context builder and can take 5-10 MINUTES.\n# Do NOT interrupt or assume it is stuck. Wait patiently for completion.|g' \
+            "$workflow_file"
+        rm -f "${workflow_file}.bak"
+    fi
+
+    # Add timeout warning to SKILL.md
+    if [ -f "$skill_md" ]; then
+        sed -i.bak \
+            -e 's|3\. \*\*MUST use `setup-review`\*\*|3. **MUST use `setup-review`** (⚠️ takes 5-10 minutes - wait patiently)|g' \
+            "$skill_md"
+        rm -f "${skill_md}.bak"
+    fi
+
+    # Add timeout warning to flowctl-reference.md
+    if [ -f "$ref_file" ]; then
+        sed -i.bak \
+            -e 's|1\. \*\*Always use setup-review first\*\*|1. **Always use setup-review first** (⚠️ takes 5-10 minutes)|g' \
+            "$ref_file"
+        rm -f "${ref_file}.bak"
+    fi
+}
+
 # ====================
 # Install CLI tools (flow-next only)
 # ====================
@@ -399,6 +431,12 @@ done
 if [ -d "$CODEX_DIR/skills/flow-next-work" ]; then
     patch_flow_next_work_for_codex "$CODEX_DIR/skills/flow-next-work"
     echo -e "  ${GREEN}✓${NC} flow-next-work (patched for Codex - no subagent)"
+fi
+
+# Patch flow-next-impl-review for Codex (add timeout warnings)
+if [ -d "$CODEX_DIR/skills/flow-next-impl-review" ]; then
+    patch_flow_next_impl_review_for_codex "$CODEX_DIR/skills/flow-next-impl-review"
+    echo -e "  ${GREEN}✓${NC} flow-next-impl-review (patched for Codex - timeout warnings)"
 fi
 
 # ====================
