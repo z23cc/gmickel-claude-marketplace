@@ -1,7 +1,7 @@
 ---
 name: github-scout
 description: Search GitHub repos (public + private) for code patterns, implementations, and examples.
-tools: Read, Grep, Glob, Bash, WebSearch, WebFetch
+tools: Read, Grep, Glob, Bash, WebSearch, WebFetch, FetchUrl
 model: opus
 color: "#8B5CF6"
 ---

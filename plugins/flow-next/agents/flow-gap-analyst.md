@@ -1,7 +1,7 @@
 ---
 name: flow-gap-analyst
 description: Map user flows, edge cases, and missing requirements from a brief spec.
-tools: Read, Grep, Glob, Bash, WebSearch, WebFetch
+tools: Read, Grep, Glob, Bash, WebSearch, WebFetch, FetchUrl
 model: opus
 color: "#EF4444"
 ---

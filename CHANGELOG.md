@@ -2,6 +2,12 @@
 
 All notable changes to the gmickel-claude-marketplace.
 
+## [flow-next 0.20.12] - 2026-02-03
+
+### Fixed
+
+- **Droid agent tool compatibility** — Added `FetchUrl` alongside `WebFetch` in 7 agents (context-scout, docs-scout, flow-gap-analyst, github-scout, practice-scout, quality-auditor, repo-scout). Droid uses `FetchUrl`, Claude Code uses `WebFetch` — now both work.
+
 ## [flow-next 0.20.11] - 2026-02-03
 
 ### Changed
