@@ -325,10 +325,16 @@ patch_flow_next_impl_review_for_codex() {
     local skill_md="$skill_dir/SKILL.md"
     local ref_file="$skill_dir/flowctl-reference.md"
 
-    # Add timeout warning to workflow.md
+    # Add timeout warning to workflow.md for setup-review
     if [ -f "$workflow_file" ]; then
         sed -i.bak \
             -e 's|# Atomic: pick-window + builder|# Atomic: pick-window + builder\n# ⚠️ CODEX NOTE: This command runs the context builder and can take 5-10 MINUTES.\n# Do NOT interrupt or assume it is stuck. Wait patiently for completion.|g' \
+            "$workflow_file"
+        rm -f "${workflow_file}.bak"
+
+        # Add timeout warning for chat-send (LLM response can take 2-5 minutes)
+        sed -i.bak \
+            -e 's|\$FLOWCTL rp chat-send --window "\$W" --tab "\$T" --message-file /tmp/review-prompt.md --new-chat|# ⚠️ CODEX NOTE: chat-send waits for LLM response. Can take 2-5 MINUTES. Wait patiently.\n$FLOWCTL rp chat-send --window "$W" --tab "$T" --message-file /tmp/review-prompt.md --new-chat|g' \
             "$workflow_file"
         rm -f "${workflow_file}.bak"
     fi
@@ -337,6 +343,7 @@ patch_flow_next_impl_review_for_codex() {
     if [ -f "$skill_md" ]; then
         sed -i.bak \
             -e 's|3\. \*\*MUST use `setup-review`\*\*|3. **MUST use `setup-review`** (⚠️ takes 5-10 minutes - wait patiently)|g' \
+            -e 's|4\. \*\*DO NOT add --json flag to chat-send\*\*|4. **DO NOT add --json flag to chat-send** (⚠️ chat-send waits for LLM, takes 2-5 minutes)|g' \
             "$skill_md"
         rm -f "${skill_md}.bak"
     fi
@@ -345,6 +352,7 @@ patch_flow_next_impl_review_for_codex() {
     if [ -f "$ref_file" ]; then
         sed -i.bak \
             -e 's|1\. \*\*Always use setup-review first\*\*|1. **Always use setup-review first** (⚠️ takes 5-10 minutes)|g' \
+            -e 's|flowctl rp chat-send --window "\$W"|# ⚠️ chat-send waits for LLM response (2-5 minutes)\nflowctl rp chat-send --window "$W"|g' \
             "$ref_file"
         rm -f "${ref_file}.bak"
     fi
