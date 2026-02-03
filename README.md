@@ -34,7 +34,7 @@
 > ```bash
 > droid plugin marketplace add https://github.com/gmickel/gmickel-claude-marketplace
 > ```
-> Then `/plugins` → Marketplace → install flow-next. Commands work (`/flow-next:plan`), skills load automatically.
+> Then `/plugins` → Marketplace → install flow-next. Commands don't autocomplete yet but work when typed (e.g. `/flow-next:plan`). Skills load automatically.
 
 ---
 
