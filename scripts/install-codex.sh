@@ -24,6 +24,11 @@
 #     CODEX_AGENT_APPROVAL=on-request
 #     CODEX_AGENT_SANDBOX=workspace-write
 #
+# Skill patching:
+#   flow-next-work is patched to not spawn worker subagents. Instead,
+#   worker.md is copied into the skill and phases.md is rewritten to
+#   reference it directly (Codex lacks Task tool for subagent spawning).
+#
 # Note: Subagents (parallel research) won't run in Codex since it
 # doesn't support Claude Code's Task tool. The core plan/work flow still
 # works well without them.
@@ -179,6 +184,140 @@ convert_agent_for_codex() {
     ' "$file" > "${file}.tmp" && mv "${file}.tmp" "$file"
 }
 
+# Function to patch flow-next-work skill for Codex (no subagent spawning)
+# Completely removes worker/subagent concepts and inlines implementation steps
+patch_flow_next_work_for_codex() {
+    local skill_dir="$1"
+    local phases_file="$skill_dir/phases.md"
+    local skill_md="$skill_dir/SKILL.md"
+
+    if [ ! -f "$phases_file" ]; then
+        return
+    fi
+
+    # Remove worker.md if copied (we inline everything)
+    rm -f "$skill_dir/worker.md"
+
+    # Use awk to replace section 3c and clean up all subagent references
+    awk '
+    BEGIN { skip = 0 }
+
+    # Replace section 3c header and start skipping old content
+    /^### 3c\. Spawn Worker/ {
+        print "### 3c. Implement Task"
+        print ""
+        print "**Implement the task directly. Follow these phases:**"
+        print ""
+        print "#### Phase 1: Re-anchor (CRITICAL)"
+        print ""
+        print "```bash"
+        print "# Read task and epic specs"
+        print "$FLOWCTL show <task-id> --json"
+        print "$FLOWCTL cat <task-id>"
+        print "$FLOWCTL show <epic-id> --json"
+        print "$FLOWCTL cat <epic-id>"
+        print ""
+        print "# Check git state"
+        print "git status"
+        print "git log -5 --oneline"
+        print ""
+        print "# Check memory system"
+        print "$FLOWCTL config get memory.enabled --json"
+        print "```"
+        print ""
+        print "If memory.enabled is true, read `.flow/memory/*.md` for relevant context."
+        print ""
+        print "Parse the spec carefully - identify acceptance criteria, dependencies, technical approach, test requirements."
+        print ""
+        print "#### Phase 2: Implement"
+        print ""
+        print "```bash"
+        print "# Capture base commit for scoped review"
+        print "BASE_COMMIT=$(git rev-parse HEAD)"
+        print "```"
+        print ""
+        print "Read relevant code, implement the feature/fix. Follow existing patterns. Small, focused changes."
+        print ""
+        print "#### Phase 3: Commit"
+        print ""
+        print "```bash"
+        print "git add -A"
+        print "git commit -m \"feat(<scope>): <description>"
+        print ""
+        print "- <detail>"
+        print ""
+        print "Task: <task-id>\""
+        print "```"
+        print ""
+        print "#### Phase 4: Review (if REVIEW_MODE != none)"
+        print ""
+        print "If review enabled, invoke impl-review:"
+        print "```"
+        print "/flow-next:impl-review <task-id> --base $BASE_COMMIT"
+        print "```"
+        print ""
+        print "Loop until SHIP verdict."
+        print ""
+        print "#### Phase 5: Complete"
+        print ""
+        print "```bash"
+        print "COMMIT_HASH=$(git rev-parse HEAD)"
+        print "cat > /tmp/evidence.json << EOF"
+        print "{\"commits\": [\"$COMMIT_HASH\"], \"tests\": [\"<test commands>\"], \"prs\": []}"
+        print "EOF"
+        print "cat > /tmp/summary.md << '\\''EOF'\\'' "
+        print "<1-2 sentence summary>"
+        print "EOF"
+        print "$FLOWCTL done <task-id> --summary-file /tmp/summary.md --evidence-json /tmp/evidence.json"
+        print "```"
+        print ""
+        skip = 1
+        next
+    }
+
+    # Stop skipping at next section
+    skip && /^### 3d\./ { skip = 0 }
+
+    # Skip old 3c content
+    skip { next }
+
+    # Global text replacements
+    {
+        gsub(/spawn a worker subagent with fresh context/, "implement the task directly")
+        gsub(/After worker returns/, "After implementing")
+        gsub(/the worker failed/, "implementation failed")
+        gsub(/Worker subagent model/, "Implementation model")
+        gsub(/worker subagent/, "direct implementation")
+        gsub(/worker handles/, "you handle")
+        gsub(/spawn worker/, "implement task")
+        gsub(/Use the Task tool to spawn the `plan-sync` subagent/, "Run plan-sync (skip in Codex)")
+        gsub(/spawn the `plan-sync` subagent/, "run plan-sync")
+        gsub(/quality auditor subagent/, "quality check")
+        gsub(/\*\*Why spawn a worker\?\*\*/, "**Implementation notes:**")
+        gsub(/Worker inherits/, "Implementation uses")
+        gsub(/spawn.*worker.*:/, "implement:")
+        gsub(/├─ 3a-c: find task → start → spawn worker/, "├─ 3a-c: find task → start → implement")
+        gsub(/after worker returns/, "after implementing")
+        gsub(/Worker runs in foreground/, "Implementation runs in foreground")
+        print
+    }
+    ' "$phases_file" > "${phases_file}.tmp" && mv "${phases_file}.tmp" "$phases_file"
+
+    # Patch SKILL.md
+    if [ -f "$skill_md" ]; then
+        sed -i.bak \
+            -e 's/worker subagent with fresh context/direct implementation/g' \
+            -e 's/worker subagent/direct implementation/g' \
+            -e 's/Worker subagent/Direct implementation/g' \
+            -e 's/Each task is implemented by a `worker` subagent/Each task is implemented directly by you/g' \
+            -e 's/worker handles/you handle/g' \
+            -e 's/The worker invokes/Invoke/g' \
+            -e 's/pass.*to the worker/handle directly/g' \
+            "$skill_md"
+        rm -f "${skill_md}.bak"
+    fi
+}
+
 # ====================
 # Install CLI tools (flow-next only)
 # ====================
@@ -255,6 +394,12 @@ for skill_dir in "$PLUGIN_DIR/skills/"*/; do
         echo -e "  ${GREEN}✓${NC} $skill"
     fi
 done
+
+# Patch flow-next-work for Codex (no subagent spawning)
+if [ -d "$CODEX_DIR/skills/flow-next-work" ]; then
+    patch_flow_next_work_for_codex "$CODEX_DIR/skills/flow-next-work"
+    echo -e "  ${GREEN}✓${NC} flow-next-work (patched for Codex - no subagent)"
+fi
 
 # ====================
 # Install agents (with patching)
