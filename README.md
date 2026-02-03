@@ -29,6 +29,13 @@
 >
 > 🧪 **OpenCode user?** Try [flow-next-opencode](https://github.com/gmickel/flow-next-opencode) (experimental port)
 
+> [!TIP]
+> **🤖 Works on [Factory Droid](https://factory.ai) too!** Claude Code plugins are fully compatible:
+> ```bash
+> droid plugin marketplace add https://github.com/gmickel/gmickel-claude-marketplace
+> ```
+> Then `/plugins` → Marketplace → install flow-next. Commands work (`/flow-next:plan`), skills load automatically.
+
 ---
 
 ## The Problem
