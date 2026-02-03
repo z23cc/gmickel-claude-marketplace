@@ -1,5 +1,5 @@
 {
-  "description": "Ralph workflow guards - only active when FLOW_RALPH=1",
+  "description": "Ralph workflow guards - only active when FLOW_RALPH=1 and ralph-init has been run",
   "hooks": {
     "PreToolUse": [
       {
@@ -7,12 +7,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "[ -n \"${CLAUDE_PLUGIN_ROOT}\" ] && ${CLAUDE_PLUGIN_ROOT}/scripts/hooks/ralph-guard.py",
-            "timeout": 5
-          },
-          {
-            "type": "command",
-            "command": "[ -n \"${DROID_PLUGIN_ROOT}\" ] && ${DROID_PLUGIN_ROOT}/scripts/hooks/ralph-guard.py",
+            "command": "[ ! -f scripts/ralph/hooks/ralph-guard.py ] || scripts/ralph/hooks/ralph-guard.py",
             "timeout": 5
           }
         ]
@@ -24,12 +19,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "[ -n \"${CLAUDE_PLUGIN_ROOT}\" ] && ${CLAUDE_PLUGIN_ROOT}/scripts/hooks/ralph-guard.py",
-            "timeout": 5
-          },
-          {
-            "type": "command",
-            "command": "[ -n \"${DROID_PLUGIN_ROOT}\" ] && ${DROID_PLUGIN_ROOT}/scripts/hooks/ralph-guard.py",
+            "command": "[ ! -f scripts/ralph/hooks/ralph-guard.py ] || scripts/ralph/hooks/ralph-guard.py",
             "timeout": 5
           }
         ]
@@ -40,12 +30,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "[ -n \"${CLAUDE_PLUGIN_ROOT}\" ] && ${CLAUDE_PLUGIN_ROOT}/scripts/hooks/ralph-guard.py",
-            "timeout": 5
-          },
-          {
-            "type": "command",
-            "command": "[ -n \"${DROID_PLUGIN_ROOT}\" ] && ${DROID_PLUGIN_ROOT}/scripts/hooks/ralph-guard.py",
+            "command": "[ ! -f scripts/ralph/hooks/ralph-guard.py ] || scripts/ralph/hooks/ralph-guard.py",
             "timeout": 5
           }
         ]
@@ -56,12 +41,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "[ -n \"${CLAUDE_PLUGIN_ROOT}\" ] && ${CLAUDE_PLUGIN_ROOT}/scripts/hooks/ralph-guard.py",
-            "timeout": 5
-          },
-          {
-            "type": "command",
-            "command": "[ -n \"${DROID_PLUGIN_ROOT}\" ] && ${DROID_PLUGIN_ROOT}/scripts/hooks/ralph-guard.py",
+            "command": "[ ! -f scripts/ralph/hooks/ralph-guard.py ] || scripts/ralph/hooks/ralph-guard.py",
             "timeout": 5
           }
         ]
