@@ -536,7 +536,7 @@ SUBAGENTEOF
             -e 's|`flow-next:memory-scout`|`~/.codex/agents/memory-scout.md`|g' \
             -e 's|`flow-next:epic-scout`|`~/.codex/agents/epic-scout.md`|g' \
             -e 's|`flow-next:docs-gap-scout`|`~/.codex/agents/docs-gap-scout.md`|g' \
-            -e 's|Task flow-next:flow-gap-analyst|Run subagent ~/.codex/agents/flow-gap-analyst.md with|g' \
+            -e 's|Task flow-next:flow-gap-analyst.*|Run subagent: ~/.codex/agents/flow-gap-analyst.md (pass request + research findings)|g' \
             "$sf"
         rm -f "${sf}.bak"
     fi
