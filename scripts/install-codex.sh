@@ -198,126 +198,150 @@ patch_flow_next_work_for_codex() {
     # Remove worker.md if copied (we inline everything)
     rm -f "$skill_dir/worker.md"
 
-    # Use awk to replace section 3c and clean up all subagent references
-    awk '
-    BEGIN { skip = 0 }
+    # Create replacement content for section 3c
+    cat > /tmp/codex-3c-replacement.md << 'SECTION3CEOF'
+### 3c. Implement Task
 
-    # Replace section 3c header and start skipping old content
-    /^### 3c\. Spawn Worker/ {
-        print "### 3c. Implement Task"
-        print ""
-        print "**Implement the task directly. Follow these phases:**"
-        print ""
-        print "#### Phase 1: Re-anchor (CRITICAL)"
-        print ""
-        print "```bash"
-        print "# Read task and epic specs"
-        print "$FLOWCTL show <task-id> --json"
-        print "$FLOWCTL cat <task-id>"
-        print "$FLOWCTL show <epic-id> --json"
-        print "$FLOWCTL cat <epic-id>"
-        print ""
-        print "# Check git state"
-        print "git status"
-        print "git log -5 --oneline"
-        print ""
-        print "# Check memory system"
-        print "$FLOWCTL config get memory.enabled --json"
-        print "```"
-        print ""
-        print "If memory.enabled is true, read `.flow/memory/*.md` for relevant context."
-        print ""
-        print "Parse the spec carefully - identify acceptance criteria, dependencies, technical approach, test requirements."
-        print ""
-        print "#### Phase 2: Implement"
-        print ""
-        print "```bash"
-        print "# Capture base commit for scoped review"
-        print "BASE_COMMIT=$(git rev-parse HEAD)"
-        print "```"
-        print ""
-        print "Read relevant code, implement the feature/fix. Follow existing patterns. Small, focused changes."
-        print ""
-        print "#### Phase 3: Commit"
-        print ""
-        print "```bash"
-        print "git add -A"
-        print "git commit -m \"feat(<scope>): <description>"
-        print ""
-        print "- <detail>"
-        print ""
-        print "Task: <task-id>\""
-        print "```"
-        print ""
-        print "#### Phase 4: Review (MANDATORY)"
-        print ""
-        print "⚠️ **CRITICAL: You MUST run impl-review after EVERY task commit.**"
-        print ""
-        print "This is NOT optional. Skipping reviews violates the workflow contract."
-        print ""
-        print "```"
-        print "/flow-next:impl-review <task-id> --base $BASE_COMMIT"
-        print "```"
-        print ""
-        print "Loop until SHIP verdict. Do NOT proceed to Phase 5 without SHIP."
-        print ""
-        print "#### Phase 5: Complete"
-        print ""
-        print "```bash"
-        print "COMMIT_HASH=$(git rev-parse HEAD)"
-        print "cat > /tmp/evidence.json << EOF"
-        print "{\"commits\": [\"$COMMIT_HASH\"], \"tests\": [\"<test commands>\"], \"prs\": []}"
-        print "EOF"
-        print "cat > /tmp/summary.md << '\\''EOF'\\'' "
-        print "<1-2 sentence summary>"
-        print "EOF"
-        print "$FLOWCTL done <task-id> --summary-file /tmp/summary.md --evidence-json /tmp/evidence.json"
-        print "```"
-        print ""
-        print "#### Phase 6: Epic Completion Review (when all tasks done)"
-        print ""
-        print "When ALL tasks in the epic are done, you MUST run completion review before closing:"
-        print ""
-        print "```bash"
-        print "# Check remaining tasks"
-        print "$FLOWCTL ready --epic <epic-id> --json"
-        print "# If no tasks remaining, run completion review"
-        print "/flow-next:epic-review <epic-id>"
-        print "```"
-        print ""
-        print "Do NOT skip completion review. It verifies the entire epic implementation."
-        print ""
-        skip = 1
-        next
-    }
+**Implement the task directly. Follow these phases:**
 
-    # Stop skipping at next section
-    skip && /^### 3d\./ { skip = 0 }
+#### Phase 1: Re-anchor (CRITICAL)
 
-    # Skip old 3c content
-    skip { next }
+```bash
+# Read task and epic specs
+$FLOWCTL show <task-id> --json
+$FLOWCTL cat <task-id>
+$FLOWCTL show <epic-id> --json
+$FLOWCTL cat <epic-id>
+
+# Check git state
+git status
+git log -5 --oneline
+
+# Check memory system
+$FLOWCTL config get memory.enabled --json
+```
+
+If memory.enabled is true, read `.flow/memory/*.md` for relevant context.
+
+Parse the spec carefully - identify acceptance criteria, dependencies, technical approach, test requirements.
+
+#### Phase 2: Implement
+
+```bash
+# Capture base commit for scoped review
+BASE_COMMIT=$(git rev-parse HEAD)
+```
+
+Read relevant code, implement the feature/fix. Follow existing patterns. Small, focused changes.
+
+#### Phase 3: Commit
+
+```bash
+git add -A
+git commit -m "feat(<scope>): <description>
+
+- <detail>
+
+Task: <task-id>"
+```
+
+#### Phase 4: Review (MANDATORY)
+
+⚠️ **CRITICAL: You MUST run impl-review after EVERY task commit.**
+
+This is NOT optional. Skipping reviews violates the workflow contract.
+
+```
+/flow-next:impl-review <task-id> --base $BASE_COMMIT
+```
+
+Loop until SHIP verdict. Do NOT proceed to Phase 5 without SHIP.
+
+#### Phase 5: Complete
+
+```bash
+COMMIT_HASH=$(git rev-parse HEAD)
+cat > /tmp/evidence.json << EOF
+{"commits": ["$COMMIT_HASH"], "tests": ["<test commands>"], "prs": []}
+EOF
+cat > /tmp/summary.md << 'EOF'
+<1-2 sentence summary>
+EOF
+$FLOWCTL done <task-id> --summary-file /tmp/summary.md --evidence-json /tmp/evidence.json
+```
+
+#### Phase 6: Epic Completion Review (when all tasks done)
+
+When ALL tasks in the epic are done, you MUST run completion review before closing:
+
+```bash
+# Check remaining tasks
+$FLOWCTL ready --epic <epic-id> --json
+# If no tasks remaining, run completion review
+/flow-next:epic-review <epic-id>
+```
+
+Do NOT skip completion review. It verifies the entire epic implementation.
+
+#### Phase 7: LOOP - Continue to Next Task (CRITICAL)
+
+⚠️ **DO NOT STOP after completing a task. DO NOT ask "Next steps?"**
+
+After Phase 5 (task done), IMMEDIATELY:
+
+1. Run `$FLOWCTL ready --epic <epic-id> --json` to find next task
+2. If tasks remain → go back to Phase 1 (Re-anchor) with next task
+3. If NO tasks remain → run Phase 6 (Epic Completion Review)
+4. After epic review SHIP → epic is complete
+
+```bash
+# After each task, check for more work
+NEXT=$($FLOWCTL ready --epic <epic-id> --json | jq -r '.tasks[0].id // empty')
+if [ -n "$NEXT" ]; then
+  echo "Continuing to task: $NEXT"
+  # Go back to Phase 1 with $NEXT
+else
+  echo "All tasks done - running epic completion review"
+  # Run Phase 6
+fi
+```
+
+**You are an autonomous agent. Keep working until the epic is COMPLETE.**
+
+SECTION3CEOF
+
+    # Use awk to mark section boundaries, then replace with sed
+    local start_line=$(grep -n "^### 3c\. Spawn Worker" "$phases_file" | cut -d: -f1)
+    local end_line=$(grep -n "^### 3d\." "$phases_file" | cut -d: -f1)
+
+    if [ -n "$start_line" ] && [ -n "$end_line" ]; then
+        # Delete section 3c content (keep 3d header)
+        end_line=$((end_line - 1))
+        head -n $((start_line - 1)) "$phases_file" > "${phases_file}.tmp"
+        cat /tmp/codex-3c-replacement.md >> "${phases_file}.tmp"
+        echo "" >> "${phases_file}.tmp"
+        tail -n +$end_line "$phases_file" >> "${phases_file}.tmp"
+        mv "${phases_file}.tmp" "$phases_file"
+    fi
 
     # Global text replacements
-    {
-        gsub(/spawn a worker subagent with fresh context/, "implement the task directly")
-        gsub(/After worker returns/, "After implementing")
-        gsub(/the worker failed/, "implementation failed")
-        gsub(/Worker subagent model/, "Implementation model")
-        gsub(/worker subagent/, "direct implementation")
-        gsub(/worker handles/, "you handle")
-        gsub(/spawn worker/, "implement task")
-        gsub(/Use the Task tool to spawn the `plan-sync` subagent/, "Run plan-sync (skip in Codex)")
-        gsub(/spawn the `plan-sync` subagent/, "run plan-sync")
-        gsub(/quality auditor subagent/, "quality check")
-        gsub(/\*\*Why spawn a worker\?\*\*/, "**Implementation notes:**")
-        gsub(/Worker inherits/, "Implementation uses")
-        gsub(/spawn.*worker.*:/, "implement:")
-        gsub(/├─ 3a-c: find task → start → spawn worker/, "├─ 3a-c: find task → start → implement")
-        gsub(/after worker returns/, "after implementing")
-        gsub(/Worker runs in foreground/, "Implementation runs in foreground")
-        print
-    }
-    ' "$phases_file" > "${phases_file}.tmp" && mv "${phases_file}.tmp" "$phases_file"
+    sed -i.bak \
+        -e 's/spawn a worker subagent with fresh context/implement the task directly/g' \
+        -e 's/After worker returns/After implementing/g' \
+        -e 's/the worker failed/implementation failed/g' \
+        -e 's/Worker subagent model/Implementation model/g' \
+        -e 's/worker subagent/direct implementation/g' \
+        -e 's/worker handles/you handle/g' \
+        -e 's/spawn worker/implement task/g' \
+        -e 's/spawn the `plan-sync` subagent/run plan-sync/g' \
+        -e 's/quality auditor subagent/quality check/g' \
+        -e 's/Worker inherits/Implementation uses/g' \
+        -e 's/after worker returns/after implementing/g' \
+        -e 's/Worker runs in foreground/Implementation runs in foreground/g' \
+        "$phases_file"
+    rm -f "${phases_file}.bak"
+
+    rm -f /tmp/codex-3c-replacement.md
 
     # Patch SKILL.md
     if [ -f "$skill_md" ]; then
