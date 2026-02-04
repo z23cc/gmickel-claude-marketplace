@@ -489,6 +489,64 @@ fi
 patch_rp_review_skills_for_codex "$CODEX_DIR/skills"
 echo -e "  ${GREEN}✓${NC} RP review skills (patched for Codex - DO NOT RETRY warnings)"
 
+# Patch skills that reference scouts to use Codex subagent paths
+patch_scout_references_for_codex() {
+    local skills_dir="$1"
+
+    # Create Codex subagent instructions header
+    cat > /tmp/codex-subagent-note.md << 'SUBAGENTEOF'
+
+---
+
+## Codex Subagent Instructions
+
+**To run scouts as subagents in Codex**, use the agent files in `~/.codex/agents/`:
+
+```
+Run these agents as subagents (in parallel where possible):
+- ~/.codex/agents/repo-scout.md
+- ~/.codex/agents/practice-scout.md
+- ~/.codex/agents/docs-scout.md
+- ~/.codex/agents/github-scout.md
+- ~/.codex/agents/memory-scout.md (if memory.enabled)
+- ~/.codex/agents/epic-scout.md
+- ~/.codex/agents/docs-gap-scout.md
+```
+
+Pass the request/context to each subagent. Collect their findings before proceeding.
+
+---
+
+SUBAGENTEOF
+
+    # Patch flow-next-plan steps.md
+    if [ -f "$skills_dir/flow-next-plan/steps.md" ]; then
+        local sf="$skills_dir/flow-next-plan/steps.md"
+        # Insert note after "## Step 1" heading
+        sed -i.bak '/^## Step 1/r /tmp/codex-subagent-note.md' "$sf"
+        rm -f "${sf}.bak"
+
+        # Replace flow-next:scout-name with ~/.codex/agents/scout-name.md
+        sed -i.bak \
+            -e 's|`flow-next:context-scout`|`~/.codex/agents/context-scout.md`|g' \
+            -e 's|`flow-next:repo-scout`|`~/.codex/agents/repo-scout.md`|g' \
+            -e 's|`flow-next:practice-scout`|`~/.codex/agents/practice-scout.md`|g' \
+            -e 's|`flow-next:docs-scout`|`~/.codex/agents/docs-scout.md`|g' \
+            -e 's|`flow-next:github-scout`|`~/.codex/agents/github-scout.md`|g' \
+            -e 's|`flow-next:memory-scout`|`~/.codex/agents/memory-scout.md`|g' \
+            -e 's|`flow-next:epic-scout`|`~/.codex/agents/epic-scout.md`|g' \
+            -e 's|`flow-next:docs-gap-scout`|`~/.codex/agents/docs-gap-scout.md`|g' \
+            -e 's|Task flow-next:flow-gap-analyst|Run subagent ~/.codex/agents/flow-gap-analyst.md with|g' \
+            "$sf"
+        rm -f "${sf}.bak"
+    fi
+
+    rm -f /tmp/codex-subagent-note.md
+}
+
+patch_scout_references_for_codex "$CODEX_DIR/skills"
+echo -e "  ${GREEN}✓${NC} flow-next-plan (patched for Codex - subagent paths)"
+
 # ====================
 # Install agents (with patching)
 # ====================
