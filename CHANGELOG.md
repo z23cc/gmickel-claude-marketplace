@@ -2,6 +2,12 @@
 
 All notable changes to the gmickel-claude-marketplace.
 
+## [flow-next 0.20.20] - 2026-02-07
+
+### Fixed
+
+- **Review skills: prevent double context build** — Reordered RP workflow in impl-review, plan-review, and epic-review to run context-gathering before setup-review. Builder now runs once with a real summary instead of a placeholder. Added guardrails against re-running setup-review.
+
 ## [flow-next 0.20.19] - 2026-02-03
 
 ### Fixed
