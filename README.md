@@ -25,7 +25,7 @@
 >
 > 🤖 **[Ralph mode](plugins/flow-next/docs/ralph.md)**: Ship features while you sleep. Fresh context per iteration, multi-model review gates, auto-blocks stuck tasks.
 >
-> 📡 **Cross-platform reviews**: [RepoPrompt](https://repoprompt.com/?atp=KJbuL4) (macOS) or [Codex CLI](plugins/flow-next/README.md#cross-model-reviews) (any OS)
+> 📡 **Cross-platform reviews**: [RepoPrompt](https://repoprompt.com/?atp=KJbuL4) (macOS) or [Codex CLI](plugins/flow-next/README.md#cross-model-reviews) (any OS) · [Codex install](plugins/flow-next/README.md#openai-codex-experimental)
 >
 > 🧪 **OpenCode user?** Try [flow-next-opencode](https://github.com/gmickel/flow-next-opencode) (experimental port)
 
