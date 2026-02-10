@@ -74,9 +74,10 @@ $FLOWCTL init --json
 
 **If input is a Flow ID** (fn-N-slug or fn-N-slug.M, including legacy fn-N/fn-N-xxx): First fetch it with `$FLOWCTL show <id> --json` and `$FLOWCTL cat <id>` to get the request context.
 
-**Check if memory is enabled:**
+**Check if memory and github-scout are enabled:**
 ```bash
 $FLOWCTL config get memory.enabled --json
+$FLOWCTL config get scouts.github --json
 ```
 
 **Based on user's choice in SKILL.md setup:**
@@ -95,7 +96,7 @@ Run ALL of these scouts in parallel:
 | `flow-next:context-scout` | RepoPrompt AI file discovery | YES |
 | `flow-next:practice-scout` | Best practices + pitfalls | YES |
 | `flow-next:docs-scout` | External documentation | YES |
-| `flow-next:github-scout` | Cross-repo patterns via gh CLI | YES |
+| `flow-next:github-scout` | Cross-repo patterns via gh CLI | IF scouts.github |
 | `flow-next:memory-scout` | Project memory entries | IF memory.enabled |
 | `flow-next:epic-scout` | Dependencies on open epics | YES |
 | `flow-next:docs-gap-scout` | Docs needing updates | YES |
@@ -108,7 +109,7 @@ Run ALL of these scouts in parallel:
 | `flow-next:repo-scout` | Grep/Glob/Read patterns | YES |
 | `flow-next:practice-scout` | Best practices + pitfalls | YES |
 | `flow-next:docs-scout` | External documentation | YES |
-| `flow-next:github-scout` | Cross-repo patterns via gh CLI | YES |
+| `flow-next:github-scout` | Cross-repo patterns via gh CLI | IF scouts.github |
 | `flow-next:memory-scout` | Project memory entries | IF memory.enabled |
 | `flow-next:epic-scout` | Dependencies on open epics | YES |
 | `flow-next:docs-gap-scout` | Docs needing updates | YES |

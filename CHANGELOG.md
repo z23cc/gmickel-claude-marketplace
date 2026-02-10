@@ -2,6 +2,12 @@
 
 All notable changes to the gmickel-claude-marketplace.
 
+## [flow-next 0.20.21] - 2026-02-10
+
+### Changed
+
+- **github-scout now opt-in** — Disabled by default (`scouts.github: false`). Enable via `/flow-next:setup` or `flowctl config set scouts.github true`. Reduces planning cost and removes `gh` CLI requirement for users who don't need cross-repo search.
+
 ## [flow-next 0.20.20] - 2026-02-07
 
 ### Fixed

@@ -84,6 +84,7 @@ CURRENT_BACKEND=$("${PLUGIN_ROOT}/scripts/flowctl" config get review.backend --j
 CURRENT_MEMORY=$("${PLUGIN_ROOT}/scripts/flowctl" config get memory.enabled --json 2>/dev/null | jq -r '.value // empty')
 CURRENT_PLANSYNC=$("${PLUGIN_ROOT}/scripts/flowctl" config get planSync.enabled --json 2>/dev/null | jq -r '.value // empty')
 CURRENT_CROSSEPIC=$("${PLUGIN_ROOT}/scripts/flowctl" config get planSync.crossEpic --json 2>/dev/null | jq -r '.value // empty')
+CURRENT_GITHUB_SCOUT=$("${PLUGIN_ROOT}/scripts/flowctl" config get scouts.github --json 2>/dev/null | jq -r '.value // empty')
 ```
 
 Store detection results for use in questions. When showing options, indicate current value if set (e.g., "(current)" after the matching option label).
@@ -112,6 +113,7 @@ Current configuration:
 - Plan-Sync: <enabled|disabled> (change with: flowctl config set planSync.enabled <true|false>)
 - Plan-Sync cross-epic: <enabled|disabled> (change with: flowctl config set planSync.crossEpic <true|false>)
 - Review backend: <codex|rp|none> (change with: flowctl config set review.backend <codex|rp|none>)
+- GitHub scout: <enabled|disabled> (change with: flowctl config set scouts.github <true|false>)
 ```
 
 Only include lines for config values that are set. If no config is set, skip this notice.
@@ -156,6 +158,19 @@ Available questions (include only if corresponding config is unset):
   "options": [
     {"label": "No (Recommended)", "description": "Only sync within current epic. Faster, avoids long Ralph loops."},
     {"label": "Yes", "description": "Also update tasks in other epics that reference changed APIs/patterns."}
+  ],
+  "multiSelect": false
+}
+```
+
+**GitHub Scout question** (include if CURRENT_GITHUB_SCOUT is empty):
+```json
+{
+  "header": "GitHub Scout",
+  "question": "Enable GitHub scout? (Searches public/private repos for patterns during planning, requires gh CLI)",
+  "options": [
+    {"label": "No (Recommended)", "description": "Skip cross-repo search. Faster plans, no gh CLI needed."},
+    {"label": "Yes", "description": "Search GitHub repos for patterns/examples during /flow-next:plan"}
   ],
   "multiSelect": false
 }
@@ -225,6 +240,10 @@ Only process answers for questions that were asked (config values that were unse
 - If "Yes": `"${PLUGIN_ROOT}/scripts/flowctl" config set planSync.crossEpic true --json`
 - If "No": `"${PLUGIN_ROOT}/scripts/flowctl" config set planSync.crossEpic false --json`
 
+**GitHub Scout** (if question was asked):
+- If "Yes": `"${PLUGIN_ROOT}/scripts/flowctl" config set scouts.github true --json`
+- If "No": `"${PLUGIN_ROOT}/scripts/flowctl" config set scouts.github false --json`
+
 **Review** (if question was asked):
 Map user's answer to config value and persist:
 
@@ -269,6 +288,7 @@ Configuration (use flowctl config set to change):
 - Memory: <enabled|disabled>
 - Plan-Sync: <enabled|disabled>
 - Plan-Sync cross-epic: <enabled|disabled>
+- GitHub scout: <enabled|disabled>
 - Review backend: <codex|rp|none>
 
 Documentation updated:

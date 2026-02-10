@@ -470,6 +470,7 @@ flowctl config toggle memory.enabled [--json]
 |-----|------|---------|-------------|
 | `memory.enabled` | bool | `false` | Enable memory system |
 | `planSync.enabled` | bool | `false` | Enable plan-sync after task completion |
+| `scouts.github` | bool | `false` | Enable github-scout during planning (requires gh CLI) |
 | `review.backend` | string | `null` | Default review backend (`rp`, `codex`, `none`). If unset, review commands require `--review` or `FLOW_REVIEW_BACKEND`. |
 
 Priority: `--review=...` argument > `FLOW_REVIEW_BACKEND` env > `.flow/config.json` > error.
